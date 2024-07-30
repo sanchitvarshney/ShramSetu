@@ -30,10 +30,12 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
             Notifications
           </h3>
           <div>
-            <RxCross1
+           <Button variant={"ghost"} className='p-0 h-[30px] w-[30px]'>
+           <RxCross1
               className="h-[20px] w-[20px] cursor-pointer"
               onClick={() => setNotification(false)}
             />
+           </Button>
           </div>
         </SidebarHeader>
         <div className="h-[50px] flex justify-between items-center px-[10px]">
