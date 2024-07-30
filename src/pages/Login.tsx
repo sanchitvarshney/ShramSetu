@@ -24,42 +24,44 @@ const Login: React.FC = () => {
       <div className="overflow-hidden max-h-[100vh] flex justify-center items-center left">
         <Card className="max-w-sm mx-auto w-[500px]">
           <CardHeader>
-            <CardTitle className="text-2xl">Login</CardTitle>
+            <CardTitle className="text-2xl text-slate-600">Login</CardTitle>
             <CardDescription>
               Enter your email below to login to your account
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-[50px]">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+            <div className="grid gap-[20px]">
+              <div className="grid gap-2 floating-label-group">
+              
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
                   required
                   className={inputStyle}
+                  
                 />
+                  <Label htmlFor="email" className='floating-label'>Username</Label>
               </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    to="#"
-                    className="inline-block ml-auto text-sm underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
+              <div className="grid gap-2 floating-label-group">
                 <PasswordInput
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder='Password'
                   autoComplete="new-password"
-                  className={inputStyle}
+                  className={`${inputStyle} input`}
+                  required
                 />
+                  <Label htmlFor="password" className='floating-label'>Password</Label>
               </div>
+              <div className="flex items-center">
+                
+                <Link
+                  to="#"
+                  className="inline-block text-sm underline text-slate-600"
+                >
+                  Forgot password?
+                </Link>
+              </div> 
               <Link to={'/'}>
                 <Button
                   type="submit"
@@ -71,7 +73,7 @@ const Login: React.FC = () => {
             </div>
             <div className="mt-4 text-sm text-center">
               First time user?
-              <Link to="#" className="font-[600] text-teal-600">
+              <Link to="#" className="font-[600] text-teal-600 ml-[5px]">
                 REGISTER HERE
               </Link>
             </div>
@@ -136,5 +138,45 @@ const Wrapper = styled.div`
       rgba(255, 255, 255, 0)
     );
   }
+  .floating-label-group {
+	position: relative;
+	margin-top: 15px;
+	margin-bottom: 25px;
+
+	.floating-label {
+		font-size: 15px;
+		color: #9e9e9e;
+		position: absolute;
+		pointer-events: none;
+		top: 9px;
+		left: 12px;
+		transition: all 0.1s ease;
+	}
+
+	input:focus ~ .floating-label,
+	input:not(:focus):valid ~ .floating-label {
+		top: -15px;
+		bottom: 0px;
+		left: 0px;
+		font-size: 14px;
+		opacity: 1;
+		color: #404040;
+	}
+  
+	.input:focus ~ .floating-label,
+	.input:not(:focus):valid ~ .floating-label {
+		top: -15px;
+		bottom: 0px;
+		left: 0px;
+		font-size: 14px;
+		opacity: 1;
+		color: #404040;
+	}
+}
+
+.row {
+	margin-top: 50px;
+}
+
 `;
 export default Login;

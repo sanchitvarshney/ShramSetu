@@ -33,47 +33,44 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { FaChevronDown } from 'react-icons/fa';
 import { FaChevronRight } from 'react-icons/fa';
-import { MdOutlineAdminPanelSettings } from "react-icons/md";
+import { MdOutlineAdminPanelSettings } from 'react-icons/md';
 import { NavlinkStyle } from '@/style/CustomStyles';
+import NotificationSheet from '@/components/shared/NotificationSheet';
 
 interface Props {
   children: React.ReactNode;
 }
 const MainLayout: React.FC<Props> = ({ children }) => {
   const [open, setOpen] = useState<boolean>(false);
+  const [notification, setNotification] = useState<boolean>(false);
+  const uistate = {
+    notification,
+    setNotification
+  }
   return (
+   <>
+   <NotificationSheet uiState={uistate}/>
     <div className="flex flex-col min-h-screen bg-muted/40">
-          <Sidebar open={open} onOpenChange={setOpen}>
+      <Sidebar open={open} onOpenChange={setOpen}>
         <SidebarContent
-        
           side={'left'}
           className="top-[20px] left-[20px] bottom-[20px] h-auto rounded-xl bg-teal-800 border-0 min-w-[300px] shadow shadow-stone-400 p-[20px]"
         >
-          
-          <SidebarHeader className="bg-white/20 rounded-lg p-[20px] ">
-            <img src="/lightlogov2.svg" alt="" className='w-[100%]'/>
+          <SidebarHeader className="bg-blue-100 rounded-lg p-[20px] ">
+            <img src="/main-logo.svg" alt="" className="w-[100%]" />
             {/* <img src="/subtext.svg" alt="" className='w-[200px]'/> */}
           </SidebarHeader>
           <aside className="flex-col mt-[20px] rounded-lg">
             <nav className="grid grid-cols-3 gap-[10px] p-[10px]">
-              <NavLink
-                to="/"
-                className={NavlinkStyle}
-              >
+              <NavLink to="/" className={NavlinkStyle}>
                 <Home className="w-5 h-5" />
                 Dashboard
               </NavLink>
-              <NavLink
-                to="#"
-                className={NavlinkStyle}
-              >
+              <NavLink to="#" className={NavlinkStyle}>
                 <Mail className="w-5 h-5" />
                 Invitation
               </NavLink>
-              <NavLink
-                to="#"
-                className={NavlinkStyle}
-              >
+              <NavLink to="#" className={NavlinkStyle}>
                 <MdOutlineAdminPanelSettings className="w-6 h-6" />
                 Admin
               </NavLink>
@@ -102,8 +99,8 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="shadow-sm shadow-stone-500 ml-[30px]"
-                side="right"
+                className="shadow-sm shadow-stone-500 ml-[300px]"
+                side="top"
               >
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -118,13 +115,12 @@ const MainLayout: React.FC<Props> = ({ children }) => {
       </Sidebar>
       <div className="border-t-[10px] border-[#04b0a8] h-[70px] flex shadow-sm fixed top-0 left-0 right-0 z-[30] bg-white">
         <div className="bg-[#04b0a8] w-[300px] h-[50px] flex justify-end">
-          <img src="/lightlogo.svg" alt="Brand logo" className='w-[150px]'/>
-        
+          <img src="/lightlogov2.svg" alt="Brand logo" className="w-[170px]" />
         </div>
         <header className="  z-30 flex  justify-between    bg-[#fff] min-h-[50px] w-full pr-[20px]">
-          <div className='flex'>
+          <div className="flex">
             <img src="/navcurve.jpg" alt="" className="h-[50px]" />
-            <img src="/subtext.svg" alt="Brand logo"  className='w-[200px]'/>
+            <img src="/subtext.svg" alt="Brand logo" className="w-[200px]" />
           </div>
           <div className="flex items-center gap-[20px]">
             <div>
@@ -144,7 +140,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
             </div>
 
             <CustomTooltip message="Notification" side="bottom">
-              <div className="relative flex items-center justify-center bg-indigo-50 cursor-pointer notification max-w-max p-[5px] rounded-md">
+              <div className="relative flex items-center justify-center bg-indigo-50 cursor-pointer notification max-w-max p-[5px] rounded-md" onClick={()=>setNotification(true)}>
                 <BellRing className="h-[25px] w-[25px] text-slate-600" />
                 <Badge className="bg-teal-600 hover:bg-teal-600 h-[15px] w-[15px] rounded-full p-0 flex justify-center items-center absolute top-[-1px] right-[2px]">
                   0
@@ -179,7 +175,10 @@ const MainLayout: React.FC<Props> = ({ children }) => {
           </div>
         </header>
       </div>
-      <div className="sidebar z-[20] fixed h-[100vh] bg-white w-[20px] left-0 top-0 bottom-0 flex justify-center items-center shadow">
+      <div
+        className="sidebar z-[20] fixed h-[100vh] bg-white w-[20px] left-0 top-0 bottom-0 flex justify-center items-center shadow cursor-pointer"
+        onClick={() => setOpen(true)}
+      >
         <CustomTooltip message="Menubar" side="right">
           <Button
             onClick={() => setOpen(true)}
@@ -189,13 +188,14 @@ const MainLayout: React.FC<Props> = ({ children }) => {
           </Button>
         </CustomTooltip>
       </div>
-  
+
       <div className="flex flex-col max-w-[calc(100vw-20px)] ml-[20px]">
         <main className="grid items-start flex-1 gap-4  sm:py-0 md:gap-8 bg-neutral-200 min-h-[calc(100vh-70px)] mt-[70px]">
           {children}
         </main>
       </div>
     </div>
+   </>
   );
 };
 export default MainLayout;
