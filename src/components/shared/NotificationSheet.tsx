@@ -31,12 +31,12 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
             Notifications
           </h3>
           <div>
-           <Button variant={"ghost"} className='p-0 h-[30px] w-[30px]'>
-           <RxCross1
-              className="h-[20px] w-[20px] cursor-pointer"
-              onClick={() => setNotification(false)}
-            />
-           </Button>
+            <Button variant={'ghost'} className="p-0 h-[30px] w-[30px]">
+              <RxCross1
+                className="h-[20px] w-[20px] cursor-pointer"
+                onClick={() => setNotification(false)}
+              />
+            </Button>
           </div>
         </SidebarHeader>
         <div className="h-[50px] flex justify-between items-center px-[10px]">
@@ -68,8 +68,8 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
             </CardHeader>
             <CardContent className="p-[10px] m-0">
               <div className="flex items-center justify-between mb-[10px]">
-                <div className='flex gap-[5px] text-slate-600 font-[500]'>
-                  <Avatar className='h-[30px] w-[30px]'>
+                <div className="flex gap-[5px] text-slate-600 font-[500]">
+                  <Avatar className="h-[30px] w-[30px]">
                     <AvatarImage src="https://github.com/shadcn.png" />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
@@ -102,8 +102,8 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
             </CardHeader>
             <CardContent className="p-[10px] m-0">
               <div className="flex items-center justify-between mb-[10px]">
-                <div className='flex gap-[5px] text-slate-600 font-[500]'>
-                  <Avatar className='h-[30px] w-[30px]'>
+                <div className="flex gap-[5px] text-slate-600 font-[500]">
+                  <Avatar className="h-[30px] w-[30px]">
                     <AvatarImage src="https://github.com/shadcn.png" />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
@@ -113,9 +113,12 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
                   <p className="text-[14px] text-slate-600">2 days ago</p>
                 </div>
               </div>
-               <div className="w-full bg-blue-100 rounded-md p-[5px] text-slate-600">
+              <div className="w-full bg-blue-100 rounded-md p-[5px] text-slate-600">
                 <p className="text-[14px]">
-                 <strong>Attachment</strong> <a href="#" className='underline'>Screenshot398412343--312343-e23e-32e32-e</a>
+                  <strong>Attachment</strong>{' '}
+                  <a href="#" className="underline">
+                    Screenshot398412343--312343-e23e-32e32-e
+                  </a>
                 </p>
               </div>
             </CardContent>
@@ -134,8 +137,8 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
             </CardHeader>
             <CardContent className="p-[10px] m-0">
               <div className="flex items-center justify-between mb-[10px]">
-                <div className='flex gap-[5px] text-slate-600 font-[500]'>
-                  <Avatar className='h-[30px] w-[30px]'>
+                <div className="flex gap-[5px] text-slate-600 font-[500]">
+                  <Avatar className="h-[30px] w-[30px]">
                     <AvatarImage src="https://github.com/shadcn.png" />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
@@ -145,13 +148,44 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
                   <p className="text-[14px] text-slate-600">7 hours ago</p>
                 </div>
               </div>
-              
+            </CardContent>
+          </Card>
+          <Card className="p-0 rounded-md">
+            <CardHeader className="p-[10px] flex justify-between flex-row gap-[20px]">
+              <div>
+                <CardTitle className="text-slate-600">
+                  Salary component compleate successfully
+                </CardTitle>
+                <CardDescription>Lorem ipsum dolor sit amet.</CardDescription>
+              </div>
+              <div>
+                <Badge className="h-[12px] w-[12px] rounded-full bg-transparent border-2 border-blue-300 p-0 hover:bg-transparent " />
+              </div>
+            </CardHeader>
+            <CardContent className="p-[10px] m-0">
+              <div className="flex items-center justify-between mb-[10px]">
+                <div className="flex gap-[5px] text-slate-600 font-[500]">
+                  <Avatar className="h-[30px] w-[30px]">
+                    <AvatarImage src="https://github.com/shadcn.png" />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                  Lovish Tuteja
+                </div>
+                <div>
+                  <p className="text-[14px] text-slate-600">7 hours ago</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
-        <SidebarFooter className='bg-white h-[50px] shadow'>
-          footer
-        </SidebarFooter>
+        <div className="bg-white h-[50px] border-t shadow border-neutral-200  w-full flex justify-center items-center">
+          <Button
+            variant={'outline'}
+            className="underline bg-transparent border-none shadow-none text-slate-600"
+          >
+            See All Notifications
+          </Button>
+        </div>
       </SidebarContent>
     </Sidebar>
   );
