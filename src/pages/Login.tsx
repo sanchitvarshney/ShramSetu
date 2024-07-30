@@ -53,11 +53,11 @@ const Login: React.FC = () => {
                 />
                   <Label htmlFor="password" className='floating-label'>Password</Label>
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center mt-[-20px]">
                 
                 <Link
                   to="#"
-                  className="inline-block text-sm underline text-slate-600"
+                  className="inline-block ml-auto text-sm underline text-slate-600 text-[12px]"
                 >
                   Forgot password?
                 </Link>

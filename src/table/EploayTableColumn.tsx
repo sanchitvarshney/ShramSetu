@@ -4,6 +4,7 @@ export const columnDefs: ColDef[] = [
       headerName: 'Index',
       valueGetter: 'node.rowIndex + 1',
       width: 80,
+      filter:false
     },
     { headerName: 'Name', field: 'name', sortable: true, filter: true },
     { headerName: 'Last Name', field: 'lastName', sortable: true, filter: true },
@@ -19,6 +20,7 @@ export const columnDefs: ColDef[] = [
         <button >Action</button>
       ),
       width: 100,
+      filter:false
     },
   ];
   export const rowData = [

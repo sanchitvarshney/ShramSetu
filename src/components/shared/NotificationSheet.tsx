@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
 } from '@/components/ui/sidebar';
 import { Props } from '@/types/mainLayout';
@@ -52,7 +53,7 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
             Mark all as read
           </Button>
         </div>
-        <div className="h-[calc(100vh-120px)] overflow-y-auto flex flex-col gap-[10px] px-[10px] py-[20px]">
+        <div className="h-[calc(100vh-170px)] overflow-y-auto flex flex-col gap-[10px] px-[10px] py-[20px]">
           <Card className="p-0 rounded-md">
             <CardHeader className="p-[10px] flex justify-between flex-row">
               <div>
@@ -148,6 +149,9 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
             </CardContent>
           </Card>
         </div>
+        <SidebarFooter className='bg-white h-[50px] shadow'>
+          footer
+        </SidebarFooter>
       </SidebarContent>
     </Sidebar>
   );

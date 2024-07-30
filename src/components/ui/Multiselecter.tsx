@@ -62,6 +62,7 @@ interface MultiSelectProps
   maxCount?: number;
   asChild?: boolean;
   className?: string;
+  PannelClassName?: string;
 }
 
 export const MultipleSelect = React.forwardRef<
@@ -79,6 +80,7 @@ export const MultipleSelect = React.forwardRef<
       maxCount = 3,
       asChild = false,
       className,
+      PannelClassName,
       ...props
     },
     ref
@@ -227,7 +229,7 @@ export const MultipleSelect = React.forwardRef<
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="min-w-[600px] p-0 shadow-sm shadow-stone-500 "
+          className={cn("min-w-[600px] p-0 shadow-sm shadow-stone-500 ",PannelClassName)}
           align="start"
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >
