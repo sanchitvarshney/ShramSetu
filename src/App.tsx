@@ -13,6 +13,10 @@ import CompanyPage from './pages/adminPages/CompanyPage';
 import WorkersPage from './pages/adminPages/WorkersPage';
 import ClientUserPage from './pages/adminPages/ClientUserPage';
 import ActivityLogPage from './pages/adminPages/ActivityLogPage';
+import InvitationPage from './pages/invitation/InvitationPage';
+import WhatsAppInvitationPage from './components/shared/WhatsAppInvitationPage';
+import MailInvitationPage from './components/shared/MailInvitationPage';
+import MessageInvitationPage from './components/shared/MessageInvitationPage';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -55,7 +59,7 @@ const router = createBrowserRouter([
     element: (
       <MainLayout>
         <AdminLayout>
-          <ClientUserPage/>
+          <ClientUserPage />
         </AdminLayout>
       </MainLayout>
     ),
@@ -65,8 +69,38 @@ const router = createBrowserRouter([
     element: (
       <MainLayout>
         <AdminLayout>
-          <ActivityLogPage/>
+          <ActivityLogPage />
         </AdminLayout>
+      </MainLayout>
+    ),
+  },
+  {
+    path: '/invitation/whatsapp',
+    element: (
+      <MainLayout>
+        <InvitationPage>
+          <WhatsAppInvitationPage />
+        </InvitationPage>
+      </MainLayout>
+    ),
+  },
+  {
+    path: '/invitation/mail',
+    element: (
+      <MainLayout>
+        <InvitationPage>
+          <MailInvitationPage />
+        </InvitationPage>
+      </MainLayout>
+    ),
+  },
+  {
+    path: '/invitation/message',
+    element: (
+      <MainLayout>
+        <InvitationPage>
+          <MessageInvitationPage />
+        </InvitationPage>
       </MainLayout>
     ),
   },
