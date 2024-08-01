@@ -1,13 +1,24 @@
-import React from 'react'
-import InvitationCard from '../reusable/InvitationCard'
+import React, { useMemo } from 'react'
+import { AgGridReact } from 'ag-grid-react';
+import { columnDefs, dummyData } from '@/table/InvitationTable';
 
 const MailInvitationPage:React.FC = () => {
+  const defaultColDef = useMemo(() => {
+    return {
+      filter: 'agTextColumnFilter',
+      floatingFilter: true,
+    };
+  }, []);
   return (
-    <div className='grid grid-cols-4 gap-[30px] p-[20px] '  >
-      {
-        Array.from({length:12}).map((_,i)=><InvitationCard key={i}/>)
-      }
-    </div>
+    <div className="ag-theme-quartz h-[calc(100vh-190px)]">
+    <AgGridReact
+      suppressCellFocus={false}
+      defaultColDef={defaultColDef}
+      columnDefs={columnDefs}
+      rowData={dummyData}
+      pagination={true}
+    />
+  </div>
   )
 }
 
