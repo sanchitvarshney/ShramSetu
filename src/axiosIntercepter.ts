@@ -1,13 +1,13 @@
-import { LoggedInUserType, SelectOptionType } from '@/types/general';
+import { LoggedInUserType } from '@/types/general';
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 
 const socketLink: string = import.meta.env.VITE_REACT_APP_SOCKET_BASE_URL;
 const imsLink: string = import.meta.env.VITE_REACT_APP_API_BASE_URL;
 
-interface LoggedInUser {
-  token: string;
-}
+// interface LoggedInUser {
+//   token: string;
+// }
 
 interface ErrorResponse {
   success?: boolean;
@@ -17,9 +17,9 @@ interface ErrorResponse {
   };
 }
 
-const loggedInUser: LoggedInUser | null = JSON.parse(
-  localStorage.getItem('loggedInUser') as string,
-);
+// const loggedInUser: LoggedInUser | null = JSON.parse(
+//   localStorage.getItem('loggedInUser') as string,
+// );
 // const otherData: OtherData | null = JSON.parse(localStorage.getItem("otherData") as string);
 const localUser = localStorage.getItem('loggedInUser');
 const parsed: LoggedInUserType | null = JSON.parse(localUser ?? 'null');
@@ -29,7 +29,6 @@ const orshAxios = axios.create({
   baseURL: imsLink,
   headers: {
     'auth-token': parsed?.token,
-    // 'x-csrf-token': loggedInUser?.token,
     company: selectedCompany,
   },
 });

@@ -60,11 +60,44 @@ interface AddWorkerPayload {
   empPassword: string;
   empGender: string;
 }
+interface ActivityLog {
+  text: string;
+  value: string;
+  insertBy: string;
+  insertDt: string;
+  status: string;
+}
+
+interface ActivityLogResponse {
+  data: ActivityLog[] | null;
+  message: string;
+  success: boolean;
+}
+
+interface ClientDetail {
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobile: string;
+  code: string;
+  companyName: string;
+  branchName: string;
+  panNo: string;
+  gstNo: string;
+}
+
+interface ClientResponse{
+  data: ClientDetail[] | null;
+  message: string;
+  success: boolean;
+}
 
 interface AdminPageState {
   companies: Company[] | null;
   department: Department[] | null;
   designation: Designation[] | null;
+  clientList: ClientDetail[] | null;
+  activityLogs: ActivityLog[] | null;
   loading: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
@@ -73,6 +106,8 @@ const initialState: AdminPageState = {
   companies: null,
   department: [],
   designation: [],
+  clientList:[],
+  activityLogs: [],
   loading: 'idle',
   error: null,
 };
@@ -151,6 +186,47 @@ export const addWorker = createAsyncThunk(
   },
 );
 
+export const fetchActivityLogs = createAsyncThunk<ActivityLogResponse, void>(
+  'homePage/fetchActivityLogs',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<ActivityLogResponse>(
+        `${baseLink}fetch/uplodedEmployees`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch designations');
+    }
+  },
+);
+
+export const fetchClientList = createAsyncThunk<ClientResponse, void>(
+  'homePage/fetchClientList',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<ClientResponse>(
+        `${baseLink}client/list`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch designations');
+    }
+  },
+);
+export const deleteActivityLog = createAsyncThunk<ActivityLogResponse, void>(
+  'homePage/fetchActivityLogs',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<ActivityLogResponse>(
+        `${baseLink}fetch/uplodedEmployees`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch designations');
+    }
+  },
+);
+
 // Create the slice
 const adminPageSlice = createSlice({
   name: 'adminPage',
@@ -204,6 +280,20 @@ const adminPageSlice = createSlice({
       .addCase(addWorker.rejected, (state, action) => {
         state.loading = 'failed';
         state.error = action.payload as string;
+      })
+      .addCase(fetchActivityLogs.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.activityLogs = action.payload.data;
+        state.error = null;
+      })
+      .addCase(fetchActivityLogs.rejected, (state, action) => {
+        state.loading = 'failed';
+        state.error = action.payload as string;
+      })
+      .addCase(fetchClientList.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.clientList = action.payload.data;
+        state.error = null;
       });
   },
 });

@@ -1,24 +1,34 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { columnDefs, dummyData } from '@/table/WorkersTableColumns';
-const ClientUserPage:React.FC = () => {
-    const defaultColDef = useMemo(() => {
-        return {
-          filter: 'agTextColumnFilter',
-          floatingFilter: true,
-        };
-      }, []);
-    
+import { columnDefs } from '@/table/WorkersTableColumns';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchClientList } from '@/features/admin/adminPageSlice';
+import { AppDispatch, RootState } from '@/store';
+const ClientUserPage: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { clientList } = useSelector((state: RootState) => state.adminPage);
+
+  const defaultColDef = useMemo(() => {
+    return {
+      filter: 'agTextColumnFilter',
+      floatingFilter: true,
+    };
+  }, []);
+
+  useEffect(() => {
+    dispatch(fetchClientList());
+  }, [dispatch]);
+  
   return (
     <div className=" ag-theme-quartz h-[calc(100vh-70px)]">
-    <AgGridReact
-      rowData={dummyData}
-      columnDefs={columnDefs}
-      defaultColDef={defaultColDef}
-      pagination={true}
-    />
-  </div>
-  )
-}
+      <AgGridReact
+        rowData={clientList}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        pagination={true}
+      />
+    </div>
+  );
+};
 
-export default ClientUserPage
+export default ClientUserPage;
