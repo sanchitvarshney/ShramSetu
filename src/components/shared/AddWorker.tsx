@@ -1,4 +1,4 @@
-import  { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,7 +22,6 @@ import { inputStyle } from '@/style/CustomStyles';
 import { Label } from '../ui/label';
 import { AiOutlineUser } from 'react-icons/ai';
 
-
 import { BsTelephone } from 'react-icons/bs';
 import { CiMail } from 'react-icons/ci';
 import { IoIosLock } from 'react-icons/io';
@@ -30,7 +29,7 @@ import { LiaClipboardListSolid } from 'react-icons/lia';
 import { FaFileExcel } from 'react-icons/fa6';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
-
+import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 
 import { Calendar } from '@/components/ui/calendar';
@@ -40,24 +39,83 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useDispatch, useSelector } from 'react-redux';
-import { Department, Designation, fetchDepartments, fetchDesignations } from '@/features/admin/adminPageSlice';
+import {
+  addWorker,
+  Department,
+  Designation,
+  fetchDepartments,
+  fetchDesignations,
+} from '@/features/admin/adminPageSlice';
 import { AppDispatch, RootState } from '@/store';
 const AddWorker = () => {
   const dispatch = useDispatch<AppDispatch>();
   const buttonRef = useRef<HTMLButtonElement>(null);
-  
-  const { department,designation} = useSelector((state: RootState) => state.adminPage);
 
-  const [date, setDate] = useState<Date>();
+  const { department, designation } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
+  const [empFirstName, setEmpFirstName] = useState('');
+  const [empMiddleName, setEmpMiddleName] = useState('');
+  const [empLastName, setEmpLastName] = useState('');
+  const [empEmail, setEmpEmail] = useState('');
+  const [empDOB, setEmpDOB] = useState<Date | undefined>(undefined);
+  const [empDepartment, setEmpDepartment] = useState('');
+  const [empDesignation, setEmpDesignation] = useState('');
+  const [empMobile, setEmpMobile] = useState('');
+  const [empPassword, setEmpPassword] = useState('');
+  const [empGender, setEmpGender] = useState('');
 
-  useEffect(()=>{
-    dispatch(fetchDepartments())
-    dispatch(fetchDesignations())
-  },[dispatch])
+  const handleSubmit = () => {
+    if (
+      empFirstName &&
+      empLastName &&
+      empEmail &&
+      empMobile &&
+      empPassword &&
+      empDOB &&
+      empDepartment &&
+      empDesignation
+    ) {
+      dispatch(
+        addWorker({
+          empFirstName,
+          empMiddleName,
+          empLastName,
+          empEmail,
+          empDOB: format(empDOB, 'dd-MM-yyyy'),
+          empDepartment,
+          empDesignation,
+          empMobile,
+          empPassword,
+          empGender,
+        }),
+      ).then((response: any) => {
+        if (response.payload.success) {
+          toast({ title: 'Success!!', description: response.payload.message });
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: response.payload.message,
+          });
+        }
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please fill all the mandatory fields.',
+      });
+    }
+  };
 
-  console.log()
+  useEffect(() => {
+    dispatch(fetchDepartments());
+    dispatch(fetchDesignations());
+  }, [dispatch]);
+
   return (
-    <div className='overflow-y-auto '>
+    <div className="overflow-y-auto ">
       <div className="p-[10px]">
         <div className="h-[50px] flex justify-end items-center">
           <Button className="text-[17px] shadow-neutral-400 flex items-center gap-[5px] bg-[#1d6f42] hover:bg-[##268f55">
@@ -65,18 +123,24 @@ const AddWorker = () => {
           </Button>
         </div>
         <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0">
-          <CardHeader className=' border-b p-0 px-[20px]  h-[70px] gap-0 flex justify-center '>
+          <CardHeader className=" border-b p-0 px-[20px]  h-[70px] gap-0 flex justify-center ">
             <CardTitle className="text-[20px] font-[650] text-slate-600">
               Add Worker
             </CardTitle>
             <CardDescription>
-              Here you can add workers in the database which will be shown in the result
+              Here you can add workers in the database which will be shown in
+              the result
             </CardDescription>
           </CardHeader>
-          <CardContent className='py-[10px] h-[calc(100vh-330px)] overflow-x-auto'>
+          <CardContent className="py-[10px] h-[calc(100vh-330px)] overflow-x-auto">
             <div className="grid grid-cols-3 gap-[20px]">
               <div className="floating-label-group">
-                <Input required className={inputStyle} />
+                <Input
+                  required
+                  className={inputStyle}
+                  value={empFirstName}
+                  onChange={(e) => setEmpFirstName(e.target.value)}
+                />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
                     <AiOutlineUser className="h-[18px] w-[18px]" />
@@ -85,7 +149,12 @@ const AddWorker = () => {
                 </Label>
               </div>
               <div className="floating-label-group">
-                <Input required className={inputStyle} />
+                <Input
+                  required
+                  className={inputStyle}
+                  value={empMiddleName}
+                  onChange={(e) => setEmpMiddleName(e.target.value)}
+                />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
                     <AiOutlineUser className="h-[18px] w-[18px]" />
@@ -94,7 +163,12 @@ const AddWorker = () => {
                 </Label>
               </div>
               <div className="floating-label-group">
-                <Input required className={inputStyle} />
+                <Input
+                  required
+                  className={inputStyle}
+                  value={empLastName}
+                  onChange={(e) => setEmpLastName(e.target.value)}
+                />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
                     <AiOutlineUser className="h-[18px] w-[18px]" />
@@ -109,16 +183,16 @@ const AddWorker = () => {
                     Gender
                   </span>
                 </Label>
-                <Select>
+                <Select onValueChange={setEmpGender}>
                   <SelectTrigger
                     className={`${inputStyle} input2  focus:ring-0`}
                     ref={buttonRef}
                   >
-                    <SelectValue className="" placeholder="--"/>
+                    <SelectValue className="" placeholder="--" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="light">Male</SelectItem>
-                    <SelectItem value="dark">Female</SelectItem>
+                    <SelectItem value="M">Male</SelectItem>
+                    <SelectItem value="F">Female</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -135,25 +209,35 @@ const AddWorker = () => {
                       variant={'outline'}
                       className={cn(
                         `${inputStyle} w-full justify-start hover:bg-transparent`,
-                        !date && 'text-[#9e9e9e]',
+                        !empDOB && 'text-[#9e9e9e]',
                       )}
                     >
                       <CalendarIcon className="w-4 h-4 mr-2" />
-                      {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                      {empDOB ? (
+                        format(empDOB, 'PPP')
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={date}
-                      onSelect={setDate}
+                      selected={empDOB}
+                      onSelect={setEmpDOB}
                       initialFocus
                     />
                   </PopoverContent>
                 </Popover>
               </div>
               <div className="floating-label-group">
-                <Input type='number' required className={inputStyle} />
+                <Input
+                  type="number"
+                  required
+                  className={inputStyle}
+                  value={empMobile}
+                  onChange={(e) => setEmpMobile(e.target.value)}
+                />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
                     <BsTelephone className="h-[18px] w-[18px]" />
@@ -162,7 +246,13 @@ const AddWorker = () => {
                 </Label>
               </div>
               <div className="floating-label-group">
-                <Input type='email' required className={inputStyle} />
+                <Input
+                  type="email"
+                  required
+                  className={inputStyle}
+                  value={empEmail}
+                  onChange={(e) => setEmpEmail(e.target.value)}
+                />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
                     <CiMail className="h-[18px] w-[18px]" />
@@ -177,16 +267,19 @@ const AddWorker = () => {
                     Department
                   </span>
                 </Label>
-                <Select>
+                <Select onValueChange={setEmpDepartment}>
                   <SelectTrigger
                     className={`${inputStyle} input2  focus:ring-0`}
                     ref={buttonRef}
                   >
-                    <SelectValue className="" placeholder="--"/>
+                    <SelectValue className="" placeholder="--" />
                   </SelectTrigger>
                   <SelectContent>
-                  {department?.map((department: Department) => (
-                      <SelectItem value={department?.value} key={department?.value}>
+                    {department?.map((department: Department) => (
+                      <SelectItem
+                        value={department?.value}
+                        key={department?.value}
+                      >
                         {department?.text}
                       </SelectItem>
                     ))}
@@ -200,16 +293,19 @@ const AddWorker = () => {
                     Designation
                   </span>
                 </Label>
-                <Select>
+                <Select onValueChange={setEmpDesignation}>
                   <SelectTrigger
                     className={`${inputStyle} input2  focus:ring-0`}
                     ref={buttonRef}
                   >
-                    <SelectValue className="" placeholder="--"/>
+                    <SelectValue className="" placeholder="--" />
                   </SelectTrigger>
                   <SelectContent>
-                  {designation?.map((designation: Designation) => (
-                      <SelectItem value={designation?.value} key={designation?.value}>
+                    {designation?.map((designation: Designation) => (
+                      <SelectItem
+                        value={designation?.value}
+                        key={designation?.value}
+                      >
                         {designation?.text}
                       </SelectItem>
                     ))}
@@ -226,7 +322,12 @@ const AddWorker = () => {
                 </Label>
               </div>
               <div className="floating-label-group">
-                <Input required className={inputStyle} />
+                <Input
+                  required
+                  className={inputStyle}
+                  value={empPassword}
+                  onChange={(e) => setEmpPassword(e.target.value)}
+                />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
                     <IoIosLock className="h-[18px] w-[18px]" />
@@ -237,7 +338,10 @@ const AddWorker = () => {
             </div>
           </CardContent>
           <CardFooter className="p-0 px-[20px] flex justify-end items-center border-t h-[50px] ">
-            <Button className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px] ">
+            <Button
+              className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px] "
+              onClick={handleSubmit}
+            >
               <BiSolidLogInCircle className="h-[25px] w-[25px]" />
               Register
             </Button>

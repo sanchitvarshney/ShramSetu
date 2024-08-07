@@ -1,6 +1,6 @@
-import { LoggedInUserType } from "@/types/general";
-import axios, { AxiosResponse, AxiosError } from "axios";
-import { toast } from "react-toastify";
+import { LoggedInUserType, SelectOptionType } from '@/types/general';
+import axios, { AxiosResponse, AxiosError } from 'axios';
+import { toast } from 'react-toastify';
 
 const socketLink: string = import.meta.env.VITE_REACT_APP_SOCKET_BASE_URL;
 const imsLink: string = import.meta.env.VITE_REACT_APP_API_BASE_URL;
@@ -17,16 +17,20 @@ interface ErrorResponse {
   };
 }
 
-const loggedInUser: LoggedInUser | null = JSON.parse(localStorage.getItem("loggedInUser") as string);
+const loggedInUser: LoggedInUser | null = JSON.parse(
+  localStorage.getItem('loggedInUser') as string,
+);
 // const otherData: OtherData | null = JSON.parse(localStorage.getItem("otherData") as string);
-const localUser = localStorage.getItem("loggedInUser");
-const parsed: LoggedInUserType | null = JSON.parse(localUser ?? "null");
+const localUser = localStorage.getItem('loggedInUser');
+const parsed: LoggedInUserType | null = JSON.parse(localUser ?? 'null');
+const selectedCompany = localStorage.getItem('companySelect') ?? 'null';
 
 const orshAxios = axios.create({
   baseURL: imsLink,
   headers: {
-    "auth-token": parsed?.token,
-    "x-csrf-token": loggedInUser?.token,
+    'auth-token': parsed?.token,
+    // 'x-csrf-token': loggedInUser?.token,
+    company: selectedCompany,
   },
 });
 
@@ -38,34 +42,33 @@ orshAxios.interceptors.response.use(
     return response;
   },
   (error: AxiosError<ErrorResponse>) => {
-    if (error.response && typeof error.response.data === "object") {
+    if (error.response && typeof error.response.data === 'object') {
       const errorData = error.response.data;
 
       if (errorData?.data?.logout) {
-        toast.error(errorData.message || "Logout error.");
+        toast.error(errorData.message || 'Logout error.');
         localStorage.clear();
         window.location.reload();
         return Promise.reject(error);
       }
 
       if (errorData.success !== undefined) {
-      
-        toast.error(errorData.message || "Error occurred.");
+        toast.error(errorData.message || 'Error occurred.');
         return Promise.reject(errorData);
       }
 
       if (errorData.message) {
         toast.error(errorData.message);
       } else {
-        toast.error("Error while connecting to backend.");
+        toast.error('Error while connecting to backend.');
       }
 
       return Promise.reject(errorData);
     }
 
-    toast.error("An unexpected error occurred.");
+    toast.error('An unexpected error occurred.');
     return Promise.reject(error);
-  }
+  },
 );
 
 export { orshAxios, socketLink };

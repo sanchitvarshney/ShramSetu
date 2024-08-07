@@ -48,6 +48,19 @@ interface DesignationResponse {
   success: boolean;
 }
 
+interface AddWorkerPayload {
+  empFirstName: string;
+  empMiddleName: string;
+  empLastName: string;
+  empEmail: string;
+  empDOB: string;
+  empDepartment: string;
+  empDesignation: string;
+  empMobile: string;
+  empPassword: string;
+  empGender: string;
+}
+
 interface AdminPageState {
   companies: Company[] | null;
   department: Department[] | null;
@@ -123,6 +136,21 @@ export const fetchDesignations = createAsyncThunk<DesignationResponse, void>(
   },
 );
 
+export const addWorker = createAsyncThunk(
+  'adminPage/addworker',
+  async (workerData: AddWorkerPayload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post(
+        baseLink + 'worker/add',
+        workerData,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to add company');
+    }
+  },
+);
+
 // Create the slice
 const adminPageSlice = createSlice({
   name: 'adminPage',
@@ -164,6 +192,18 @@ const adminPageSlice = createSlice({
         state.loading = 'succeeded';
         state.error = null;
         state.designation = action.payload.data;
+      })
+      .addCase(addWorker.pending, (state) => {
+        state.loading = 'loading';
+        state.error = null;
+      })
+      .addCase(addWorker.fulfilled, (state) => {
+        state.loading = 'succeeded';
+        state.error = null;
+      })
+      .addCase(addWorker.rejected, (state, action) => {
+        state.loading = 'failed';
+        state.error = action.payload as string;
       });
   },
 });

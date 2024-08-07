@@ -31,8 +31,7 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
-import { FaChevronDown } from 'react-icons/fa';
-import { FaChevronRight } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { MdOutlineAdminPanelSettings } from 'react-icons/md';
 import { NavlinkStyle } from '@/style/CustomStyles';
 import NotificationSheet from '@/components/shared/NotificationSheet';
@@ -44,18 +43,32 @@ import { Company, fetchCompanies } from '@/features/homePage/homePageSlice';
 interface Props {
   children: React.ReactNode;
 }
+
 const MainLayout: React.FC<Props> = ({ children }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const [open, setOpen] = useState<boolean>(false);
   const [notification, setNotification] = useState<boolean>(false);
-  const uistate = {
-    notification,
-    setNotification,
-  };
   const { companies } = useSelector((state: RootState) => state.homePage);
-  const [selectedCompany, setSelectedCompany] = useState<string | ''>('');
+  const [selectedCompany, setSelectedCompany] = useState<string>('');
+
+  useEffect(() => {
+    dispatch(fetchCompanies());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (companies?.length > 0) {
+      // Set default company or fetch from local storage if needed
+      const defaultCompany = localStorage.getItem('companySelect') || companies[0].value;
+      setSelectedCompany(defaultCompany);
+    }
+  }, [companies]);
+
+  useEffect(() => {
+    // Persist selected company to local storage
+    localStorage.setItem('companySelect', selectedCompany);
+  }, [selectedCompany]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -63,19 +76,9 @@ const MainLayout: React.FC<Props> = ({ children }) => {
     toast({ description: 'Logged Out Successfully' });
   };
 
-  useEffect(() => {
-    dispatch(fetchCompanies());
-  }, []);
-
-  useEffect(() => {
-    if (companies?.length > 0) {
-      setSelectedCompany(companies[0].value);
-    }
-  }, [companies]);
-
   return (
     <>
-      <NotificationSheet uiState={uistate} />
+      <NotificationSheet uiState={{ notification, setNotification }} />
       <div className="flex flex-col min-h-screen bg-muted/40">
         <Sidebar open={open} onOpenChange={setOpen}>
           <SidebarContent
@@ -84,7 +87,6 @@ const MainLayout: React.FC<Props> = ({ children }) => {
           >
             <SidebarHeader className="bg-blue-100 rounded-lg p-[20px] ">
               <img src="/main-logo.svg" alt="" className="w-[100%]" />
-              {/* <img src="/subtext.svg" alt="" className='w-[200px]'/> */}
             </SidebarHeader>
             <aside className="flex-col mt-[20px] rounded-lg">
               <nav className="grid grid-cols-3 gap-[10px] p-[10px]">
@@ -161,14 +163,14 @@ const MainLayout: React.FC<Props> = ({ children }) => {
               className="w-[170px]"
             />
           </div>
-          <header className="  z-30 flex  justify-between    bg-[#fff] min-h-[50px] w-full pr-[20px]">
+          <header className="z-30 flex justify-between bg-[#fff] min-h-[50px] w-full pr-[20px]">
             <div className="flex">
               <img src="/navcurve.jpg" alt="" className="h-[50px]" />
               <img src="/subtext.svg" alt="Brand logo" className="w-[200px]" />
             </div>
             <div className="flex items-center gap-[20px]">
               <div>
-                <Select value={selectedCompany}>
+                <Select value={selectedCompany} onValueChange={setSelectedCompany}>
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Choose Company" />
                   </SelectTrigger>
@@ -242,7 +244,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
         </div>
 
         <div className="flex flex-col max-w-[calc(100vw-20px)] ml-[20px]">
-          <main className="grid items-start flex-1 gap-4  sm:py-0 md:gap-8 bg-white min-h-[calc(100vh-70px)] mt-[70px]">
+          <main className="grid items-start flex-1 gap-4 sm:py-0 md:gap-8 bg-white min-h-[calc(100vh-70px)] mt-[70px]">
             {children}
           </main>
         </div>
@@ -250,4 +252,5 @@ const MainLayout: React.FC<Props> = ({ children }) => {
     </>
   );
 };
+
 export default MainLayout;

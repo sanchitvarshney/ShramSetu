@@ -10,3 +10,10 @@ export interface LoggedInUserType {
   type: string;
   isAdmin: boolean;
 }
+
+export interface SelectOptionType {
+  text: string;
+  value: string;
+  disabled?: boolean;
+}
+
