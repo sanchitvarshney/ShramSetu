@@ -26,7 +26,6 @@ import { BsTelephone } from 'react-icons/bs';
 import { CiMail } from 'react-icons/ci';
 import { IoIosLock } from 'react-icons/io';
 import { LiaClipboardListSolid } from 'react-icons/lia';
-import { FaFileExcel } from 'react-icons/fa6';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
@@ -47,7 +46,7 @@ import {
   fetchDesignations,
 } from '@/features/admin/adminPageSlice';
 import { AppDispatch, RootState } from '@/store';
-import { FileUploadDialog } from '@/components/shared/FileUploadDialog';
+
 const AddWorker = () => {
   const dispatch = useDispatch<AppDispatch>();
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -65,7 +64,6 @@ const AddWorker = () => {
   const [empMobile, setEmpMobile] = useState('');
   const [empPassword, setEmpPassword] = useState('');
   const [empGender, setEmpGender] = useState('');
-  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const handleSubmit = () => {
     if (
@@ -119,17 +117,6 @@ const AddWorker = () => {
   return (
     <div className="overflow-y-auto ">
       <div className="p-[10px]">
-        <div className="h-[50px] flex justify-end items-center">
-          <Button
-            className="text-[17px] shadow-neutral-400 flex items-center gap-[5px] bg-[#1d6f42] hover:bg-[##268f55"
-            onClick={() => setDialogOpen(true)}
-          >
-            <FaFileExcel className="h-[20px] w-[20px]" /> Bulk Upload
-          </Button>
-        </div>
-        {isDialogOpen && (
-          <FileUploadDialog onClose={() => setDialogOpen(false)} />
-        )}
         <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0">
           <CardHeader className=" border-b p-0 px-[20px]  h-[70px] gap-0 flex justify-center ">
             <CardTitle className="text-[20px] font-[650] text-slate-600">
