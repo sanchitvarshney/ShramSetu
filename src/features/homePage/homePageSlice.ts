@@ -24,6 +24,7 @@ export interface SearchCompany {
   createdOn: string;
   updatedOn: string;
   srNo: string;
+  companyID: string;
 }
 
 // Define the payload structure for the POST request
@@ -141,9 +142,9 @@ const homePageSlice = createSlice({
         state.loading = 'failed';
         state.error = action.payload as string;
       })
-      .addCase(advancedFilter.fulfilled, (state) => {
+      .addCase(advancedFilter.fulfilled, (state, action) => {
         state.loading = 'succeeded';
-        // Handle successful addition, maybe update a list or show a success message
+        state.advancedFilter = action.payload.data;
         state.error = null;
       });
   },

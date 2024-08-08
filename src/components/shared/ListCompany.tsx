@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
-import { fetchCompanies } from '@/features/admin/adminPageSlice';
+import { searchCompanies } from '@/features/admin/adminPageSlice';
 import { ColDef } from 'ag-grid-community';
 
 const ListCompany: React.FC = () => {
@@ -15,7 +15,7 @@ const ListCompany: React.FC = () => {
   }), []);
 
   useEffect(() => {
-    dispatch(fetchCompanies());
+    dispatch(searchCompanies());
   }, [dispatch]);
 
   const columnDefs: ColDef[] = [

@@ -154,7 +154,7 @@ export const MultipleSelect = React.forwardRef<
               className
             )}
           >
-            {selectedValues.length > 0 ? (
+            {selectedValues?.length > 0 ? (
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center flex-nowrap">
                   {selectedValues.slice(0, maxCount).map((value) => {
@@ -253,7 +253,7 @@ export const MultipleSelect = React.forwardRef<
                       <div
                         className={cn(
                           "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                          selectedValues.length === options.length
+                          selectedValues?.length === options.length
                             ? "bg-teal-500 text-primary-foreground border-teal-500"
                             : "opacity-50 [&_svg]:invisible"
                         )}
@@ -265,7 +265,7 @@ export const MultipleSelect = React.forwardRef<
                     {
                       
                         options.map((option) => {
-                          const isSelected = selectedValues.includes(option.value);
+                          const isSelected = selectedValues?.includes(option.value);
                           return (
                             <CommandItem
                               key={option.value}
@@ -298,7 +298,7 @@ export const MultipleSelect = React.forwardRef<
               <CommandSeparator />
               <CommandGroup>
                 <div className="flex items-center justify-between">
-                  {selectedValues.length > 0 && (
+                  {selectedValues?.length > 0 && (
                     <>
                       <CommandItem
                         onSelect={handleClear}

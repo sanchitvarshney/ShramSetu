@@ -158,8 +158,8 @@ export const addCompany = createAsyncThunk(
 );
 
 // Define the async thunk for fetching companies
-export const fetchCompanies = createAsyncThunk<CompanyResponse, void>(
-  'homePage/fetchCompanies',
+export const searchCompanies = createAsyncThunk<CompanyResponse, void>(
+  'homePage/searchCompanies',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<CompanyResponse>(
@@ -260,11 +260,28 @@ export const fetchWorkers = createAsyncThunk<
   },
 );
 
+export const bulkUpload = createAsyncThunk<void, File, { rejectValue: string }>(
+  'adminPage/bulkUpload',
+  async (file: File, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('uploadfile', file);
+      const response = await orshAxios.post(
+        baseLink + 'worker/upload',
+        formData,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to upload file');
+    }
+  },
+);
+
 export const deleteActivityLog = createAsyncThunk<void, string>(
   'adminPage/deleteActivityLog',
   async (fileId: string, { rejectWithValue }) => {
     try {
-      await orshAxios.delete(baseLink+`worker/delete/file/${fileId}`);
+      await orshAxios.delete(baseLink + `worker/delete/file/${fileId}`);
     } catch (error) {
       return rejectWithValue('Failed to delete activity log');
     }
@@ -290,16 +307,16 @@ const adminPageSlice = createSlice({
         state.loading = 'failed';
         state.error = action.payload as string;
       })
-      .addCase(fetchCompanies.pending, (state) => {
+      .addCase(searchCompanies.pending, (state) => {
         state.loading = 'loading';
         state.error = null;
       })
-      .addCase(fetchCompanies.fulfilled, (state, action) => {
+      .addCase(searchCompanies.fulfilled, (state, action) => {
         state.loading = 'succeeded';
         state.error = null;
         state.companies = action.payload.data;
       })
-      .addCase(fetchCompanies.rejected, (state, action) => {
+      .addCase(searchCompanies.rejected, (state, action) => {
         state.loading = 'failed';
         state.error = action.payload as string;
       })

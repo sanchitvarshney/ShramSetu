@@ -13,7 +13,6 @@ import { Plus, Search, SearchIcon, Trash2 } from 'lucide-react';
 import {
   Form,
   FormControl,
-
   FormField,
   FormItem,
   FormMessage,
@@ -36,21 +35,7 @@ import { advancedFilter, fetchSearchCompanies, SearchCompany } from '@/features/
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 
-const companyOptions: {
-  light: {
-      value: string;
-      label: string;
-  }[];
-  dark: {
-      value: string;
-      label: string;
-  }[];
-  system: {
-      value: string;
-      label: string;
-  }[];
-  empty:[]
-}  = {
+const companyOptions = {
   light: [
     { value: 'Company1', label: 'light1' },
     { value: 'Company2', label: 'light2' },
@@ -63,9 +48,11 @@ const companyOptions: {
     { value: 'Company5', label: 'system1' },
     { value: 'Company6', label: 'system2' },
   ],
-  empty:[]
+  empty: [],
 };
+
 type FilterKeys = keyof typeof companyOptions;
+
 interface RowData {
   id: number;
   filter: string;
@@ -73,17 +60,13 @@ interface RowData {
 }
 
 const FormSchema = z.object({
-  companies: z
-    .array(z.string().min(1))
-    .min(1)
-    .nonempty('Please select at least one company.'),
+  companies: z.array(z.string()).min(1, 'Please select at least one company.'),
 });
 
 const HomePage: React.FC = () => {
-
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-
+  const [companiesArray , setCompaniesArray] = useState([]);
   const { searchCompanies } = useSelector((state: RootState) => state.homePage);
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -92,13 +75,15 @@ const HomePage: React.FC = () => {
       companies: [],
     },
   });
+
   const [rows, setRows] = useState<RowData[]>([
     { id: Date.now(), filter: '', companies: [] },
   ]);
 
-const isValidFilter = (filter: string): filter is FilterKeys => {
-  return ['light', 'dark', 'system'].includes(filter);
-};
+  const isValidFilter = (filter: string): filter is FilterKeys => {
+    return ['light', 'dark', 'system'].includes(filter);
+  };
+
   const handleAddRow = () => {
     setRows([...rows, { id: Date.now(), filter: '', companies: [] }]);
   };
@@ -109,48 +94,39 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
 
   const handleChange = (id: number, name: string, value: any) => {
     setRows(rows.map((row) => (row.id === id ? { ...row, [name]: value } : row)));
-   
-
-  };
-  const handleFilterChange = (id: number, name: string, value: any) => {
-    setRows(rows.map((row) => (row.id === id ? { ...row, [name]: value ,companies:[]} : row)));
-   
-
   };
 
+  const handleFilterChange = (id: number, value: string) => {
+    setRows(rows.map((row) => (row.id === id ? { ...row, filter: value, companies: [] } : row)));
+  };
 
   const handleCompanyChange = (id: number, selectedCompanies: string[]) => {
     handleChange(id, 'companies', selectedCompanies);
   };
 
-  // function onSubmit(data: z.infer<typeof FormSchema>) {
-  //   console.log(data);
-  // }
-// console.log(companies)
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    navigate("/employee-list")
+    console.log(data.companies);
+    navigate('/employee-list');
     const payload = {
-      companies: data.companies,
+      company: companiesArray,
       excludePreviousCompany: false, // Adjust as needed
       excludePreviousIndustry: false, // Adjust as needed
       limit: 100, // Adjust as needed
     };
 
     try {
-      // Dispatch the addCompany thunk
       await dispatch(advancedFilter(payload)).unwrap();
-      // Handle successful submission (e.g., show success message or reset form)
       console.log('Company added successfully');
     } catch (err) {
-      // Handle error (e.g., show error message)
       console.error('Failed to add company:', err);
     }
   };
 
   useEffect(() => {
     dispatch(fetchSearchCompanies());
-  }, []);
-  
+  }, [dispatch]);
+
+
   return (
     <>
       <Tabs defaultValue="filter">
@@ -173,7 +149,7 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
               <CardContent className="bg-transparent mt-[30px]">
                 <Form {...form}>
                   <form
-                    onSubmit={form.handleSubmit(onSubmit)}
+                    // onSubmit={form.handleSubmit(onSubmit)}
                     className="w-full flex flex-col gap-[20px] items-center justify-center"
                   >
                     <div className="min-w-[300px] rounded">
@@ -186,16 +162,17 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                               <MultipleSelect
                                 options={searchCompanies?.map(
                                   (company: SearchCompany) => ({
-                                    value: company.srNo,
+                                    value: company.companyID,
                                     label: company.name,
                                   }),
                                 )}
                                 onValueChange={field.onChange}
                                 defaultValue={field.value}
+                                value={field.value}
                                 placeholder="Select a company..."
                                 variant="secondary"
                                 maxCount={3}
-                                className=" min-w-[600px] rounded-full h-[50px] bg-white border border-neutral-300 shadow hover:bg-white"
+                                className="min-w-[600px] rounded-full h-[50px] bg-white border border-neutral-300 shadow hover:bg-white"
                               />
                             </FormControl>
                             <FormMessage />
@@ -203,15 +180,17 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                               {searchCompanies
                                 ?.filter(
                                   (item: SearchCompany) =>
-                                    !field.value.includes(item.srNo),
+                                    !field.value.includes(item.companyID),
                                 )
                                 .map((list: SearchCompany) => (
                                   <Badge
-                                    onClick={() =>
+                                    onClick={() =>{
+                                      setCompaniesArray(field.value)
+                                      console.log(...field.value,"val")
                                       form.setValue('companies', [
                                         ...field.value,
-                                        list.srNo,
-                                      ])
+                                        list.companyID,
+                                      ])}
                                     }
                                     key={list.name}
                                     className="hover:bg-white bg-white border-gray-200 shadow min-w-[calc((100%/3)-10px)] justify-between rounded-full text-slate-600 px-[18px] py-[5px] flex items-center gap-[10px] text-[15px] cursor-pointer"
@@ -230,7 +209,7 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                     <Button
                       type="submit"
                       className="flex rounded-full gap-[10px] bg-teal-500 hover:bg-teal-400 text-white shadow-sm shadow-stone-500 mt-[20px] py-[20px] px-[20px]"
-
+                    onClick={onSubmit}
                     >
                       <SearchIcon className="w-[20px] h-[20px]" />
                       Search
@@ -276,7 +255,7 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                             <Select
                               value={row.filter}
                               onValueChange={(value) => {
-                                handleFilterChange(row.id, 'filter', value);
+                                handleFilterChange(row.id, value);
                               }}
                             >
                               <SelectTrigger className="w-[180px] shadow-none placeholder: py-[20px] bg-white">
@@ -305,7 +284,7 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                               variant="secondary"
                               maxCount={3}
                               className="w-auto bg-white shadow-none hover:bg-white min-w-[600px]"
-                              disabled={row.filter === '' ? true : false}
+                              disabled={row.filter === ''}
                             />
                           </div>
                         </div>
@@ -328,7 +307,7 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                   <Button
                     type="submit"
                     className="flex gap-[10px] bg-teal-500 hover:bg-teal-400 text-white shadow-sm shadow-stone-500 mt-[20px] py-[20px] px-[20px]"
-                    disabled={rows.length <= 0 ? true : false}
+                    disabled={rows.length <= 0}
                   >
                     <SearchIcon className="w-[20px] h-[20px]" />
                     Search

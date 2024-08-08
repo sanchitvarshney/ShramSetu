@@ -17,3 +17,8 @@ export interface SelectOptionType {
   disabled?: boolean;
 }
 
+export interface ResponseType {
+  data: null | any;
+  message: string | null;
+  success: true;
+}

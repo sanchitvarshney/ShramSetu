@@ -6,7 +6,7 @@ export const columnDefs: ColDef[] = [
       width: 80,
       filter:false
     },
-    { headerName: 'Name', field: 'name', sortable: true, filter: true },
+    { headerName: 'Name', field: 'firstName', sortable: true, filter: true },
     { headerName: 'Last Name', field: 'lastName', sortable: true, filter: true },
     { headerName: 'Gender', field: 'gender', sortable: true, filter: true },
     { headerName: 'DOB', field: 'dob', sortable: true, filter: true },
