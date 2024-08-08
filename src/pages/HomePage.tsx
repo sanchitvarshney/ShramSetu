@@ -31,8 +31,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Link } from 'react-router-dom';
-import { fetchSearchCompanies, SearchCompany } from '@/features/homePage/homePageSlice';
+import { Link, useNavigate } from 'react-router-dom';
+import { advancedFilter, fetchSearchCompanies, SearchCompany } from '@/features/homePage/homePageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 
@@ -82,6 +82,7 @@ const FormSchema = z.object({
 const HomePage: React.FC = () => {
 
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
   const { searchCompanies } = useSelector((state: RootState) => state.homePage);
 
@@ -122,9 +123,29 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
     handleChange(id, 'companies', selectedCompanies);
   };
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(data);
-  }
+  // function onSubmit(data: z.infer<typeof FormSchema>) {
+  //   console.log(data);
+  // }
+// console.log(companies)
+  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    navigate("/employee-list")
+    const payload = {
+      companies: data.companies,
+      excludePreviousCompany: false, // Adjust as needed
+      excludePreviousIndustry: false, // Adjust as needed
+      limit: 100, // Adjust as needed
+    };
+
+    try {
+      // Dispatch the addCompany thunk
+      await dispatch(advancedFilter(payload)).unwrap();
+      // Handle successful submission (e.g., show success message or reset form)
+      console.log('Company added successfully');
+    } catch (err) {
+      // Handle error (e.g., show error message)
+      console.error('Failed to add company:', err);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchSearchCompanies());
@@ -165,7 +186,7 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                               <MultipleSelect
                                 options={searchCompanies?.map(
                                   (company: SearchCompany) => ({
-                                    value: company.panNo,
+                                    value: company.srNo,
                                     label: company.name,
                                   }),
                                 )}
@@ -182,14 +203,14 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                               {searchCompanies
                                 ?.filter(
                                   (item: SearchCompany) =>
-                                    !field.value.includes(item.panNo),
+                                    !field.value.includes(item.srNo),
                                 )
                                 .map((list: SearchCompany) => (
                                   <Badge
                                     onClick={() =>
                                       form.setValue('companies', [
                                         ...field.value,
-                                        list.panNo,
+                                        list.srNo,
                                       ])
                                     }
                                     key={list.name}
@@ -209,6 +230,7 @@ const isValidFilter = (filter: string): filter is FilterKeys => {
                     <Button
                       type="submit"
                       className="flex rounded-full gap-[10px] bg-teal-500 hover:bg-teal-400 text-white shadow-sm shadow-stone-500 mt-[20px] py-[20px] px-[20px]"
+
                     >
                       <SearchIcon className="w-[20px] h-[20px]" />
                       Search

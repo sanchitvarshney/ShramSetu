@@ -86,10 +86,37 @@ interface ClientDetail {
   gstNo: string;
 }
 
-interface ClientResponse{
+interface ClientResponse {
   data: ClientDetail[] | null;
   message: string;
   success: boolean;
+}
+
+interface Worker {
+  employeeID: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  DOB: string;
+  DOBFile: {
+    fileName: string;
+    filePath: string;
+  };
+  gender: string;
+  email: string;
+  mobile: string;
+  bloodGroup: string;
+  aadhaarNo: string;
+  aadhaarFile: {
+    fileName: string;
+    filePath: string;
+  };
+}
+
+interface WorkersResponse {
+  success: boolean;
+  status: string;
+  data: Worker[];
 }
 
 interface AdminPageState {
@@ -98,6 +125,7 @@ interface AdminPageState {
   designation: Designation[] | null;
   clientList: ClientDetail[] | null;
   activityLogs: ActivityLog[] | null;
+  workers: Worker[] | null;
   loading: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
@@ -106,8 +134,9 @@ const initialState: AdminPageState = {
   companies: null,
   department: [],
   designation: [],
-  clientList:[],
+  clientList: [],
   activityLogs: [],
+  workers: [],
   loading: 'idle',
   error: null,
 };
@@ -213,16 +242,31 @@ export const fetchClientList = createAsyncThunk<ClientResponse, void>(
     }
   },
 );
-export const deleteActivityLog = createAsyncThunk<ActivityLogResponse, void>(
-  'homePage/fetchActivityLogs',
-  async (_, { rejectWithValue }) => {
+
+export const fetchWorkers = createAsyncThunk<
+  WorkersResponse,
+  { startDate: string; endDate: string }
+>(
+  'adminPage/fetchWorkers',
+  async ({ startDate, endDate }, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<ActivityLogResponse>(
-        `${baseLink}fetch/uplodedEmployees`,
+      const response = await orshAxios.get<WorkersResponse>(
+        `https://esptest.mscorpres.net/worker/list?data=${startDate}-${endDate}&wise=createdDate`,
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch designations');
+      return rejectWithValue('Failed to fetch workers');
+    }
+  },
+);
+
+export const deleteActivityLog = createAsyncThunk<void, string>(
+  'adminPage/deleteActivityLog',
+  async (fileId: string, { rejectWithValue }) => {
+    try {
+      await orshAxios.delete(baseLink+`worker/delete/file/${fileId}`);
+    } catch (error) {
+      return rejectWithValue('Failed to delete activity log');
     }
   },
 );
@@ -293,6 +337,11 @@ const adminPageSlice = createSlice({
       .addCase(fetchClientList.fulfilled, (state, action) => {
         state.loading = 'succeeded';
         state.clientList = action.payload.data;
+        state.error = null;
+      })
+      .addCase(fetchWorkers.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.workers = action.payload.data; // Set the workers data
         state.error = null;
       });
   },

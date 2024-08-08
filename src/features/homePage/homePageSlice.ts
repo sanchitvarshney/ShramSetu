@@ -1,3 +1,4 @@
+import { orshAxios } from '@/axiosIntercepter';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
@@ -22,6 +23,15 @@ export interface SearchCompany {
   website: string;
   createdOn: string;
   updatedOn: string;
+  srNo: string;
+}
+
+// Define the payload structure for the POST request
+export interface AdvancedFilterPayload {
+  companies: string[];
+  excludePreviousCompany: boolean;
+  excludePreviousIndustry: boolean;
+  limit: number;
 }
 
 interface HomePageState {
@@ -29,6 +39,7 @@ interface HomePageState {
   searchCompanies: SearchCompany[] | null;
   selectedCompany: Company | null;
   error: string | null;
+  advancedFilter: AdvancedFilterPayload[] | null;
   loading: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
 
@@ -38,6 +49,7 @@ const initialState: HomePageState = {
   searchCompanies: [],
   selectedCompany: null,
   error: null,
+  advancedFilter: [],
   loading: 'idle',
 };
 
@@ -69,6 +81,20 @@ export const fetchSearchCompanies = createAsyncThunk<SearchCompany[]>(
   },
 );
 
+export const advancedFilter = createAsyncThunk(
+  'adminPage/advancedFilter',
+  async (companyData: AdvancedFilterPayload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post(
+        baseLink + 'fetch/advancedFilter',
+        companyData,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to add company');
+    }
+  },
+);
 // Create the slice
 const homePageSlice = createSlice({
   name: 'homePage',
@@ -114,6 +140,11 @@ const homePageSlice = createSlice({
       .addCase(fetchSearchCompanies.rejected, (state, action) => {
         state.loading = 'failed';
         state.error = action.payload as string;
+      })
+      .addCase(advancedFilter.fulfilled, (state) => {
+        state.loading = 'succeeded';
+        // Handle successful addition, maybe update a list or show a success message
+        state.error = null;
       });
   },
 });

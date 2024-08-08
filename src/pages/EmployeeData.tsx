@@ -21,6 +21,8 @@ const options = [
   { value: 'Company2', label: 'light2' },
 ];
 const EmployeeData: React.FC = () => {
+
+
   const defaultColDef = useMemo(() => {
     return {
       filter: 'agTextColumnFilter',
@@ -143,7 +145,7 @@ const EmployeeData: React.FC = () => {
         <div className="bg-[#e0f2f1] h-[150px] w-full">
           <div className="h-[100px]">
             <div className="h-[50px] flex gap-[10px] items-center p-[10px]">
-              <Checkbox id="1" />
+              <Checkbox id="1"/>
               <Label htmlFor="1" className="text-[13px] font-[400]">
                 Exclude workers who are not working anymore in your interested
                 industry but has a past experience.

@@ -1,36 +1,57 @@
-import { Button } from '@/components/ui/button'; // Ensure columns is correctly defined
-import { AgGridReact } from 'ag-grid-react';
 import React, { useEffect, useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
 import { IoMdDownload } from 'react-icons/io';
-import { fetchActivityLogs } from '@/features/admin/adminPageSlice';
+import { fetchActivityLogs, deleteActivityLog } from '@/features/admin/adminPageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { RowData } from '@/table/activityLogTable';
-import { FaTrash } from 'react-icons/fa'; // Import delete icon
+import { FaTrash } from 'react-icons/fa';
+import { Button } from '@/components/ui/button';
+import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
+import { toast } from '@/components/ui/use-toast';
+
 
 const ActivityLogPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { activityLogs } = useSelector((state: RootState) => state.adminPage);
   const [rowData, setRowData] = useState<RowData[]>([]);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchActivityLogs());
   }, [dispatch]);
 
   useEffect(() => {
-    // Transform API data to match dummyData format
-    const transformedData = activityLogs.map((log: any, index: number) => ({
-      id: log.id || index + 1, // Ensure a unique ID
+    const transformedData = activityLogs?.map((log: any) => ({
       insertedBy: log.insertBy,
       insertDate: log.insertDt,
-      action: '', // Placeholder, will be replaced by the custom renderer
-    }));
+      action: '',
+      value: log.value,
+    })) || [];
     setRowData(transformedData);
   }, [activityLogs]);
 
-  const deleteRow = (id: number) => {
-    setRowData(rowData.filter((row) => row.id !== id));
-    // Optionally dispatch an action to remove the item from the backend as well
+  const handleDelete = (fileId: string) => {
+    setSelectedFileId(fileId);
+    setIsDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedFileId) {
+      dispatch(deleteActivityLog(selectedFileId))
+        .then((response: any) => {
+          setRowData(rowData.filter((row:any) => row.value !== selectedFileId));
+          setIsDialogOpen(false);
+          if (response.meta.requestStatus ==="fulfilled") {
+            toast({ title: 'Success!!', description: "File Deleted Successfully"});
+          }
+        })
+        .catch((error:any) => {
+          console.error('Failed to delete log:', error);
+          setIsDialogOpen(false);
+        });
+    }
   };
 
   const defaultColDef = {
@@ -41,7 +62,7 @@ const ActivityLogPage: React.FC = () => {
   const actionCellRenderer = (params: any) => (
     <div className="flex justify-center">
       <button
-        onClick={() => deleteRow(params.data.id)}
+        onClick={() => handleDelete(params.data.value)}
         className="text-red-500 hover:text-red-700 pt-3"
         aria-label="Delete"
       >
@@ -50,11 +71,10 @@ const ActivityLogPage: React.FC = () => {
     </div>
   );
 
-  // Define columns, ensuring there’s only one action column
   const enhancedColumns = [
     {
       headerName: '#',
-      field: 'id',
+      field: 'value',
       headerClass: 'custom-header',
       filter: false,
       maxWidth: 50,
@@ -76,7 +96,7 @@ const ActivityLogPage: React.FC = () => {
       field: 'action',
       headerClass: 'custom-header',
       flex: 1,
-      cellRenderer: actionCellRenderer, // Use the custom renderer
+      cellRenderer: actionCellRenderer,
     },
   ];
 
@@ -91,11 +111,18 @@ const ActivityLogPage: React.FC = () => {
         <AgGridReact
           suppressCellFocus={false}
           defaultColDef={defaultColDef}
-          columnDefs={enhancedColumns} // Use enhanced columns with custom renderer
-          rowData={rowData} // Use transformed data here
+          columnDefs={enhancedColumns}
+          rowData={rowData}
           pagination={true}
         />
       </div>
+      <AlertDialogPopup
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Activity Log"
+        description="Are you sure you want to delete this Activity Log?"
+      />
     </div>
   );
 };
