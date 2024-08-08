@@ -3,9 +3,9 @@ import { ColDef } from 'ag-grid-community';
 export  const columnDefs: ColDef[] = [
     { headerName: 'First Name', field: 'firstName', sortable: true, filter: true,flex:1},
     { headerName: 'Last Name', field: 'lastName', sortable: true, filter: true ,flex:1},
-    { headerName: 'Phone', field: 'phone', sortable: true, filter: true ,flex:1},
+    { headerName: 'Phone', field: 'mobile', sortable: true, filter: true ,flex:1},
     { headerName: 'E-mail', field: 'email', sortable: true, filter: true ,flex:1},
-    { headerName: 'D.O.B', field: 'dob', sortable: true, filter: true ,flex:1}
+    { headerName: 'D.O.B', field: 'DOB', sortable: true, filter: true ,flex:1}
 ];
 
 interface RowData {
