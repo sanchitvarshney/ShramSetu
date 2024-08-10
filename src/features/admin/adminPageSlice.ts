@@ -1,5 +1,6 @@
 import { orshAxios } from '@/axiosIntercepter';
 import { toast } from '@/components/ui/use-toast';
+import { SelectOptionType } from '@/types/general';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 const baseLink = 'https://esptest.mscorpres.net/';
@@ -132,6 +133,11 @@ interface AdminPageState {
   companies: Company[] | null;
   department: Department[] | null;
   designation: Designation[] | null;
+  marriedStatus: SelectOptionType[] | null;
+  states: SelectOptionType[] | null;
+  universityList: SelectOptionType[] | null;
+  educationStatus: SelectOptionType[] | null;
+  streams: SelectOptionType[] | null;
   clientList: ClientDetail[] | null;
   activityLogs: ActivityLog[] | null;
   workers: Worker[] | null;
@@ -143,7 +149,12 @@ interface AdminPageState {
 const initialState: AdminPageState = {
   companies: null,
   department: [],
+  marriedStatus: [],
   designation: [],
+  universityList: [],
+  educationStatus: [],
+  states: [],
+  streams: [],
   clientList: [],
   activityLogs: [],
   workers: [],
@@ -207,6 +218,75 @@ export const fetchDesignations = createAsyncThunk<DesignationResponse, void>(
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch designations');
+    }
+  },
+);
+
+export const fetchMarriedStatus = createAsyncThunk<DesignationResponse, void>(
+  'homePage/fetchMarriedStatus',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<DesignationResponse>(
+        `${baseLink}fetch/marriedStatus`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch married status');
+    }
+  },
+);
+
+export const fetchStates = createAsyncThunk<DesignationResponse, void>(
+  'homePage/fetchStates',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<DesignationResponse>(
+        `${baseLink}fetch/states`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch states');
+    }
+  },
+);
+export const universitiesSearch = createAsyncThunk<DesignationResponse, void>(
+  'homePage/universitiesSearch',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<DesignationResponse>(
+        `${baseLink}fetch/designations`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch universities');
+    }
+  },
+);
+
+export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
+  'homePage/getEducationStatus',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<DesignationResponse>(
+        `${baseLink}fetch/designations`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch educationStatus');
+    }
+  },
+);
+
+export const getStreams = createAsyncThunk<DesignationResponse, void>(
+  'homePage/getStreams',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<DesignationResponse>(
+        `${baseLink}fetch/streams?search=`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch streams');
     }
   },
 );
@@ -361,6 +441,26 @@ const adminPageSlice = createSlice({
         state.loading = 'succeeded';
         state.error = null;
         state.designation = action.payload.data;
+      })
+      .addCase(fetchMarriedStatus.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.error = null;
+        state.marriedStatus = action.payload.data;
+      })
+      .addCase(fetchStates.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.error = null;
+        state.states = action.payload.data;
+      })
+      .addCase(universitiesSearch.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.error = null;
+        state.universityList = action.payload.data;
+      })
+      .addCase(getEducationStatus.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.error = null;
+        state.educationStatus = action.payload.data;
       })
       .addCase(addWorker.pending, (state) => {
         state.loading = 'loading';
