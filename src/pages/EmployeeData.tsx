@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { columnDefs, rowData } from '@/table/EploayTableColumn';
 import { Input } from '@/components/ui/input';
@@ -15,13 +15,17 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { MultipleSelect } from '@/components/ui/Multiselecter';
+import { RootState } from '@/store';
+import { useSelector } from 'react-redux';
+import WorkerDetails from '@/components/shared/WorkerDetails';
 
 const options = [
   { value: 'Company1', label: 'light1' },
   { value: 'Company2', label: 'light2' },
 ];
 const EmployeeData: React.FC = () => {
-
+  const { advancedFilter } = useSelector((state: RootState) => state.homePage);
+  const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
 
   const defaultColDef = useMemo(() => {
     return {
@@ -29,6 +33,10 @@ const EmployeeData: React.FC = () => {
       floatingFilter: true,
     };
   }, []);
+
+  const toggleShowDetails = (empId?: string) => {
+    setSelectedEmpId(empId ?? null);
+  };
 
   return (
     <div className="grid grid-cols-[350px_1fr]">
@@ -145,7 +153,7 @@ const EmployeeData: React.FC = () => {
         <div className="bg-[#e0f2f1] h-[150px] w-full">
           <div className="h-[100px]">
             <div className="h-[50px] flex gap-[10px] items-center p-[10px]">
-              <Checkbox id="1"/>
+              <Checkbox id="1" />
               <Label htmlFor="1" className="text-[13px] font-[400]">
                 Exclude workers who are not working anymore in your interested
                 industry but has a past experience.
@@ -178,10 +186,20 @@ const EmployeeData: React.FC = () => {
             suppressCellFocus={false}
             defaultColDef={defaultColDef}
             columnDefs={columnDefs}
-            rowData={rowData}
+            rowData={advancedFilter?.result || []}
             pagination={true}
+            context={{ toggleShowDetails }}
           />
         </div>
+        {selectedEmpId && (
+          <div className="flex-1 h-full">
+            <WorkerDetails
+              showEdit
+              empId={selectedEmpId} // Pass the selected employee ID
+              toggleDetails={toggleShowDetails} // Pass the function to close details
+            />
+          </div>
+        )}
       </div>
     </div>
   );

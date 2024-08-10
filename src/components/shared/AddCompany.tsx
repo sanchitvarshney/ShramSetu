@@ -111,7 +111,7 @@ const AddCompany: React.FC = () => {
               </ModalTitle>
               <ul className="list-disc text-[14px] mt-[10px] max-h-[200px] min-h-[200px] overflow-y-auto p-[10px] rounded-lg bg-blue-50 overflow-hidden flex flex-col gap-[5px]">
                 {input === '' ? (
-                  searchCompanies.map((data: any) => (
+                  searchCompanies?.map((data: any) => (
                     <React.Fragment key={data.companyID}>
                       <li className="font-[500] hover:bg-slate-200 rounded-md px-[10px] py-[5px]">
                         {data.name}

@@ -19,6 +19,7 @@ import MailInvitationPage from './components/shared/MailInvitationPage';
 import MessageInvitationPage from './components/shared/MessageInvitationPage';
 import Protected from '@/components/Protected';
 import { Toaster } from '@/components/ui/toaster';
+import EmpUpdate from '@/components/ui/EmpUpdate';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -120,6 +121,16 @@ const router = createBrowserRouter([
           <InvitationPage>
             <MessageInvitationPage />
           </InvitationPage>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
+    path: '/employee-update/:id',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <EmpUpdate />
         </MainLayout>
       </Protected>
     ),

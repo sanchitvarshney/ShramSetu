@@ -8,6 +8,7 @@ import { fetchWorkerDetails } from '@/features/admin/adminPageSlice';
 import { SelectOptionType } from '@/types/general';
 import { cn } from '@/lib/utils';
 import { differenceInDays, parse } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 interface WorkerDetailsProps {
   empId: string;
@@ -33,16 +34,20 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
       <CardHeader className="flex py-0 flex-row justify-between items-center">
         <CardTitle>Worker Details</CardTitle>
         <div className="flex items-center gap-2">
-          <IconButton
-            color="text-primary"
-            tooltip="Update Worker"
-            icon={
-              <Edit
-                size={20}
-                className="text-muted-foreground group-hover:text-white"
+          {showEdit && (
+            <Link target="_blank" to={`/employee-update/:${empId}`}>
+              <IconButton
+                color="text-primary"
+                tooltip="Update Worker"
+                icon={
+                  <Edit
+                    size={20}
+                    className="text-muted-foreground group-hover:text-white"
+                  />
+                }
               />
-            }
-          />
+            </Link>
+          )}
           <IconButton
             // onClick={() => handleDownloadCV()}
             // loading={loading("cv")}
