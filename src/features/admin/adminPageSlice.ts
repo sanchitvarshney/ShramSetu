@@ -129,6 +129,23 @@ interface WorkersInfoResponse {
   data: [];
 }
 
+interface BranchDetail {
+  branchID: string;
+  branchName: string;
+  city: string;
+  companyID: string;
+  companyName: string;
+  email: string;
+  gst: string;
+}
+
+interface BranchInfoResponse {
+  success: boolean;
+  status: string;
+  message: string;
+  data: BranchDetail[] | null;
+}
+
 interface AdminPageState {
   companies: Company[] | null;
   department: Department[] | null;
@@ -140,6 +157,7 @@ interface AdminPageState {
   streams: SelectOptionType[] | null;
   clientList: ClientDetail[] | null;
   activityLogs: ActivityLog[] | null;
+  branches: BranchDetail[] | null;
   workers: Worker[] | null;
   workerInfo: [] | null;
   loading: 'idle' | 'loading' | 'succeeded' | 'failed';
@@ -158,6 +176,7 @@ const initialState: AdminPageState = {
   clientList: [],
   activityLogs: [],
   workers: [],
+  branches: [],
   workerInfo: [],
   loading: 'idle',
   error: null,
@@ -181,7 +200,7 @@ export const addCompany = createAsyncThunk(
 
 // Define the async thunk for fetching companies
 export const searchCompanies = createAsyncThunk<CompanyResponse, void>(
-  'homePage/searchCompanies',
+  'adminPage/searchCompanies',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<CompanyResponse>(
@@ -195,7 +214,7 @@ export const searchCompanies = createAsyncThunk<CompanyResponse, void>(
 );
 
 export const fetchDepartments = createAsyncThunk<DepartmentResponse, void>(
-  'homePage/fetchDepartments',
+  'adminPage/fetchDepartments',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DepartmentResponse>(
@@ -209,7 +228,7 @@ export const fetchDepartments = createAsyncThunk<DepartmentResponse, void>(
 );
 
 export const fetchDesignations = createAsyncThunk<DesignationResponse, void>(
-  'homePage/fetchDesignations',
+  'adminPage/fetchDesignations',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
@@ -223,7 +242,7 @@ export const fetchDesignations = createAsyncThunk<DesignationResponse, void>(
 );
 
 export const fetchMarriedStatus = createAsyncThunk<DesignationResponse, void>(
-  'homePage/fetchMarriedStatus',
+  'adminPage/fetchMarriedStatus',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
@@ -237,7 +256,7 @@ export const fetchMarriedStatus = createAsyncThunk<DesignationResponse, void>(
 );
 
 export const fetchStates = createAsyncThunk<DesignationResponse, void>(
-  'homePage/fetchStates',
+  'adminPage/fetchStates',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
@@ -250,11 +269,11 @@ export const fetchStates = createAsyncThunk<DesignationResponse, void>(
   },
 );
 export const universitiesSearch = createAsyncThunk<DesignationResponse, void>(
-  'homePage/universitiesSearch',
+  'adminPage/universitiesSearch',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
-        `${baseLink}fetch/designations`,
+        `${baseLink}fetch/university?search=`,
       );
       return response.data;
     } catch (error) {
@@ -264,7 +283,7 @@ export const universitiesSearch = createAsyncThunk<DesignationResponse, void>(
 );
 
 export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
-  'homePage/getEducationStatus',
+  'adminPage/getEducationStatus',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
@@ -278,7 +297,7 @@ export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
 );
 
 export const getStreams = createAsyncThunk<DesignationResponse, void>(
-  'homePage/getStreams',
+  'adminPage/getStreams',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
@@ -307,7 +326,7 @@ export const addWorker = createAsyncThunk(
 );
 
 export const fetchActivityLogs = createAsyncThunk<ActivityLogResponse, void>(
-  'homePage/fetchActivityLogs',
+  'adminPage/fetchActivityLogs',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<ActivityLogResponse>(
@@ -321,7 +340,7 @@ export const fetchActivityLogs = createAsyncThunk<ActivityLogResponse, void>(
 );
 
 export const fetchClientList = createAsyncThunk<ClientResponse, void>(
-  'homePage/fetchClientList',
+  'adminPage/fetchClientList',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<ClientResponse>(
@@ -382,6 +401,30 @@ export const fetchWorkerDetails = createAsyncThunk<WorkersInfoResponse, string>(
       const response = await orshAxios.get<WorkersInfoResponse>(
         baseLink + `fetch/employeeAllInfo?username=${empId}`,
       );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch workers');
+    }
+  },
+);
+
+export const getCompanyBranchOptions = createAsyncThunk<
+  BranchInfoResponse,
+  string
+>(
+  'adminPage/getCompanyBranchOptions',
+  async (companyID, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<BranchInfoResponse>(
+        baseLink + `company/branches?companyID=${companyID}`,
+      );
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      }
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch workers');
@@ -493,6 +536,11 @@ const adminPageSlice = createSlice({
         state.workers = action.payload.data; // Set the workers data
         state.error = null;
       })
+      .addCase(getStreams.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.streams = action.payload.data; // Set the workers data
+        state.error = null;
+      })
       .addCase(fetchWorkerDetails.rejected, (state, action) => {
         state.loading = 'failed';
         state.error = action.payload as string;
@@ -501,6 +549,11 @@ const adminPageSlice = createSlice({
       .addCase(fetchWorkerDetails.fulfilled, (state, action) => {
         state.loading = 'succeeded';
         state.workerInfo = action.payload.data;
+        state.error = null;
+      })
+      .addCase(getCompanyBranchOptions.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.branches = action.payload.data;
         state.error = null;
       });
   },

@@ -180,8 +180,12 @@ const EmployeeData: React.FC = () => {
           </div>
         </div>
       </div>
-      <div>
-        <div className="ag-theme-quartz h-[calc(100vh-70px)]">
+      <div className="relative">
+        <div
+          className={`ag-theme-quartz h-[calc(100vh-70px)] ${
+            selectedEmpId ? 'w-1/2' : 'w-full'
+          }`}
+        >
           <AgGridReact
             suppressCellFocus={false}
             defaultColDef={defaultColDef}
@@ -192,11 +196,10 @@ const EmployeeData: React.FC = () => {
           />
         </div>
         {selectedEmpId && (
-          <div className="flex-1 h-full">
+          <div className="absolute top-0 right-0 w-1/2 h-[calc(100vh-70px)] bg-white border-l border-gray-200">
             <WorkerDetails
-              showEdit
-              empId={selectedEmpId} // Pass the selected employee ID
-              toggleDetails={toggleShowDetails} // Pass the function to close details
+              empId={selectedEmpId} 
+              toggleDetails={toggleShowDetails} 
             />
           </div>
         )}

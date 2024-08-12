@@ -27,8 +27,8 @@ const ListWorker: React.FC = () => {
     ) {
       const startDate = new Date(range.from);
       const endDate = range.to ? new Date(range.to) : new Date(range.from);
-      const formattedStartDate = format(startDate, 'MM-dd-yyyy');
-      const formattedEndDate = format(endDate, 'MM-dd-yyyy');
+      const formattedStartDate = format(startDate, 'dd-MM-yyyy');
+      const formattedEndDate = format(endDate, 'dd-MM-yyyy');
       dispatch(
         fetchWorkers({
           startDate: formattedStartDate,

@@ -6,7 +6,7 @@ const actionCellRenderer = (params: any) => {
   return (
     <div className="flex justify-center">
       <button
-        onClick={() => toggleShowDetails(params?.data?.employeeID)}
+        onClick={() => toggleShowDetails(params?.data?.employeeCode)}
         className="text-teal-500 hover:text-teal-600"
         aria-label="Show Name"
       >
