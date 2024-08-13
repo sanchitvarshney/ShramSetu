@@ -40,8 +40,6 @@ import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import {
-  Department,
-  Designation,
   fetchDepartments,
   fetchDesignations,
   fetchMarriedStatus,
@@ -52,6 +50,7 @@ import {
   getLocationsFromPinCode,
   getStreams,
   universitiesSearch,
+  updateEmployeeDetails,
 } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
 import { fetchSearchCompanies } from '@/features/homePage/homePageSlice';
@@ -68,98 +67,105 @@ export default function EmpUpdate() {
     streams,
     educationStatus,
     workerInfo,
+    states,
     corPincode: corState,
     perPincode: perState,
   } = useSelector((state: RootState) => state.adminPage);
   const { searchCompanies } = useSelector((state: RootState) => state.homePage);
-  const [empFirstName, setEmpFirstName] = useState(
-    workerInfo?.basicInfo?.firstName || '',
-  );
-  const [empMiddleName, setEmpMiddleName] = useState(
-    workerInfo?.basicInfo?.middleName || '',
-  );
-  const [empLastName, setEmpLastName] = useState(
-    workerInfo?.basicInfo?.lastName || '',
-  );
-  const [empEmail, setEmpEmail] = useState(workerInfo?.basicInfo?.email || '');
-  const [empMobile, setEmpMobile] = useState(
-    workerInfo?.basicInfo?.mobile || '',
-  );
-  const [gender, setGender] = useState(
-    workerInfo?.basicInfo?.gender?.text || '',
-  );
+  const [empFirstName, setEmpFirstName] = useState<string>();
+  const [empMiddleName, setEmpMiddleName] = useState<string>();
+  const [empLastName, setEmpLastName] = useState<string>();
+  const [empEmail, setEmpEmail] = useState<string>();
+  const [empMobile, setEmpMobile] = useState<string>();
+  const [gender, setGender] = useState<string>();
   const [empDOB, setEmpDOB] = useState(null);
-  const [maritalStatus, setMaritalStatus] = useState(
-    workerInfo?.basicInfo?.maritalStatus || '',
-  );
-  const [empBloodGroup, setEmpBloodGroup] = useState(
-    workerInfo?.basicInfo?.bloodGroup || '',
-  );
-  const [designation, setDesignation] = useState(
-    workerInfo?.basicInfo?.designation || '',
-  );
-  const [department, setDepartment] = useState(
-    workerInfo?.basicInfo?.department || '',
-  );
-  const [empAdhaar, setEmpAdhaar] = useState(
-    workerInfo?.basicInfo?.aadhaarNo || '',
-  );
-  const [empPan, setEmpPan] = useState(workerInfo?.basicInfo?.panNo || '');
-  const [empMark, setEmpMark] = useState(
-    workerInfo?.basicInfo?.identificationMark || '',
-  );
-  const [empHobbies, setEmpHobbies] = useState(
-    workerInfo?.basicInfo?.hobbies || '',
-  );
-  const [bankName, setBankName] = useState(
-    workerInfo?.bankDetails?.bankName || '',
-  );
-
-  const [accNo, setAccNo] = useState(workerInfo?.bankDetails?.accountNo || '');
-  const [isfc, setIFSC] = useState(workerInfo?.bankDetails?.ifsCode || '');
-  const [esi, setESI] = useState(workerInfo?.bankDetails?.esi || '');
-  const [uan, setUan] = useState(workerInfo?.bankDetails?.uan || '');
-  const [fatherName, setFatherName] = useState('');
-  const [motherName, setMotherName] = useState('');
-  const [spouseName, setSpouseName] = useState('');
-  const [childrenCount, setChildrenCount] = useState('');
-  const [perPinCode, setPerPinCode] = useState('');
-  const [corPinCode, setCorPinCode] = useState('');
-  const [perHouseNo, setPerHouseNo] = useState('');
-  const [corHouseNo, setCorHouseNo] = useState('');
-  const [perArea, setPerArea] = useState('');
-  const [corArea, setCorArea] = useState('');
-  const [isChecked, setIsChecked] = useState(false);
-  const [children, setChildren] = useState([
-    {
-      name: '',
-      gender: '',
-      dob: '',
-    },
-  ]);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [maritalStatus, setMaritalStatus] = useState<string>();
+  const [empBloodGroup, setEmpBloodGroup] = useState<string>();
+  const [designation, setDesignation] = useState<string>();
+  const [department, setDepartment] = useState<string>();
+  const [empAdhaar, setEmpAdhaar] = useState<string>();
+  const [empPan, setEmpPan] = useState<string>();
+  const [empMark, setEmpMark] = useState<string>();
+  const [empHobbies, setEmpHobbies] = useState<string>();
+  const [bankName, setBankName] = useState<string>();
+  const [accNo, setAccNo] = useState<string>();
+  const [isfc, setIFSC] = useState<string>();
+  const [esi, setESI] = useState<string>();
+  const [uan, setUan] = useState<string>();
+  const [fatherName, setFatherName] = useState<string>('');
+  const [motherName, setMotherName] = useState<string>('');
+  const [spouseName, setSpouseName] = useState<string>('');
+  const [childrenCount, setChildrenCount] = useState<string>('');
+  const [perPinCode, setPerPinCode] = useState<string>('');
+  const [corPinCode, setCorPinCode] = useState<string>('');
+  const [perHouseNo, setPerHouseNo] = useState<string>('');
+  const [corHouseNo, setCorHouseNo] = useState<string>('');
+  const [perArea, setPerArea] = useState<string>('');
+  const [corArea, setCorArea] = useState<string>('');
+  const [isChecked, setIsChecked] = useState<boolean>(false);
+  const [children, setChildren] = useState([]);
   const [educationDetails, setEducationDetails] = useState([
     {
       degree: workerInfo?.educationInfo?.degree || '',
-      subject: workerInfo?.educationInfo?.subject || '',
+      stream: workerInfo?.educationInfo?.educationId || '',
       grade: workerInfo?.educationInfo?.grade || '',
       university: workerInfo?.educationInfo?.university || '',
-      startingYear: workerInfo?.educationInfo?.startYear || '',
-      passingYear: workerInfo?.educationInfo?.ednYear || '',
+      startYear: workerInfo?.educationInfo?.startYear || '',
+      endYear: workerInfo?.educationInfo?.ednYear || '',
     },
   ]);
+  useEffect(() => {
+    if (workerInfo) {
+      setEmpFirstName(workerInfo?.basicInfo?.firstName || '');
+      setEmpMiddleName(workerInfo?.basicInfo?.middleName || '');
+      setEmpLastName(workerInfo?.basicInfo?.lastName || '');
+      setEmpEmail(workerInfo?.basicInfo?.email || '');
+      setEmpMobile(workerInfo?.basicInfo?.mobile || '');
+      setGender(workerInfo?.basicInfo?.gender?.text || '');
+      setEmpDOB(workerInfo?.basicInfo?.DOB || null);
+      setEmpBloodGroup(workerInfo?.basicInfo?.bloodGroup || '');
+      setMaritalStatus(workerInfo?.basicInfo?.maritalStatus || '');
+      setDesignation(workerInfo?.basicInfo?.designation || '');
+      setDepartment(workerInfo?.basicInfo?.department || '');
+      setEmpAdhaar(workerInfo?.basicInfo?.aadhaarNo || '');
+      setEmpPan(workerInfo?.basicInfo?.panNo || '');
+      setEmpMark(workerInfo?.basicInfo?.identificationMark || '');
+      setBankName(workerInfo?.bankDetails?.bankName || '');
+      setEmpHobbies(workerInfo?.basicInfo?.hobbies || '');
+      setAccNo(workerInfo?.bankDetails?.accountNo || '');
+      setIFSC(workerInfo?.bankDetails?.ifsCode || '');
+      setESI(workerInfo?.bankDetails?.esi || '');
+      setUan(workerInfo?.bankDetails?.uan || '');
+      setFatherName(workerInfo?.familyInfo?.fatherName || '');
+      setMotherName(workerInfo?.familyInfo?.motherName || '');
+      setSpouseName(workerInfo?.familyInfo?.spouseName || '');
+      setChildrenCount(workerInfo?.familyInfo?.childCount || '');
+      setPerPinCode(
+        workerInfo?.basicInfo?.permanentAddress?.pincodePermanent || '',
+      );
+      setPerHouseNo(
+        workerInfo?.basicInfo?.permanentAddress?.houseNoPermanent || '',
+      );
+      setPerArea(workerInfo?.basicInfo?.permanentAddress?.colonyPermanent);
+      setCorArea(workerInfo?.basicInfo?.presentAddress?.colonyPresent);
+    }
+  }, [workerInfo]);
+  console.log(workerInfo?.permanentAddress?.pincodePermanent);
   const [employmentDetails, setEmploymentDetails] = useState([
     {
       company: '',
-      companyBranch: '',
-      designation: '',
-      dateOfJoining: null,
-      dateOfLeaving: null,
+      branch: '',
+      role: '',
+      joiningDate: null,
+      relievingDate: null,
     },
   ]);
 
   const addChild = () => {
-    setChildren([...children, { name: '', gender: '', dob: '' }]);
+    setChildren([
+      ...children,
+      { childName: '', childGender: '', childDob: null },
+    ]);
   };
 
   const removeChild = (index) => {
@@ -177,11 +183,11 @@ export default function EmpUpdate() {
       ...educationDetails,
       {
         degree: '',
-        subject: '',
+        educationId: '',
         grade: '',
         university: '',
-        startingYear: '',
-        passingYear: '',
+        startYear: '',
+        endYear: '',
       },
     ]);
   };
@@ -201,10 +207,10 @@ export default function EmpUpdate() {
       ...employmentDetails,
       {
         company: '',
-        companyBranch: '',
-        designation: '',
-        dateOfJoining: null,
-        dateOfLeaving: null,
+        branch: '',
+        role: '',
+        joiningDate: null,
+        relievingDate: null,
       },
     ]);
   };
@@ -214,7 +220,6 @@ export default function EmpUpdate() {
   };
 
   const handleInputEmpChange = (index, field, value) => {
-    console.log(index, field, value);
     const newDetails = [...employmentDetails];
     newDetails[index] = { ...newDetails[index], [field]: value };
     setEmploymentDetails(newDetails);
@@ -253,8 +258,14 @@ export default function EmpUpdate() {
     }
   }, [perPinCode, corPinCode]);
   const permanentResult = perState.find((item: any) => item.name === perArea);
+  const perStateforAPI = states.find(
+    (item: any) => item.text === permanentResult?.state,
+  );
   const correspondingResult = corState.find(
     (item: any) => item.name === corArea,
+  );
+  const corrStateforAPI = states.find(
+    (item: any) => item.text === correspondingResult?.state,
   );
 
   useEffect(() => {
@@ -264,7 +275,53 @@ export default function EmpUpdate() {
       setCorArea(perArea);
     }
   }, [isChecked, perPinCode, perHouseNo, perArea]);
-  console.log(empDOB, '+++++');
+
+  const payload = {
+    empId: 'emp-c5a9c5a6-b894-45cc-ac6e-8486812bf70e',
+    firstName: empFirstName,
+    middleName: empMiddleName,
+    lastName: empLastName,
+    DOB: empDOB,
+    aadhaarNo: empAdhaar,
+    bloodGroup: empBloodGroup,
+    childCount: childrenCount,
+    childData: children,
+    email: empEmail,
+    mobile: empMobile,
+    panNo: empPan,
+    esi: esi,
+    identificationMark: empMark,
+    hobbies: empHobbies,
+    maritalStatus: maritalStatus,
+    spouse: spouseName,
+    fatherName: fatherName,
+    motherName: motherName,
+    houseNoPermanent: perHouseNo,
+    colonyPermanent: perArea,
+    cityPermanent: permanentResult?.block,
+    districtPermanent: permanentResult?.district,
+    statePermanent: perStateforAPI?.value,
+    pinCodePermanent: perPinCode,
+    houseNoPresent: corHouseNo,
+    colonyPresent: corArea,
+    cityPresent: correspondingResult?.block,
+    districtPresent: correspondingResult?.district,
+    statePresent: corrStateforAPI?.value,
+    pinCodePresent: corPinCode,
+    department: department,
+    designation: designation,
+    gender: gender,
+    companyData: employmentDetails,
+    educationData: educationDetails,
+    bankDetail: {
+      bankName: bankName,
+      accountNo: accNo,
+      ifsCode: isfc,
+    },
+    empFamilyKey: 'Chandra',
+    uan: uan,
+  };
+
   return (
     <div className="overflow-y-auto">
       <div className="p-[10px]">
@@ -330,43 +387,16 @@ export default function EmpUpdate() {
                   </SelectContent>
                 </Select>
               </div>
+              <DatePickerWithLabel
+                label="Date Of Birth"
+                date={empDOB}
+                onDateChange={(value) => {
+                  setEmpDOB(value);
+                }}
+                icon={AiOutlineUser}
+                className="custom-class" // Optional custom class
+              />
 
-              {/* Date Of Birth */}
-
-              <div>
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <AiOutlineUser className="h-[18px] w-[18px]" />
-                    Date Of Birth
-                  </span>
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={'outline'}
-                      className={cn(
-                        `${inputStyle} w-full justify-start hover:bg-transparent`,
-                        !empDOB && 'text-[#9e9e9e]',
-                      )}
-                    >
-                      <CalendarIcon className="w-4 h-4 mr-2" />
-                      {empDOB ? (
-                        format(empDOB, 'PPP')
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={empDOB}
-                      onSelect={setEmpDOB}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
               <SelectWithLabel
                 label="Marital Status"
                 value={maritalStatus}
@@ -463,7 +493,6 @@ export default function EmpUpdate() {
                     value={perArea}
                     onValueChange={(value) => {
                       setPerArea(value);
-                      console.log(value);
                     }}
                     options={perState}
                     textKey="name"
@@ -525,107 +554,7 @@ export default function EmpUpdate() {
                     </label>
                   </div>
                 </div>
-                {/* <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3">
-                  <LabelInput
-                    value={corPinCode}
-                    onChange={(e) => setCorPinCode(e.target.value)}
-                    icon={Navigation}
-                    label="Pin Code"
-                    required
-                  />
-                  <LabelInput
-                    value={corPinCode}
-                    onChange={(e) => setCorPinCode(e.target.value)}
-                    icon={Navigation}
-                    label="Pin Code"
-                    required
-                  />
 
-                  <div className="floating-label-group">
-                    <Select
-                    // onValueChange={(value) => setDepartment(value)}
-                    >
-                      <SelectTrigger className={`${inputStyle} focus:ring-0`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hr">Human Resources</SelectItem>
-                        <SelectItem value="it">
-                          Information Technology
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Label className="floating-label gap-[10px]">
-                      <span className="flex items-center gap-[10px]">
-                        <Map className="h-[18px] w-[18px]" />
-                        Area/Post Office
-                      </span>
-                    </Label>
-                  </div>
-                  <div className="floating-label-group">
-                    <Select
-                    // onValueChange={(value) => setDepartment(value)}
-                    >
-                      <SelectTrigger className={`${inputStyle} focus:ring-0`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hr">Human Resources</SelectItem>
-                        <SelectItem value="it">
-                          Information Technology
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Label className="floating-label gap-[10px]">
-                      <span className="flex items-center gap-[10px]">
-                        <Map className="h-[18px] w-[18px]" />
-                        State
-                      </span>
-                    </Label>
-                  </div>
-                  <div className="floating-label-group">
-                    <Input
-                      required
-                      className={inputStyle}
-                      // value={empAdhaar}
-                      // onChange={(e) => setEmpAdhaar(e.target.value)}
-                    />
-                    <Label className="floating-label gap-[10px]">
-                      <span className="flex items-center gap-[10px]">
-                        <LocateIcon className="h-[18px] w-[18px]" />
-                        City
-                      </span>
-                    </Label>
-                  </div>
-                  <div className="floating-label-group">
-                    <Input
-                      required
-                      className={inputStyle}
-                      // value={empAdhaar}
-                      // onChange={(e) => setEmpAdhaar(e.target.value)}
-                    />
-                    <Label className="floating-label gap-[10px]">
-                      <span className="flex items-center gap-[10px]">
-                        <Navigation className="h-[18px] w-[18px]" />
-                        District
-                      </span>
-                    </Label>
-                  </div>
-                  <div className="floating-label-group">
-                    <Input
-                      required
-                      className={inputStyle}
-                      // value={empAdhaar}
-                      // onChange={(e) => setEmpAdhaar(e.target.value)}
-                    />
-                    <Label className="floating-label gap-[10px]">
-                      <span className="flex items-center gap-[10px]">
-                        <PiHouseLine className="h-[18px] w-[18px]" />
-                        House No.
-                      </span>
-                    </Label>
-                  </div>
-                </div> */}
                 <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3">
                   <LabelInput
                     value={corPinCode}
@@ -639,7 +568,6 @@ export default function EmpUpdate() {
                     value={corArea}
                     onValueChange={(value) => {
                       setCorArea(value);
-                      console.log(value);
                     }}
                     options={corState}
                     textKey="name"
@@ -741,8 +669,10 @@ export default function EmpUpdate() {
                 className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-3 gap-2 pb-3 my-2"
               >
                 <LabelInput
-                  value={child.name}
-                  onChange={(e) => handleChange(index, 'name', e.target.value)}
+                  value={child.childName}
+                  onChange={(e) =>
+                    handleChange(index, 'childName', e.target.value)
+                  }
                   icon={AiOutlineUser}
                   label="Child Name"
                   required
@@ -755,9 +685,9 @@ export default function EmpUpdate() {
                     </span>
                   </Label>
                   <Select
-                    value={child.gender}
+                    value={child.childGender}
                     onValueChange={(value) =>
-                      handleChange(index, 'gender', value)
+                      handleChange(index, 'childGender', value)
                     }
                   >
                     <SelectTrigger className={inputStyle}>
@@ -769,40 +699,15 @@ export default function EmpUpdate() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label className="floating-label  gap-[10px]">
-                    <span className="flex items-center gap-[10px]">
-                      <AiOutlineUser className="h-[18px] w-[18px]" />
-                      Date Of Birth
-                    </span>
-                  </Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          `${inputStyle} w-full justify-start hover:bg-transparent`,
-                          !empDOB && 'text-[#9e9e9e]',
-                        )}
-                      >
-                        <CalendarIcon className="w-4 h-4 mr-2" />
-                        {empDOB ? (
-                          format(empDOB, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={empDOB}
-                        onSelect={setEmpDOB}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <DatePickerWithLabel
+                  label="Date Of Birth"
+                  date={child.childDob}
+                  onDateChange={(value) => {
+                    handleChange(index, 'childDob', value);
+                  }}
+                  icon={AiOutlineUser}
+                  className="custom-class" // Optional custom class
+                />
 
                 <div className="row-span-3 flex justify-center">
                   <IconButton
@@ -851,9 +756,9 @@ export default function EmpUpdate() {
 
                     <SelectWithLabel
                       label="Subject"
-                      value={detail.subject}
+                      value={detail.stream}
                       onValueChange={(value) =>
-                        handleInputEduChange(index, 'subject', value)
+                        handleInputEduChange(index, 'stream', value)
                       }
                       options={streams}
                       textKey="text"
@@ -882,26 +787,18 @@ export default function EmpUpdate() {
                       icon={Building}
                     />
                     <LabelInput
-                      value={detail.startingYear}
+                      value={detail.startYear}
                       onChange={(e) =>
-                        handleInputEduChange(
-                          index,
-                          'startingYear',
-                          e.target.value,
-                        )
+                        handleInputEduChange(index, 'startYear', e.target.value)
                       }
                       icon={CalendarDays}
                       label="Starting Year"
                       required
                     />
                     <LabelInput
-                      value={detail.passingYear}
+                      value={detail.endYear}
                       onChange={(e) =>
-                        handleInputEduChange(
-                          index,
-                          'passingYear',
-                          e.target.value,
-                        )
+                        handleInputEduChange(index, 'endYear', e.target.value)
                       }
                       icon={CalendarDays}
                       label="Passing Year"
@@ -958,9 +855,9 @@ export default function EmpUpdate() {
                     />
                     <SelectWithLabel
                       label="Company Branch"
-                      value={detail.companyBranch}
+                      value={detail.branch}
                       onValueChange={(value) =>
-                        handleInputEmpChange(index, 'companyBranch', value)
+                        handleInputEmpChange(index, 'branch', value)
                       }
                       options={branches}
                       textKey="branchName"
@@ -969,9 +866,9 @@ export default function EmpUpdate() {
 
                     <SelectWithLabel
                       label="Designation"
-                      value={detail.designation}
+                      value={detail.role}
                       onValueChange={(value) =>
-                        handleInputEmpChange(index, 'designation', value)
+                        handleInputEmpChange(index, 'role', value)
                       }
                       options={designationList}
                       icon={LiaClipboardListSolid}
@@ -980,129 +877,22 @@ export default function EmpUpdate() {
                     />
                     <DatePickerWithLabel
                       label="Date Of Joining"
-                      date={detail.dateOfJoining}
+                      date={detail.joiningDate}
                       onDateChange={(value) => {
-                        {
-                          console.log(value, 'val');
-                        }
-                        handleInputEmpChange(index, 'dateOfJoining', value);
+                        handleInputEmpChange(index, 'joiningDate', value);
                       }}
                       icon={AiOutlineUser}
-                      className="custom-class" // Optional custom class
+                      className="custom-class"
                     />
-                    <div>
-                      <Label className="floating-label  gap-[10px]">
-                        <span className="flex items-center gap-[10px]">
-                          <AiOutlineUser className="h-[18px] w-[18px]" />
-                          Date Of Birth
-                        </span>
-                      </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              `${inputStyle} w-full justify-start hover:bg-transparent`,
-                              !empDOB && 'text-[#9e9e9e]',
-                            )}
-                          >
-                            <CalendarIcon className="w-4 h-4 mr-2" />
-                            {detail.dateOfJoining ? (
-                              format(detail?.dateOfJoining, 'PPP')
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={detail.dateOfJoining}
-                            onSelect={(value) =>
-                              handleInputEmpChange(
-                                index,
-                                'dateOfJoining',
-                                value,
-                              )
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div>
-                      <Label className="floating-label gap-[10px]">
-                        <span className="flex items-center gap-[10px]">
-                          <AiOutlineUser className="h-[18px] w-[18px]" />
-                          Date Of Joining
-                        </span>
-                      </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              `${inputStyle} w-full justify-start hover:bg-transparent`,
-                            )}
-                          >
-                            <CalendarIcon className="w-4 h-4 mr-2" />
-                            {detail.dateOfJoining
-                              ? detail.dateOfJoining.toDateString()
-                              : 'Pick a date'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            value={detail.dateOfJoining}
-                            onChange={(value) =>
-                              handleInputEmpChange(
-                                index,
-                                'dateOfJoining',
-                                value,
-                              )
-                            }
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
-                    <div>
-                      <Label className="floating-label gap-[10px]">
-                        <span className="flex items-center gap-[10px]">
-                          <AiOutlineUser className="h-[18px] w-[18px]" />
-                          Date Of Leaving
-                        </span>
-                      </Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              `${inputStyle} w-full justify-start hover:bg-transparent`,
-                            )}
-                          >
-                            <CalendarIcon className="w-4 h-4 mr-2" />
-                            {detail.dateOfLeaving
-                              ? detail.dateOfLeaving.toDateString()
-                              : 'Pick a date'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            value={detail.dateOfLeaving}
-                            onChange={(value) =>
-                              handleInputEmpChange(
-                                index,
-                                'dateOfLeaving',
-                                value,
-                              )
-                            }
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                    <DatePickerWithLabel
+                      label="Date Of Leaving"
+                      date={detail.relievingDate}
+                      onDateChange={(value) => {
+                        handleInputEmpChange(index, 'relievingDate', value);
+                      }}
+                      icon={AiOutlineUser}
+                      className="custom-class"
+                    />
 
                     <div className="row-span-3 flex justify-center">
                       <IconButton
@@ -1170,7 +960,15 @@ export default function EmpUpdate() {
           </CardContent>
         </Card>
         <div className="p-4">
-          <Button type="submit">Submit</Button>
+          <Button
+            type="submit"
+            onClick={() => {
+              console.log(payload);
+              dispatch(updateEmployeeDetails(payload));
+            }}
+          >
+            Submit
+          </Button>
         </div>
       </div>
     </div>
@@ -1178,13 +976,13 @@ export default function EmpUpdate() {
 }
 
 interface LabelInputProps {
-  value: string;
+  value: string | undefined;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   label: string;
   required?: boolean;
   icon?: React.ElementType; // Use ElementType for component type
   blank?: boolean;
-  readonly?: boolean;
+  readOnly?: boolean;
 }
 
 export const LabelInput: React.FC<LabelInputProps> = ({
@@ -1312,8 +1110,8 @@ export const DatePickerWithLabel: React.FC<DatePickerWithLabelProps> = ({
         <PopoverContent className="w-auto p-0">
           <Calendar
             mode="single"
-            value={date}
-            onChange={onDateChange}
+            selected={date}
+            onSelect={onDateChange}
             initialFocus
           />
         </PopoverContent>

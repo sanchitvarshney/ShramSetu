@@ -322,6 +322,29 @@ export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
   },
 );
 
+export const updateEmployeeDetails = createAsyncThunk(
+  'adminPage/updateEmployeeDetails',
+  async (employeeData, { rejectWithValue }) => {
+    console.log(employeeData,"data")
+    try {
+      const response = await orshAxios.put(
+        baseLink + 'worker/update',
+        employeeData,
+      );
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      }
+      return response.data.add;
+    } catch (error) {
+      return rejectWithValue('Failed to add company');
+    }
+  },
+);
+
 export const getStreams = createAsyncThunk<DesignationResponse, void>(
   'adminPage/getStreams',
   async (_, { rejectWithValue }) => {
