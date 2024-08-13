@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 import { inputStyle } from '@/style/CustomStyles';
 import {
   CalendarIcon,
@@ -54,6 +53,7 @@ import {
 } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
 import { fetchSearchCompanies } from '@/features/homePage/homePageSlice';
+import { cn, parseDated } from '@/lib/utils';
 
 export default function EmpUpdate() {
   const params = useParams();
@@ -103,17 +103,34 @@ export default function EmpUpdate() {
   const [perArea, setPerArea] = useState<string>('');
   const [corArea, setCorArea] = useState<string>('');
   const [isChecked, setIsChecked] = useState<boolean>(false);
-  const [children, setChildren] = useState([]);
+  const [currentCompany, setIsCurrentCompany] = useState<boolean>(false);
+  const [children, setChildren] = useState([
+    // {
+    //   childName: '',
+    //   childGender: '',
+    //   childDob: null,
+    // },
+  ]);
   const [educationDetails, setEducationDetails] = useState([
     {
-      degree: workerInfo?.educationInfo?.degree || '',
-      stream: workerInfo?.educationInfo?.educationId || '',
-      grade: workerInfo?.educationInfo?.grade || '',
-      university: workerInfo?.educationInfo?.university || '',
-      startYear: workerInfo?.educationInfo?.startYear || '',
-      endYear: workerInfo?.educationInfo?.ednYear || '',
+      degree: '',
+      stream: '',
+      grade: '',
+      university: '',
+      startYear: '',
+      endYear: '',
+      educationId: '',
     },
   ]);
+
+  // const parseDate = (dateString: string | null): Date | null => {
+  //   return dateString ? new Date(dateString) : null;
+  // };
+  // const formatDate = (date: Date | null): string => {
+  //   return date ? format(date, 'dd-MM-yyyy') : 'Pick a date';
+  // };
+
+  console.log('gen');
   useEffect(() => {
     if (workerInfo) {
       setEmpFirstName(workerInfo?.basicInfo?.firstName || '');
@@ -121,12 +138,12 @@ export default function EmpUpdate() {
       setEmpLastName(workerInfo?.basicInfo?.lastName || '');
       setEmpEmail(workerInfo?.basicInfo?.email || '');
       setEmpMobile(workerInfo?.basicInfo?.mobile || '');
-      setGender(workerInfo?.basicInfo?.gender?.text || '');
-      setEmpDOB(workerInfo?.basicInfo?.DOB || null);
+      setGender(workerInfo?.basicInfo?.gender?.value || '');
+      setEmpDOB(parseDated(workerInfo?.basicInfo?.dob) || null);
       setEmpBloodGroup(workerInfo?.basicInfo?.bloodGroup || '');
-      setMaritalStatus(workerInfo?.basicInfo?.maritalStatus || '');
-      setDesignation(workerInfo?.basicInfo?.designation || '');
-      setDepartment(workerInfo?.basicInfo?.department || '');
+      setMaritalStatus(workerInfo?.basicInfo?.maritalStatus.value || '');
+      setDesignation(workerInfo?.basicInfo?.designation?.value || '');
+      setDepartment(workerInfo?.basicInfo?.department?.value || '');
       setEmpAdhaar(workerInfo?.basicInfo?.aadhaarNo || '');
       setEmpPan(workerInfo?.basicInfo?.panNo || '');
       setEmpMark(workerInfo?.basicInfo?.identificationMark || '');
@@ -134,8 +151,8 @@ export default function EmpUpdate() {
       setEmpHobbies(workerInfo?.basicInfo?.hobbies || '');
       setAccNo(workerInfo?.bankDetails?.accountNo || '');
       setIFSC(workerInfo?.bankDetails?.ifsCode || '');
-      setESI(workerInfo?.bankDetails?.esi || '');
-      setUan(workerInfo?.bankDetails?.uan || '');
+      setESI(workerInfo?.basicInfo?.esi || '');
+      setUan(workerInfo?.basicInfo?.uan || '');
       setFatherName(workerInfo?.familyInfo?.fatherName || '');
       setMotherName(workerInfo?.familyInfo?.motherName || '');
       setSpouseName(workerInfo?.familyInfo?.spouseName || '');
@@ -149,8 +166,33 @@ export default function EmpUpdate() {
       setPerArea(workerInfo?.basicInfo?.permanentAddress?.colonyPermanent);
       setCorArea(workerInfo?.basicInfo?.presentAddress?.colonyPresent);
     }
+    if (workerInfo?.educationInfo) {
+      setEducationDetails(
+        workerInfo.educationInfo.map((info: any) => ({
+          educationId: info.educationId || '',
+          degree: info.subject || '',
+          stream: info.stream || '',
+          university: info.university || '',
+          startYear: info.startYear || '',
+          endYear: info.endYear || '',
+          grade: info?.percentage || '',
+        })),
+      );
+    }
+    if (workerInfo?.companyInfo) {
+      setEmploymentDetails(
+        workerInfo.companyInfo.map((info: any) => ({
+          company: info.companyCode || '',
+          branch: info.companyBranch || '',
+          role: info.role.value || '',
+          isCurrentCompany: info?.isEmpCurrentCompany || false,
+          joiningDate: parseDated(info.joiningDate),
+          relievingDate: parseDated(info.relievingDate),
+        })),
+      );
+    }
   }, [workerInfo]);
-  console.log(workerInfo?.permanentAddress?.pincodePermanent);
+
   const [employmentDetails, setEmploymentDetails] = useState([
     {
       company: '',
@@ -183,6 +225,7 @@ export default function EmpUpdate() {
       ...educationDetails,
       {
         degree: '',
+        stream: '',
         educationId: '',
         grade: '',
         university: '',
@@ -238,7 +281,7 @@ export default function EmpUpdate() {
       dispatch(fetchSearchCompanies());
     }
   }, []);
-
+  console.log(empDOB);
   useEffect(() => {
     if (perPinCode.length === 6) {
       dispatch(
@@ -258,6 +301,7 @@ export default function EmpUpdate() {
     }
   }, [perPinCode, corPinCode]);
   const permanentResult = perState.find((item: any) => item.name === perArea);
+
   const perStateforAPI = states.find(
     (item: any) => item.text === permanentResult?.state,
   );
@@ -277,11 +321,11 @@ export default function EmpUpdate() {
   }, [isChecked, perPinCode, perHouseNo, perArea]);
 
   const payload = {
-    empId: 'emp-c5a9c5a6-b894-45cc-ac6e-8486812bf70e',
+    empId: workerInfo?.basicInfo?.uid,
     firstName: empFirstName,
     middleName: empMiddleName,
     lastName: empLastName,
-    DOB: empDOB,
+    // DOB: formatDate(parseDate(empDOB==="Invalid date"?"":empDOB))|| null,
     aadhaarNo: empAdhaar,
     bloodGroup: empBloodGroup,
     childCount: childrenCount,
@@ -298,14 +342,16 @@ export default function EmpUpdate() {
     motherName: motherName,
     houseNoPermanent: perHouseNo,
     colonyPermanent: perArea,
-    cityPermanent: permanentResult?.block,
+    cityPermanent: permanentResult?.block || '-',
     districtPermanent: permanentResult?.district,
+    countryPermanent: permanentResult?.country,
     statePermanent: perStateforAPI?.value,
     pinCodePermanent: perPinCode,
     houseNoPresent: corHouseNo,
     colonyPresent: corArea,
     cityPresent: correspondingResult?.block,
     districtPresent: correspondingResult?.district,
+    countryPresent: correspondingResult?.country,
     statePresent: corrStateforAPI?.value,
     pinCodePresent: corPinCode,
     department: department,
@@ -325,6 +371,24 @@ export default function EmpUpdate() {
   return (
     <div className="overflow-y-auto">
       <div className="p-[10px]">
+        {/* <Card className='rounded-lg max-h-[calc(100vh-210px)] overflow-hidden'>
+        <CardHeader className="p-0 px-[20px] h-[70px] gap-0 flex flex-row">
+            <CardTitle className="text-[20px] font-[650] text-slate-600">
+            Update Employee Details
+            </CardTitle>
+            <CardTitle className="float-right">
+          <Button
+            type="submit"
+            onClick={() => {
+              console.log(payload);
+              dispatch(updateEmployeeDetails(payload));
+            }}
+          >
+            Submit
+          </Button>
+        </CardTitle>
+          </CardHeader>
+        </Card> */}
         <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0">
           <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
             <CardTitle className="text-[20px] font-[650] text-slate-600">
@@ -506,7 +570,7 @@ export default function EmpUpdate() {
                     icon={Map}
                     label="State"
                     required
-                    readonly
+                    readOnly
                   />
                   <LabelInput
                     value={permanentResult?.block}
@@ -514,7 +578,7 @@ export default function EmpUpdate() {
                     icon={LocateIcon}
                     label="City"
                     required
-                    readonly
+                    readOnly
                   />
                   <LabelInput
                     value={permanentResult?.district}
@@ -522,7 +586,7 @@ export default function EmpUpdate() {
                     icon={Navigation}
                     label="District"
                     required
-                    readonly
+                    readOnly
                   />
                   <LabelInput
                     value={perHouseNo}
@@ -581,7 +645,7 @@ export default function EmpUpdate() {
                     icon={Map}
                     label="State"
                     required
-                    readonly
+                    readOnly
                   />
                   <LabelInput
                     value={correspondingResult?.block}
@@ -589,7 +653,7 @@ export default function EmpUpdate() {
                     icon={LocateIcon}
                     label="City"
                     required
-                    readonly
+                    readOnly
                   />
                   <LabelInput
                     value={correspondingResult?.district}
@@ -597,7 +661,7 @@ export default function EmpUpdate() {
                     icon={Navigation}
                     label="District"
                     required
-                    readonly
+                    readOnly
                   />
                   <LabelInput
                     value={corHouseNo}
@@ -653,7 +717,7 @@ export default function EmpUpdate() {
             </div>
           </CardContent>
           <CardContent>
-            <div className="grid grid-cols-8 flex">
+            <div className="grid grid-cols-8">
               <div className="flex col-span-7 flex-col gap-y-2 2xl:flex-row justify-between">
                 <p className="text-lg font-semibold text-muted-foreground">
                   Children Information
@@ -820,7 +884,7 @@ export default function EmpUpdate() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-lg max-h-full overflow-hidden p-0 mt-4 w-1/2">
+          <Card className="rounded-lg h-fit overflow-hidden p-0 mt-4 w-1/2">
             <CardHeader className="border-b p-0 px-[20px] h-[120px] gap-0 flex justify-center">
               <CardTitle className="text-[20px] font-[650] text-slate-600 display-flex">
                 Employment Details
@@ -893,6 +957,21 @@ export default function EmpUpdate() {
                       icon={AiOutlineUser}
                       className="custom-class"
                     />
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="terms"
+                        checked={currentCompany}
+                        onChange={(e) => setIsCurrentCompany(e.target.checked)}
+                        className="form-checkbox"
+                      />
+                      <label
+                        htmlFor="terms"
+                        className="text-sm font-medium leading-none"
+                      >
+                        Current Company
+                      </label>
+                    </div>
 
                     <div className="row-span-3 flex justify-center">
                       <IconButton
@@ -909,56 +988,58 @@ export default function EmpUpdate() {
             </CardContent>
           </Card>
         </div>
-        <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0 w-1/2">
-          <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
-            <CardTitle className="text-[20px] font-[650] text-slate-600">
-              Benifits Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-[10px] overflow-x-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-1 gap-2">
-              <LabelInput
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                icon={LiaClipboardListSolid}
-                label="Bank Name"
-                required
-              />
-              <LabelInput
-                value={accNo}
-                onChange={(e) => setAccNo(e.target.value)}
-                icon={LiaClipboardListSolid}
-                label="Account Number"
-                required
-              />
-
-              <LabelInput
-                value={isfc}
-                onChange={(e) => setIFSC(e.target.value)}
-                icon={LiaClipboardListSolid}
-                label="IFSC Code"
-                required
-              />
-              <div className="grid grid-cols-2 gap-4">
+        <div className="flex gap-4 pt-4">
+          <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0 w-1/2">
+            <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
+              <CardTitle className="text-[20px] font-[650] text-slate-600">
+                Benifits Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-[10px] overflow-x-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-1 gap-2">
                 <LabelInput
-                  value={esi}
-                  onChange={(e) => setESI(e.target.value)}
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
                   icon={LiaClipboardListSolid}
-                  label="ESI"
+                  label="Bank Name"
+                  required
+                />
+                <LabelInput
+                  value={accNo}
+                  onChange={(e) => setAccNo(e.target.value)}
+                  icon={LiaClipboardListSolid}
+                  label="Account Number"
                   required
                 />
 
                 <LabelInput
-                  value={uan}
-                  onChange={(e: any) => setUan(e.target.value)}
+                  value={isfc}
+                  onChange={(e) => setIFSC(e.target.value)}
                   icon={LiaClipboardListSolid}
-                  label="UAN"
+                  label="IFSC Code"
                   required
                 />
+                <div className="grid grid-cols-2 gap-4">
+                  <LabelInput
+                    value={esi}
+                    onChange={(e) => setESI(e.target.value)}
+                    icon={LiaClipboardListSolid}
+                    label="ESI"
+                    required
+                  />
+
+                  <LabelInput
+                    value={uan}
+                    onChange={(e: any) => setUan(e.target.value)}
+                    icon={LiaClipboardListSolid}
+                    label="UAN"
+                    required
+                  />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
         <div className="p-4">
           <Button
             type="submit"
@@ -980,7 +1061,7 @@ interface LabelInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   label: string;
   required?: boolean;
-  icon?: React.ElementType; // Use ElementType for component type
+  icon?: React.ElementType;
   blank?: boolean;
   readOnly?: boolean;
 }
@@ -992,7 +1073,7 @@ export const LabelInput: React.FC<LabelInputProps> = ({
   required = false,
   icon: Icon,
   blank = false,
-  readOnly = false, // Icon should be a component type
+  readOnly = false,
 }) => {
   return (
     <div className="floating-label-group">
@@ -1018,13 +1099,13 @@ export const LabelInput: React.FC<LabelInputProps> = ({
 
 interface SelectWithLabelProps<T> {
   label: string;
-  value: string;
+  value: string | undefined;
   onValueChange: (value: string) => void;
-  options: T[]; // Array of options with dynamic keys
-  textKey: keyof T; // Key to get the text for SelectItem
-  optionKey: keyof T; // Key to get the value for SelectItem
-  className?: string; // Additional class names
-  icon?: React.ElementType; // Optional icon component
+  options: T[];
+  textKey: keyof T;
+  optionKey: keyof T;
+  className?: string;
+  icon?: React.ElementType;
   blank?: boolean;
 }
 
@@ -1075,8 +1156,8 @@ interface DatePickerWithLabelProps {
   label: string;
   date: Date | null;
   onDateChange: (date: Date | null) => void;
-  icon?: React.ElementType; // Optional icon component
-  className?: string; // Additional class names
+  icon?: React.ElementType;
+  className?: string;
 }
 
 export const DatePickerWithLabel: React.FC<DatePickerWithLabelProps> = ({
@@ -1104,7 +1185,7 @@ export const DatePickerWithLabel: React.FC<DatePickerWithLabelProps> = ({
             )}
           >
             <CalendarIcon className="w-4 h-4 mr-2" />
-            {date ? format(date, 'PPP') : <span>Pick a date</span>}
+            {/* {date ? format(date, 'PPP') : <span>Pick a date</span>} */}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">

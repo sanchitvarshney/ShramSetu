@@ -203,7 +203,7 @@ const initialState: AdminPageState = {
   branches: [],
   workerInfo: [],
   corPincode: [],
-  perPincode:[],
+  perPincode: [],
   loading: 'idle',
   error: null,
 };
@@ -313,7 +313,7 @@ export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
-        `${baseLink}fetch/designations`,
+        `${baseLink}fetch/getEducationStatus`,
       );
       return response.data;
     } catch (error) {
@@ -325,7 +325,6 @@ export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
 export const updateEmployeeDetails = createAsyncThunk(
   'adminPage/updateEmployeeDetails',
   async (employeeData, { rejectWithValue }) => {
-    console.log(employeeData,"data")
     try {
       const response = await orshAxios.put(
         baseLink + 'worker/update',
@@ -335,6 +334,11 @@ export const updateEmployeeDetails = createAsyncThunk(
         toast({
           variant: 'destructive',
           title: 'Error',
+          description: response.data.message,
+        });
+      } else {
+        toast({
+          title: 'Success',
           description: response.data.message,
         });
       }
@@ -491,10 +495,9 @@ export const getLocationsFromPinCode = createAsyncThunk<
 >(
   'adminPage/getLocationsFromPinCode',
   async ({ pinCode, addressType }, { rejectWithValue }) => {
-    console.log(pinCode, addressType);
     try {
       const response = await orshAxios.get<PincodeResponse>(
-        baseLink + `fetch/pinCodeDetails?pincode=${pinCode}`
+        baseLink + `fetch/pinCodeDetails?pincode=${pinCode}`,
       );
       if (!response.data.success) {
         toast({
@@ -508,7 +511,7 @@ export const getLocationsFromPinCode = createAsyncThunk<
     } catch (error) {
       return rejectWithValue('Failed to fetch workers');
     }
-  }
+  },
 );
 
 export const deleteActivityLog = createAsyncThunk<void, string>(
