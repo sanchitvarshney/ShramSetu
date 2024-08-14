@@ -324,12 +324,12 @@ export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
 );
 
 export const updateEmployeeDetails = createAsyncThunk<
-UpdateEmployeeResponse, // Type of the returned value
-any, // Type of the argument passed to payloadCreator
-{ rejectValue: string } // Optional configuration for rejectWithValue
+  UpdateEmployeeResponse, 
+  any,
+  { rejectValue: string }
 >(
   'adminPage/updateEmployeeDetails',
-  async (employeeData:any, { rejectWithValue }) => {
+  async (employeeData: any, { rejectWithValue }) => {
     try {
       const response = await orshAxios.put(
         baseLink + 'worker/update',
@@ -419,7 +419,7 @@ export const fetchWorkers = createAsyncThunk<
   async ({ startDate, endDate }, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<WorkersResponse>(
-        `https://esptest.mscorpres.net/worker/list?data=${startDate}-${endDate}&wise=createdDate`,
+        baseLink + `worker/list?data=${startDate}-${endDate}&wise=createdDate`,
       );
       if (!response.data.success) {
         toast({

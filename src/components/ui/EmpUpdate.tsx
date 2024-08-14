@@ -110,7 +110,6 @@ export default function EmpUpdate() {
   const [perArea, setPerArea] = useState<string>('');
   const [corArea, setCorArea] = useState<string>('');
   const [isChecked, setIsChecked] = useState<boolean>(false);
-  const [currentCompany, setIsCurrentCompany] = useState<boolean>(false);
   const [children, setChildren] = useState<Child[]>([]);
   const [educationDetails, setEducationDetails] = useState<EducationDetail[]>([
     {
@@ -201,6 +200,7 @@ export default function EmpUpdate() {
       role: '',
       joiningDate: null,
       relievingDate: null,
+      isCurrentCompany: false,
     },
   ]);
 
@@ -266,6 +266,7 @@ export default function EmpUpdate() {
         role: '',
         joiningDate: null,
         relievingDate: null,
+        isCurrentCompany: false,
       },
     ]);
   };
@@ -277,7 +278,7 @@ export default function EmpUpdate() {
   const handleInputEmpChange = (
     index: number,
     field: keyof EmploymentDetail,
-    value: string | Date | null | undefined,
+    value: string | Date | null | undefined | boolean,
   ) => {
     const newDetails = [...employmentDetails];
     newDetails[index] = { ...newDetails[index], [field]: value };
@@ -979,13 +980,19 @@ export default function EmpUpdate() {
                     <div className="flex items-center space-x-2">
                       <input
                         type="checkbox"
-                        id="terms"
-                        checked={currentCompany}
-                        onChange={(e) => setIsCurrentCompany(e.target.checked)}
+                        id={`currentCompany-${index}`}
+                        checked={detail.isCurrentCompany}
+                        onChange={(e) =>
+                          handleInputEmpChange(
+                            index,
+                            'isCurrentCompany',
+                            e.target.checked,
+                          )
+                        }
                         className="form-checkbox"
                       />
                       <label
-                        htmlFor="terms"
+                        htmlFor={`currentCompany-${index}`}
                         className="text-sm font-medium leading-none"
                       >
                         Current Company

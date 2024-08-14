@@ -20,6 +20,7 @@ export interface EmploymentDetail {
   role: string;
   joiningDate: Date | null;
   relievingDate: Date | null;
+  isCurrentCompany: boolean;
 }
 
 interface ChildData {
@@ -81,6 +82,6 @@ interface ChildData {
   export interface UpdateEmployeeResponse {
     success: boolean;
     message: string;
-    add: any; // Replace `any` with the actual type of the added employee data if known
+    add: any;
   }
   

@@ -118,7 +118,7 @@ const HomePage: React.FC = () => {
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     console.log(data.companies);
     navigate('/employee-list');
-    const payload = {
+    const payload:any = {
       company: companiesArray,
       excludePreviousCompany: false, // Adjust as needed
       excludePreviousIndustry: false, // Adjust as needed
