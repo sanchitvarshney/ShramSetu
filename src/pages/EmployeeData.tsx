@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { columnDefs, rowData } from '@/table/EploayTableColumn';
+import { columnDefs} from '@/table/EploayTableColumn';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { TbFilterSearch } from 'react-icons/tb';

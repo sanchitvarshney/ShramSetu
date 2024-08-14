@@ -26,6 +26,7 @@ import {
   Percent,
   Building,
   CalendarDays,
+  RefreshCcw,
 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { AiOutlineUser } from 'react-icons/ai';
@@ -54,6 +55,12 @@ import {
 import { format } from 'date-fns';
 import { fetchSearchCompanies } from '@/features/homePage/homePageSlice';
 import { cn, parseDated } from '@/lib/utils';
+import Loading from '@/components/reusable/Loading';
+import {
+  Child,
+  EducationDetail,
+  EmploymentDetail,
+} from '@/features/admin/adminPageTypes';
 
 export default function EmpUpdate() {
   const params = useParams();
@@ -78,7 +85,7 @@ export default function EmpUpdate() {
   const [empEmail, setEmpEmail] = useState<string>();
   const [empMobile, setEmpMobile] = useState<string>();
   const [gender, setGender] = useState<string>();
-  const [empDOB, setEmpDOB] = useState(null);
+  const [empDOB, setEmpDOB] = useState<Date | null | undefined>(null);
   const [maritalStatus, setMaritalStatus] = useState<string>();
   const [empBloodGroup, setEmpBloodGroup] = useState<string>();
   const [designation, setDesignation] = useState<string>();
@@ -104,14 +111,8 @@ export default function EmpUpdate() {
   const [corArea, setCorArea] = useState<string>('');
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const [currentCompany, setIsCurrentCompany] = useState<boolean>(false);
-  const [children, setChildren] = useState([
-    // {
-    //   childName: '',
-    //   childGender: '',
-    //   childDob: null,
-    // },
-  ]);
-  const [educationDetails, setEducationDetails] = useState([
+  const [children, setChildren] = useState<Child[]>([]);
+  const [educationDetails, setEducationDetails] = useState<EducationDetail[]>([
     {
       degree: '',
       stream: '',
@@ -123,14 +124,13 @@ export default function EmpUpdate() {
     },
   ]);
 
-  // const parseDate = (dateString: string | null): Date | null => {
-  //   return dateString ? new Date(dateString) : null;
-  // };
-  // const formatDate = (date: Date | null): string => {
-  //   return date ? format(date, 'dd-MM-yyyy') : 'Pick a date';
-  // };
+  const parseDate = (dateString: string | null): Date | null => {
+    return dateString ? new Date(dateString) : null;
+  };
+  const formatDate = (date: Date | null): string => {
+    return date ? format(date, 'dd-MM-yyyy') : 'Pick a date';
+  };
 
-  console.log('gen');
   useEffect(() => {
     if (workerInfo) {
       setEmpFirstName(workerInfo?.basicInfo?.firstName || '');
@@ -164,6 +164,7 @@ export default function EmpUpdate() {
         workerInfo?.basicInfo?.permanentAddress?.houseNoPermanent || '',
       );
       setPerArea(workerInfo?.basicInfo?.permanentAddress?.colonyPermanent);
+      setCorPinCode(workerInfo?.basicInfo?.presentAddress?.pincodePresent);
       setCorArea(workerInfo?.basicInfo?.presentAddress?.colonyPresent);
     }
     if (workerInfo?.educationInfo) {
@@ -210,13 +211,20 @@ export default function EmpUpdate() {
     ]);
   };
 
-  const removeChild = (index) => {
+  const removeChild = (index: any) => {
     setChildren(children.filter((_, i) => i !== index));
   };
 
-  const handleChange = (index, field, value) => {
-    const updatedChildren = [...children];
-    updatedChildren[index][field] = value;
+  const handleChange = (
+    index: number,
+    field: keyof Child,
+    value: string | Date | null | undefined,
+  ) => {
+    const updatedChildren = [...children] as Child[];
+    updatedChildren[index] = {
+      ...updatedChildren[index],
+      [field]: value,
+    } as Child;
     setChildren(updatedChildren);
   };
 
@@ -235,11 +243,15 @@ export default function EmpUpdate() {
     ]);
   };
 
-  const handleRemoveEducation = (index) => {
+  const handleRemoveEducation = (index: number) => {
     setEducationDetails(educationDetails.filter((_, i) => i !== index));
   };
 
-  const handleInputEduChange = (index, field, value) => {
+  const handleInputEduChange = (
+    index: number,
+    field: keyof EducationDetail,
+    value: string,
+  ) => {
     const newDetails = [...educationDetails];
     newDetails[index] = { ...newDetails[index], [field]: value };
     setEducationDetails(newDetails);
@@ -258,11 +270,15 @@ export default function EmpUpdate() {
     ]);
   };
 
-  const handleRemoveEmployment = (index) => {
+  const handleRemoveEmployment = (index: number) => {
     setEmploymentDetails(employmentDetails.filter((_, i) => i !== index));
   };
 
-  const handleInputEmpChange = (index, field, value) => {
+  const handleInputEmpChange = (
+    index: number,
+    field: keyof EmploymentDetail,
+    value: string | Date | null | undefined,
+  ) => {
     const newDetails = [...employmentDetails];
     newDetails[index] = { ...newDetails[index], [field]: value };
     setEmploymentDetails(newDetails);
@@ -281,9 +297,9 @@ export default function EmpUpdate() {
       dispatch(fetchSearchCompanies());
     }
   }, []);
-  console.log(empDOB);
+
   useEffect(() => {
-    if (perPinCode.length === 6) {
+    if (perPinCode?.length === 6) {
       dispatch(
         getLocationsFromPinCode({
           pinCode: perPinCode,
@@ -291,7 +307,7 @@ export default function EmpUpdate() {
         }),
       );
     }
-    if (corPinCode.length === 6) {
+    if (corPinCode?.length === 6) {
       dispatch(
         getLocationsFromPinCode({
           pinCode: corPinCode,
@@ -319,13 +335,15 @@ export default function EmpUpdate() {
       setCorArea(perArea);
     }
   }, [isChecked, perPinCode, perHouseNo, perArea]);
-
+  const isValidDate = (date: any): date is Date =>
+    date instanceof Date && !isNaN(date.getTime());
+  const validDate = isValidDate(empDOB) ? empDOB : null;
   const payload = {
     empId: workerInfo?.basicInfo?.uid,
     firstName: empFirstName,
     middleName: empMiddleName,
     lastName: empLastName,
-    // DOB: formatDate(parseDate(empDOB==="Invalid date"?"":empDOB))|| null,
+    DOB: formatDate(parseDate(validDate)) || null,
     aadhaarNo: empAdhaar,
     bloodGroup: empBloodGroup,
     childCount: childrenCount,
@@ -370,26 +388,32 @@ export default function EmpUpdate() {
 
   return (
     <div className="overflow-y-auto">
+      {!Object.keys(workerInfo).length && <Loading />}
       <div className="p-[10px]">
-        {/* <Card className='rounded-lg max-h-[calc(100vh-210px)] overflow-hidden'>
-        <CardHeader className="p-0 px-[20px] h-[70px] gap-0 flex flex-row">
-            <CardTitle className="text-[20px] font-[650] text-slate-600">
+        <div className="border-b-2 border-accent mb-2 flex items-center justify-between pb-2">
+          <p className="text-[20px] font-[650] text-slate-600">
             Update Employee Details
-            </CardTitle>
-            <CardTitle className="float-right">
-          <Button
-            type="submit"
-            onClick={() => {
-              console.log(payload);
-              dispatch(updateEmployeeDetails(payload));
-            }}
-          >
-            Submit
-          </Button>
-        </CardTitle>
-          </CardHeader>
-        </Card> */}
-        <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0">
+          </p>
+          <div className="flex gap-2">
+            <Button
+              // variant="secondary"
+              variant="outline"
+              icon={<RefreshCcw size={`18`} />}
+              onClick={() => {}}
+            >
+              Reset
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                dispatch(updateEmployeeDetails(payload));
+              }}
+            >
+              Submit
+            </Button>
+          </div>
+        </div>
+        <Card className="rounded-lg overflow-hidden p-0">
           <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
             <CardTitle className="text-[20px] font-[650] text-slate-600">
               Basic Info
@@ -530,7 +554,7 @@ export default function EmpUpdate() {
             </div>
           </CardContent>
         </Card>
-        <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0 mt-4">
+        <Card className="rounded-lg overflow-hidden p-0 mt-4">
           <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
             <CardTitle className="text-[20px] font-[650] text-slate-600">
               Contact Info
@@ -570,7 +594,6 @@ export default function EmpUpdate() {
                     icon={Map}
                     label="State"
                     required
-                    readOnly
                   />
                   <LabelInput
                     value={permanentResult?.block}
@@ -578,7 +601,6 @@ export default function EmpUpdate() {
                     icon={LocateIcon}
                     label="City"
                     required
-                    readOnly
                   />
                   <LabelInput
                     value={permanentResult?.district}
@@ -586,7 +608,6 @@ export default function EmpUpdate() {
                     icon={Navigation}
                     label="District"
                     required
-                    readOnly
                   />
                   <LabelInput
                     value={perHouseNo}
@@ -645,7 +666,6 @@ export default function EmpUpdate() {
                     icon={Map}
                     label="State"
                     required
-                    readOnly
                   />
                   <LabelInput
                     value={correspondingResult?.block}
@@ -653,7 +673,6 @@ export default function EmpUpdate() {
                     icon={LocateIcon}
                     label="City"
                     required
-                    readOnly
                   />
                   <LabelInput
                     value={correspondingResult?.district}
@@ -661,7 +680,6 @@ export default function EmpUpdate() {
                     icon={Navigation}
                     label="District"
                     required
-                    readOnly
                   />
                   <LabelInput
                     value={corHouseNo}
@@ -675,117 +693,118 @@ export default function EmpUpdate() {
             </div>
           </CardContent>
         </Card>
-
-        <Card className="rounded-lg h-full overflow-hidden p-0">
-          <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
-            <CardTitle className="text-[20px] font-[650] text-slate-600">
-              Family Info
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="py-[10px]  overflow-x-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
-              <LabelInput
-                value={fatherName}
-                onChange={(e) => setFatherName(e.target.value)}
-                icon={AiOutlineUser}
-                label="Father Name"
-                required
-              />
-              <LabelInput
-                value={motherName}
-                onChange={(e) => setMotherName(e.target.value)}
-                icon={AiOutlineUser}
-                label="Mother Name"
-                required
-              />
-              <LabelInput
-                value={spouseName}
-                onChange={(e) => setSpouseName(e.target.value)}
-                icon={AiOutlineUser}
-                label="Spouse Name"
-                required
-                blank
-              />
-              <LabelInput
-                value={childrenCount}
-                onChange={(e) => setChildrenCount(e.target.value)}
-                icon={AiOutlineUser}
-                label="Children Count"
-                required
-                blank
-              />
-            </div>
-          </CardContent>
-          <CardContent>
-            <div className="grid grid-cols-8">
-              <div className="flex col-span-7 flex-col gap-y-2 2xl:flex-row justify-between">
-                <p className="text-lg font-semibold text-muted-foreground">
-                  Children Information
-                </p>
-              </div>
-              <div className="col-span-1">
-                <IconButton onClick={addChild} icon={<PlusCircle />} />
-              </div>
-            </div>
-            {children.map((child, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-3 gap-2 pb-3 my-2"
-              >
+        <div className="pt-4">
+          <Card className="rounded-lg h-full overflow-hidden pt-4">
+            <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
+              <CardTitle className="text-[20px] font-[650] text-slate-600">
+                Family Info
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-[10px]  overflow-x-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
                 <LabelInput
-                  value={child.childName}
-                  onChange={(e) =>
-                    handleChange(index, 'childName', e.target.value)
-                  }
+                  value={fatherName}
+                  onChange={(e) => setFatherName(e.target.value)}
                   icon={AiOutlineUser}
-                  label="Child Name"
+                  label="Father Name"
                   required
                 />
-                <div>
-                  <Label className="floating-label gap-[10px]">
-                    <span className="flex items-center gap-[10px]">
-                      <AiOutlineUser className="h-[18px] w-[18px]" />
-                      Gender
-                    </span>
-                  </Label>
-                  <Select
-                    value={child.childGender}
-                    onValueChange={(value) =>
-                      handleChange(index, 'childGender', value)
-                    }
-                  >
-                    <SelectTrigger className={inputStyle}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="M">Male</SelectItem>
-                      <SelectItem value="F">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <DatePickerWithLabel
-                  label="Date Of Birth"
-                  date={child.childDob}
-                  onDateChange={(value) => {
-                    handleChange(index, 'childDob', value);
-                  }}
+                <LabelInput
+                  value={motherName}
+                  onChange={(e) => setMotherName(e.target.value)}
                   icon={AiOutlineUser}
-                  className="custom-class" // Optional custom class
+                  label="Mother Name"
+                  required
                 />
-
-                <div className="row-span-3 flex justify-center">
-                  <IconButton
-                    onClick={() => removeChild(index)}
-                    icon={<Trash2 size={18} />}
-                    hoverBackground="hover:bg-red-100"
-                    hoverColor="hover:text-red-400"
-                    color="text-red-400"
-                  />
+                <LabelInput
+                  value={spouseName}
+                  onChange={(e) => setSpouseName(e.target.value)}
+                  icon={AiOutlineUser}
+                  label="Spouse Name"
+                  required
+                  blank
+                />
+                <LabelInput
+                  value={childrenCount}
+                  onChange={(e) => setChildrenCount(e.target.value)}
+                  icon={AiOutlineUser}
+                  label="Children Count"
+                  required
+                  blank
+                />
+              </div>
+            </CardContent>
+            <CardContent>
+              <div className="grid grid-cols-8">
+                <div className="flex col-span-7 flex-col gap-y-2 2xl:flex-row justify-between">
+                  <p className="text-lg font-semibold text-muted-foreground">
+                    Children Information
+                  </p>
+                </div>
+                <div className="col-span-1">
+                  <IconButton onClick={addChild} icon={<PlusCircle />} />
                 </div>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              {children.map((child, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-3 gap-2 pb-3 my-2"
+                >
+                  <LabelInput
+                    value={child.childName}
+                    onChange={(e) =>
+                      handleChange(index, 'childName', e.target.value)
+                    }
+                    icon={AiOutlineUser}
+                    label="Child Name"
+                    required
+                  />
+                  <div>
+                    <Label className="floating-label gap-[10px]">
+                      <span className="flex items-center gap-[10px]">
+                        <AiOutlineUser className="h-[18px] w-[18px]" />
+                        Gender
+                      </span>
+                    </Label>
+                    <Select
+                      value={child.childGender}
+                      onValueChange={(value) =>
+                        handleChange(index, 'childGender', value)
+                      }
+                    >
+                      <SelectTrigger className={inputStyle}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="M">Male</SelectItem>
+                        <SelectItem value="F">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <DatePickerWithLabel
+                    label="Date Of Birth"
+                    date={child.childDob}
+                    onDateChange={(value) => {
+                      handleChange(index, 'childDob', value);
+                    }}
+                    icon={AiOutlineUser}
+                    className="custom-class" // Optional custom class
+                  />
+
+                  <div className="row-span-3 flex justify-center">
+                    <IconButton
+                      onClick={() => removeChild(index)}
+                      icon={<Trash2 size={18} />}
+                      hoverBackground="hover:bg-red-100"
+                      hoverColor="hover:text-red-400"
+                      color="text-red-400"
+                    />
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
         <div className="flex gap-4">
           <Card className="rounded-lg max-h-full overflow-auto p-0 mt-4 w-1/2">
             <CardHeader className="border-b p-0 px-[20px] h-[120px] gap-0 flex justify-center">
@@ -1044,7 +1063,6 @@ export default function EmpUpdate() {
           <Button
             type="submit"
             onClick={() => {
-              console.log(payload);
               dispatch(updateEmployeeDetails(payload));
             }}
           >
@@ -1061,7 +1079,7 @@ interface LabelInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   label: string;
   required?: boolean;
-  icon?: React.ElementType;
+  icon?: React.ElementType; // Use ElementType for component type
   blank?: boolean;
   readOnly?: boolean;
 }
@@ -1101,11 +1119,11 @@ interface SelectWithLabelProps<T> {
   label: string;
   value: string | undefined;
   onValueChange: (value: string) => void;
-  options: T[];
-  textKey: keyof T;
-  optionKey: keyof T;
-  className?: string;
-  icon?: React.ElementType;
+  options: T[]; // Array of options with dynamic keys
+  textKey: keyof T; // Key to get the text for SelectItem
+  optionKey: keyof T; // Key to get the value for SelectItem
+  className?: string; // Additional class names
+  icon?: React.ElementType; // Optional icon component
   blank?: boolean;
 }
 
@@ -1154,12 +1172,13 @@ export const SelectWithLabel = <T extends Record<string, any>>({
 
 interface DatePickerWithLabelProps {
   label: string;
-  date: Date | null;
-  onDateChange: (date: Date | null) => void;
-  icon?: React.ElementType;
-  className?: string;
+  date: Date | undefined | null;
+  onDateChange: (date: Date | null | undefined) => void;
+  icon?: React.ElementType; // Optional icon component
+  className?: string; // Additional class names
 }
-
+const isValidDate = (date: any): date is Date =>
+  date instanceof Date && !isNaN(date.getTime());
 export const DatePickerWithLabel: React.FC<DatePickerWithLabelProps> = ({
   label,
   date,
@@ -1167,6 +1186,7 @@ export const DatePickerWithLabel: React.FC<DatePickerWithLabelProps> = ({
   icon: Icon = AiOutlineUser,
   className = '',
 }) => {
+  const validDate = isValidDate(date) ? date : undefined;
   return (
     <div className={className}>
       <Label className="floating-label gap-[10px]">
@@ -1185,7 +1205,7 @@ export const DatePickerWithLabel: React.FC<DatePickerWithLabelProps> = ({
             )}
           >
             <CalendarIcon className="w-4 h-4 mr-2" />
-            {/* {date ? format(date, 'PPP') : <span>Pick a date</span>} */}
+            {validDate ? format(validDate, 'PPP') : <span>Pick a date</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">

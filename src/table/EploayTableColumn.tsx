@@ -2,7 +2,7 @@ import { ColDef } from 'ag-grid-community';
 
 const actionCellRenderer = (params: any) => {
   const { toggleShowDetails } = params.context;
-  console.log(params);
+
   return (
     <div className="flex justify-center">
       <button

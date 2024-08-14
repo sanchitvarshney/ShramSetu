@@ -38,6 +38,7 @@ import {
 } from '@/features/homePage/homePageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
+import Loading from '@/components/reusable/Loading';
 
 const companyOptions = {
   light: [
@@ -147,6 +148,7 @@ const HomePage: React.FC = () => {
 
   return (
     <>
+      {!searchCompanies?.length && <Loading />}
       <Tabs defaultValue="filter">
         <div className="flex items-center justify-center">
           <TabsList className="h-[50px] ml-[10px] gap-[20px] bg-white shadow-sm shadow-stone-300 mt-[10px] px-[10px] rounded-full">

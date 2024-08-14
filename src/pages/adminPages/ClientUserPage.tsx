@@ -4,6 +4,7 @@ import { columnDefs } from '@/table/WorkersTableColumns';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClientList } from '@/features/admin/adminPageSlice';
 import { AppDispatch, RootState } from '@/store';
+import Loading from '@/components/reusable/Loading';
 const ClientUserPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { clientList } = useSelector((state: RootState) => state.adminPage);
@@ -18,9 +19,10 @@ const ClientUserPage: React.FC = () => {
   useEffect(() => {
     dispatch(fetchClientList());
   }, [dispatch]);
-  
+
   return (
     <div className=" ag-theme-quartz h-[calc(100vh-70px)]">
+      {!clientList.length && <Loading />}
       <AgGridReact
         rowData={clientList}
         columnDefs={columnDefs}

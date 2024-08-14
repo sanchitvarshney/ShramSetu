@@ -1,5 +1,6 @@
 import { orshAxios } from '@/axiosIntercepter';
 import { toast } from '@/components/ui/use-toast';
+import { UpdateEmployeeResponse } from '@/features/admin/adminPageTypes';
 import { SelectOptionType } from '@/types/general';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
@@ -322,9 +323,13 @@ export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
   },
 );
 
-export const updateEmployeeDetails = createAsyncThunk(
+export const updateEmployeeDetails = createAsyncThunk<
+UpdateEmployeeResponse, // Type of the returned value
+any, // Type of the argument passed to payloadCreator
+{ rejectValue: string } // Optional configuration for rejectWithValue
+>(
   'adminPage/updateEmployeeDetails',
-  async (employeeData, { rejectWithValue }) => {
+  async (employeeData:any, { rejectWithValue }) => {
     try {
       const response = await orshAxios.put(
         baseLink + 'worker/update',
@@ -344,7 +349,7 @@ export const updateEmployeeDetails = createAsyncThunk(
       }
       return response.data.add;
     } catch (error) {
-      return rejectWithValue('Failed to add company');
+      return rejectWithValue('Failed to fetch employee');
     }
   },
 );
@@ -489,8 +494,13 @@ interface GetLocationsParams {
   addressType: 'permanent' | 'corresponding';
 }
 
+interface GetLocationsSuccessPayload {
+  data: PinCode[] | null;
+  addressType: 'permanent' | 'corresponding';
+}
+
 export const getLocationsFromPinCode = createAsyncThunk<
-  PincodeResponse,
+  GetLocationsSuccessPayload,
   GetLocationsParams
 >(
   'adminPage/getLocationsFromPinCode',

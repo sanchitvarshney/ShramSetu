@@ -4,15 +4,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
 import { ColDef } from 'ag-grid-community';
+import Loading from '@/components/reusable/Loading';
 
 const ListCompany: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { companies} = useSelector((state: RootState) => state.adminPage);
+  const { companies } = useSelector((state: RootState) => state.adminPage);
 
-  const defaultColDef = useMemo(() => ({
-    filter: 'agTextColumnFilter',
-    floatingFilter: true,
-  }), []);
+  const defaultColDef = useMemo(
+    () => ({
+      filter: 'agTextColumnFilter',
+      floatingFilter: true,
+    }),
+    [],
+  );
 
   useEffect(() => {
     dispatch(searchCompanies());
@@ -30,6 +34,8 @@ const ListCompany: React.FC = () => {
 
   return (
     <div className="ag-theme-quartz h-[calc(100vh-140px)]">
+      {!companies?.length && <Loading />}
+
       <AgGridReact
         rowData={companies || []}
         columnDefs={columnDefs}

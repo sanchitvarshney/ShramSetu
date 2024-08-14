@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { IoMdDownload } from 'react-icons/io';
-import { fetchActivityLogs, deleteActivityLog } from '@/features/admin/adminPageSlice';
+import {
+  fetchActivityLogs,
+  deleteActivityLog,
+} from '@/features/admin/adminPageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { RowData } from '@/table/activityLogTable';
@@ -9,7 +12,7 @@ import { FaTrash } from 'react-icons/fa';
 import { Button } from '@/components/ui/button';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 import { toast } from '@/components/ui/use-toast';
-
+import Loading from '@/components/reusable/Loading';
 
 const ActivityLogPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -23,12 +26,13 @@ const ActivityLogPage: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    const transformedData = activityLogs?.map((log: any) => ({
-      insertedBy: log.insertBy,
-      insertDate: log.insertDt,
-      action: '',
-      value: log.value,
-    })) || [];
+    const transformedData =
+      activityLogs?.map((log: any) => ({
+        insertedBy: log.insertBy,
+        insertDate: log.insertDt,
+        action: '',
+        value: log.value,
+      })) || [];
     setRowData(transformedData);
   }, [activityLogs]);
 
@@ -41,13 +45,18 @@ const ActivityLogPage: React.FC = () => {
     if (selectedFileId) {
       dispatch(deleteActivityLog(selectedFileId))
         .then((response: any) => {
-          setRowData(rowData.filter((row:any) => row.value !== selectedFileId));
+          setRowData(
+            rowData.filter((row: any) => row.value !== selectedFileId),
+          );
           setIsDialogOpen(false);
-          if (response.meta.requestStatus ==="fulfilled") {
-            toast({ title: 'Success!!', description: "File Deleted Successfully"});
+          if (response.meta.requestStatus === 'fulfilled') {
+            toast({
+              title: 'Success!!',
+              description: 'File Deleted Successfully',
+            });
           }
         })
-        .catch((error:any) => {
+        .catch((error: any) => {
           console.error('Failed to delete log:', error);
           setIsDialogOpen(false);
         });
@@ -102,6 +111,7 @@ const ActivityLogPage: React.FC = () => {
 
   return (
     <div>
+      {!Object.keys(activityLogs).length && <Loading />}
       <div className="h-[50px] flex items-center justify-end px-[20px]">
         <Button className="flex items-center gap-[5px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400">
           <IoMdDownload className="h-[20px] w-[20px]" /> Download
