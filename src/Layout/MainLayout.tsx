@@ -110,7 +110,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                   Invitation
                 </NavLink>
                 <NavLink
-                  to="/company"
+                  to="/company/list"
                   className={NavlinkStyle}
                   onClick={() => setOpen(false)}
                 >

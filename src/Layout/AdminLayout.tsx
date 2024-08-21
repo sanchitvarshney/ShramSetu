@@ -14,7 +14,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
       <div className="w-full border p-[10px] ">
         <nav className="w-full flex flex-col gap-[5px]">
           <NavLink
-            to="/company"
+            to="/company/list"
             className={({ isActive }) =>
               `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
                 isActive && 'bg-teal-500 text-white'

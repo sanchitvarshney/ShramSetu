@@ -28,7 +28,6 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
     dispatch(fetchWorkerDetails(empId));
   }, [empId]);
 
-  console.log(showEdit);
   return (
     <Card className="h-full w-full">
       <CardHeader className="flex py-0 flex-row justify-between items-center">

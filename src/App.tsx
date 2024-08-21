@@ -21,6 +21,7 @@ import Protected from '@/components/Protected';
 import { Toaster } from '@/components/ui/toaster';
 import EmpUpdate from '@/components/ui/EmpUpdate';
 import Profile from '@/components/shared/Profile';
+import CompanyInfo from '@/components/ui/companyInfo';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -53,12 +54,24 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: '/company',
+    path: '/company/list',
     element: (
       <Protected authentication>
         <MainLayout>
           <AdminLayout>
             <CompanyPage />
+          </AdminLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
+    path: '/company/:id',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <AdminLayout>
+            <CompanyInfo />
           </AdminLayout>
         </MainLayout>
       </Protected>
