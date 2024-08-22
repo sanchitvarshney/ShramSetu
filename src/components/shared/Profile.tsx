@@ -1,5 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
-import AppPasswordDialog from '@/components/shared/AppPasswordDialog';
+import { ReactNode, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import IconButton from '@/components/ui/IconButton';
@@ -18,25 +17,25 @@ import {
 function Profile() {
   const dispatch = useDispatch<AppDispatch>();
   const { userProfile } = useSelector((state: RootState) => state.profilePage);
-  const [mobile, setMobile] = useState(userProfile[0]?.phoneNumber);
-  const [email, setEmail] = useState(userProfile[0]?.email);
-  const [supportEmail, setSupportEmail] = useState(userProfile[0]?.phoneNumber);
-  const [recruitmentEmail, setRecruitmentEmail] = useState(
-    userProfile[0]?.emailRecruitment,
-  );
-  const [showAppPasswordDialog, setAppPasswordDialog] = useState(false);
+  const [mobile, setMobile] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [supportEmail, setSupportEmail] = useState<string>('');
+  const [recruitmentEmail, setRecruitmentEmail] = useState<string>('');
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [fieldToVerify, setFieldToVerify] = useState('');
+  const [valueToVerify, setValueToVerify] = useState('');
 
   useEffect(() => {
     dispatch(fetchUserProfile());
   }, [dispatch]);
 
   useEffect(() => {
-    setMobile(userProfile[0]?.phoneNumber);
-    setEmail(userProfile[0]?.email);
-    setSupportEmail(userProfile[0]?.emailSupport);
-    setRecruitmentEmail(userProfile[0]?.emailRecruitment);
+    if (userProfile.length > 0) {
+      setMobile(userProfile[0]?.phoneNumber || '');
+      setEmail(userProfile[0]?.email || '');
+      setSupportEmail(userProfile[0]?.supportEmail || '');
+      setRecruitmentEmail(userProfile[0]?.emailRecruitment || '');
+    }
   }, [userProfile]);
 
   const updateUserData = async (field: string, value: string, type: string) => {
@@ -46,12 +45,11 @@ function Profile() {
       field === 'supportEmail' ||
       field === 'recruitmentEmail'
     ) {
-      // Show OTP modal
-      setFieldToVerify(field);
+      setFieldToVerify(type);
       setShowOtpModal(true);
-      dispatch(sentOtp({ body: { [field]: value }, type }));
+      setValueToVerify(value);
+      dispatch(sentOtp({ body: { [field]: value }, type: `${type}=true` }));
     } else {
-      // For other types, update data directly
       dispatch(changePassword({ body: { [field]: value }, type }));
     }
   };
@@ -87,10 +85,10 @@ function Profile() {
                     icon={<Phone size={19} />}
                     value={mobile}
                     editable
-                    notVerified={!userProfile[0]?.phoneVerify}
+                    notVerified={userProfile[0]?.phoneVerify}
                     onUpdate={(newValue) => {
                       setMobile(newValue);
-                      updateUserData('mobile', newValue, 'mobile=true');
+                      updateUserData('mobile', newValue, 'mobile');
                     }}
                   />
                   <SingleItem
@@ -98,10 +96,10 @@ function Profile() {
                     icon={<Mail size={19} />}
                     value={email}
                     editable
-                    notVerified={!userProfile[0]?.emailVerify}
+                    notVerified={userProfile[0]?.emailVerify}
                     onUpdate={(newValue) => {
                       setEmail(newValue);
-                      updateUserData('email', newValue, 'email=true');
+                      updateUserData('email', newValue, 'email');
                     }}
                   />
                   <SingleItem
@@ -112,7 +110,7 @@ function Profile() {
                     notVerified={userProfile[0]?.supportEmailVerify}
                     onUpdate={(newValue) => {
                       setSupportEmail(newValue);
-                      updateUserData('email', newValue, 'supportEmail=true');
+                      updateUserData('email', newValue, 'supportEmail');
                     }}
                   />
                   <SingleItem
@@ -123,11 +121,7 @@ function Profile() {
                     notVerified={userProfile[0]?.recruitmentEmailVerify}
                     onUpdate={(newValue) => {
                       setRecruitmentEmail(newValue);
-                      updateUserData(
-                        'email',
-                        newValue,
-                        'recruitmentEmail=true',
-                      );
+                      updateUserData('email', newValue, 'recruitmentEmail');
                     }}
                   />
                 </div>
@@ -137,22 +131,22 @@ function Profile() {
           </div>
         </div>
       )}
-      {showOtpModal && (
-        <OtpModal
-          isOpen={true}
-          field={fieldToVerify}
-          onClose={() => setShowOtpModal(false)}
-          onOtpVerified={(otp) => {
-            // Handle OTP verification
-            setShowOtpModal(false);
-            dispatch(verifyOtp({ body: { otp }, type: 'email=true' }));
-          }}
-        />
-      )}
+      <OtpModal
+        isOpen={showOtpModal}
+        onClose={() => setShowOtpModal(false)}
+        onOtpVerified={(otp) => {
+          setShowOtpModal(false);
+          dispatch(
+            verifyOtp({
+              body: { otp, email: valueToVerify },
+              type: `${fieldToVerify}=true`,
+            }),
+          );
+        }}
+      />
     </div>
   );
 }
-
 export default Profile;
 
 interface PropTypes {
@@ -160,7 +154,7 @@ interface PropTypes {
   label: string;
   value: string;
   editable?: boolean;
-  notVerified?: boolean;
+  notVerified?: string;
   extra?: ReactNode;
   onUpdate?: (newValue: string) => void;
 }
@@ -183,6 +177,10 @@ const SingleItem = ({
     }
     setIsEditing(false);
   };
+  
+  useEffect(() => {
+    setInputValue(value); // Update inputValue when value changes
+  }, [value]);
 
   return (
     <div className="flex flex-col gap-0">
@@ -191,7 +189,8 @@ const SingleItem = ({
           {icon}
           <strong>{label}</strong>
         </div>
-        {notVerified && (
+
+        {notVerified === 'false' && (
           <div className="bg-white text-black">
             <IconButton
               tooltip={

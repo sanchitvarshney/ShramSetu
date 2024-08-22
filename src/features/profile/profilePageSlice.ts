@@ -83,6 +83,7 @@ export const verifyOtp = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
+        console.log(type,body)
       const response = await orshAxios.post(`/admin/verifyOtp?${type}`, body);
       if (!response.data.success) {
         toast({
