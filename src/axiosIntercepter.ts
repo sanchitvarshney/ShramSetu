@@ -24,6 +24,7 @@ interface ErrorResponse {
 const localUser = localStorage.getItem('loggedInUser');
 const parsed: LoggedInUserType | null = JSON.parse(localUser ?? 'null');
 const selectedCompany = localStorage.getItem('companySelect') ?? 'null';
+const token = parsed?.token
 
 const orshAxios = axios.create({
   baseURL: imsLink,
@@ -31,6 +32,13 @@ const orshAxios = axios.create({
     'auth-token': parsed?.token,
     company: selectedCompany,
   },
+});
+orshAxios.interceptors.request.use((config) => {
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+    config.headers['auth-token'] =token
+  }
+  return config;
 });
 
 orshAxios.interceptors.response.use(

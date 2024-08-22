@@ -59,8 +59,8 @@ export const fetchCompanies = createAsyncThunk<CompanyResponse, void>(
   'homePage/fetchCompanies',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get<CompanyResponse>(
-        `${baseLink}fetch/companyList`,
+      const response = await orshAxios.get<CompanyResponse>(
+        '/fetch/companyList',
       );
       return response.data;
     } catch (error) {
@@ -74,7 +74,7 @@ export const fetchSearchCompanies = createAsyncThunk<SearchCompany[]>(
   'homePage/searchCompanies',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${baseLink}company/company?search=`);
+      const response = await orshAxios.get(`/company/company?search=`);
       return response?.data?.data; // Ensure data has unique identifiers
     } catch (error) {
       return rejectWithValue('Failed to fetch companies');
@@ -87,7 +87,7 @@ export const advancedFilter = createAsyncThunk(
   async (companyData: AdvancedFilterPayload, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post(
-        baseLink + 'fetch/advancedFilter',
+        '/fetch/advancedFilter',
         companyData,
       );
       return response.data;

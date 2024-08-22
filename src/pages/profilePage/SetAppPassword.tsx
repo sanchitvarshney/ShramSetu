@@ -1,11 +1,15 @@
 import { Input } from '@/components/ui/input';
+import { changePassword } from '@/features/profile/profilePageSlice';
+import { AppDispatch } from '@/store';
 import { inputStyle } from '@/style/CustomStyles';
 import { Label } from '@radix-ui/react-label';
 import { useState } from 'react';
 import { IoIosLock } from 'react-icons/io';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
+import { useDispatch } from 'react-redux';
 
 const SetPassword = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -27,6 +31,7 @@ const SetPassword = () => {
       setError('New password and confirm password do not match.');
       return;
     }
+    dispatch(changePassword(payload))
 
     // Simulate API call
     setTimeout(() => {
@@ -37,6 +42,14 @@ const SetPassword = () => {
     }, 500);
   };
 
+  const payload ={
+    oldPassword:oldPassword,
+    newPassword:newPassword,
+    confirmPassword:confirmPassword
+  }
+// const handleSubmit =()=>{
+
+// }
   return (
     <div className="pt-10 p-5">
       <div className="w-[70%] mx-auto p-6 border rounded-lg shadow-md float-left">

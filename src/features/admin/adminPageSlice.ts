@@ -216,10 +216,7 @@ export const addCompany = createAsyncThunk(
   'adminPage/addCompany',
   async (companyData: AddCompanyPayload, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.post(
-        baseLink + 'company/add',
-        companyData,
-      );
+      const response = await orshAxios.post('/company/add', companyData);
       return response.data.add;
     } catch (error) {
       return rejectWithValue('Failed to add company');
@@ -232,9 +229,7 @@ export const searchCompanies = createAsyncThunk<CompanyResponse, void>(
   'adminPage/searchCompanies',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<CompanyResponse>(
-        `${baseLink}company/list`,
-      );
+      const response = await orshAxios.get<CompanyResponse>(`/company/list`);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch companies');
@@ -247,7 +242,7 @@ export const fetchDepartments = createAsyncThunk<DepartmentResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DepartmentResponse>(
-        `${baseLink}fetch/departments`,
+        `/fetch/departments`,
       );
       return response.data;
     } catch (error) {
@@ -261,7 +256,7 @@ export const fetchDesignations = createAsyncThunk<DesignationResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
-        `${baseLink}fetch/designations`,
+        `/fetch/designations`,
       );
       return response.data;
     } catch (error) {
@@ -275,7 +270,7 @@ export const fetchMarriedStatus = createAsyncThunk<DesignationResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
-        `${baseLink}fetch/marriedStatus`,
+        `/fetch/marriedStatus`,
       );
       return response.data;
     } catch (error) {
@@ -289,7 +284,7 @@ export const fetchStates = createAsyncThunk<DesignationResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
-        `${baseLink}fetch/states`,
+        `/fetch/states`,
       );
       return response.data;
     } catch (error) {
@@ -302,7 +297,7 @@ export const universitiesSearch = createAsyncThunk<DesignationResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
-        `${baseLink}fetch/university?search=`,
+        `/fetch/university?search=`,
       );
       return response.data;
     } catch (error) {
@@ -316,7 +311,7 @@ export const getEducationStatus = createAsyncThunk<DesignationResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
-        `${baseLink}fetch/getEducationStatus`,
+        `/fetch/getEducationStatus`,
       );
       return response.data;
     } catch (error) {
@@ -333,10 +328,7 @@ export const updateEmployeeDetails = createAsyncThunk<
   'adminPage/updateEmployeeDetails',
   async (employeeData: any, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.put(
-        baseLink + 'worker/update',
-        employeeData,
-      );
+      const response = await orshAxios.put('/worker/update', employeeData);
       if (!response.data.success) {
         toast({
           variant: 'destructive',
@@ -361,7 +353,7 @@ export const getStreams = createAsyncThunk<DesignationResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<DesignationResponse>(
-        `${baseLink}fetch/streams?search=`,
+        `fetch/streams?search=`,
       );
       return response.data;
     } catch (error) {
@@ -374,10 +366,7 @@ export const addWorker = createAsyncThunk(
   'adminPage/addworker',
   async (workerData: AddWorkerPayload, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.post(
-        baseLink + 'worker/add',
-        workerData,
-      );
+      const response = await orshAxios.post('/worker/add', workerData);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to add company');
@@ -390,7 +379,7 @@ export const fetchActivityLogs = createAsyncThunk<ActivityLogResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<ActivityLogResponse>(
-        `${baseLink}fetch/uplodedEmployees`,
+        `/fetch/uplodedEmployees`,
       );
       return response.data;
     } catch (error) {
@@ -403,9 +392,7 @@ export const fetchClientList = createAsyncThunk<ClientResponse, void>(
   'adminPage/fetchClientList',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<ClientResponse>(
-        `${baseLink}client/list`,
-      );
+      const response = await orshAxios.get<ClientResponse>(`/client/list`);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch designations');
@@ -421,7 +408,7 @@ export const fetchWorkers = createAsyncThunk<
   async ({ startDate, endDate }, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<WorkersResponse>(
-        baseLink + `worker/list?data=${startDate}-${endDate}&wise=createdDate`,
+        `/worker/list?data=${startDate}-${endDate}&wise=createdDate`,
       );
       if (!response.data.success) {
         toast({
@@ -443,10 +430,7 @@ export const bulkUpload = createAsyncThunk<void, File, { rejectValue: string }>(
     try {
       const formData = new FormData();
       formData.append('uploadfile', file);
-      const response = await orshAxios.post(
-        baseLink + 'worker/upload',
-        formData,
-      );
+      const response = await orshAxios.post('/worker/upload', formData);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to upload file');
@@ -459,7 +443,7 @@ export const fetchWorkerDetails = createAsyncThunk<WorkersInfoResponse, string>(
   async (empId, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<WorkersInfoResponse>(
-        baseLink + `fetch/employeeAllInfo?username=${empId}`,
+        `/fetch/employeeAllInfo?username=${empId}`,
       );
       return response.data;
     } catch (error) {
@@ -476,7 +460,7 @@ export const getCompanyBranchOptions = createAsyncThunk<
   async (companyID, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<BranchInfoResponse>(
-        baseLink + `company/branches?companyID=${companyID}`,
+        `/company/branches?companyID=${companyID}`,
       );
       if (!response.data.success) {
         toast({
@@ -498,7 +482,7 @@ export const getCompanyInfo = createAsyncThunk<BranchInfoResponse, string>(
     try {
       console.log(companyID, 'iidd');
       const response = await orshAxios.get<BranchInfoResponse>(
-        baseLink + `company/getDetails?companyID=${companyID}`,
+        `/company/getDetails?companyID=${companyID}`,
       );
       if (!response.data.success) {
         toast({
@@ -532,7 +516,7 @@ export const getLocationsFromPinCode = createAsyncThunk<
   async ({ pinCode, addressType }, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<PincodeResponse>(
-        baseLink + `fetch/pinCodeDetails?pincode=${pinCode}`,
+        `/fetch/pinCodeDetails?pincode=${pinCode}`,
       );
       if (!response.data.success) {
         toast({
@@ -553,7 +537,7 @@ export const deleteActivityLog = createAsyncThunk<void, string>(
   'adminPage/deleteActivityLog',
   async (fileId: string, { rejectWithValue }) => {
     try {
-      await orshAxios.delete(baseLink + `worker/delete/file/${fileId}`);
+      await orshAxios.delete(`/worker/delete/file/${fileId}`);
     } catch (error) {
       return rejectWithValue('Failed to delete activity log');
     }

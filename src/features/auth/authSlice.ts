@@ -1,3 +1,4 @@
+import { orshAxios } from '@/axiosIntercepter';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
@@ -43,7 +44,7 @@ export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
   'auth/login',
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post(baseLink + 'login/admin', credentials);
+      const response = await orshAxios.post('login/admin', credentials);
       return response.data; // Return only the user data part
     } catch (error) {
       return rejectWithValue('Login failed');
