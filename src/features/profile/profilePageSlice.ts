@@ -19,7 +19,10 @@ const initialState: ProfileState = {
 // Create async thunk for changing the password
 export const changePassword = createAsyncThunk(
   'profilePage/changePassword',
-  async ({ body, type }: { body: object; type: string }, { rejectWithValue }) => {
+  async (
+    { body, type }: { body: object; type: string },
+    { rejectWithValue },
+  ) => {
     try {
       const response = await orshAxios.post(
         `/admin/change-password?${type}`,
@@ -42,7 +45,63 @@ export const changePassword = createAsyncThunk(
     } catch (error) {
       return rejectWithValue('Failed to change password');
     }
-  }
+  },
+);
+
+export const sentOtp = createAsyncThunk(
+  'adminPage/sentOtp',
+  async (
+    { body, type }: { body: object; type: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await orshAxios.post(`/admin/sendOtp?${type}`, body);
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+        return rejectWithValue(response.data.message);
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message,
+        });
+        return response.data;
+      }
+    } catch (error) {
+      return rejectWithValue('Failed to add company');
+    }
+  },
+);
+
+export const verifyOtp = createAsyncThunk(
+  'adminPage/sentOtp',
+  async (
+    { body, type }: { body: object; type: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await orshAxios.post(`/admin/verifyOtp?${type}`, body);
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+        return rejectWithValue(response.data.message);
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message,
+        });
+        return response.data;
+      }
+    } catch (error) {
+      return rejectWithValue('Failed to add company');
+    }
+  },
 );
 
 // Create async thunk for fetching the user profile
@@ -51,12 +110,12 @@ export const fetchUserProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get(`/admin/profile`);
-      console.log(response.data.data)
-      return response.data.data; 
+      console.log(response.data.data);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch user profile');
     }
-  }
+  },
 );
 
 // Create the slice
@@ -78,8 +137,7 @@ const profilePageSlice = createSlice({
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.loading = 'failed';
         state.error = action.payload as string;
-      })
-      // Handle changePassword actions
+      });
   },
 });
 

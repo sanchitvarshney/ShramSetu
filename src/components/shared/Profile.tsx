@@ -11,6 +11,8 @@ import { AppDispatch, RootState } from '@/store';
 import {
   changePassword,
   fetchUserProfile,
+  sentOtp,
+  verifyOtp,
 } from '@/features/profile/profilePageSlice';
 
 function Profile() {
@@ -18,21 +20,41 @@ function Profile() {
   const { userProfile } = useSelector((state: RootState) => state.profilePage);
   const [mobile, setMobile] = useState(userProfile[0]?.phoneNumber);
   const [email, setEmail] = useState(userProfile[0]?.email);
-  const [supportEmail, setSupportEmail] = useState(
-    userProfile[0]?.emailSupport,
-  );
+  const [supportEmail, setSupportEmail] = useState(userProfile[0]?.phoneNumber);
   const [recruitmentEmail, setRecruitmentEmail] = useState(
     userProfile[0]?.emailRecruitment,
   );
   const [showAppPasswordDialog, setAppPasswordDialog] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
-  console.log(userProfile, 'userProfile');
-  const updateUserData = async (field: string, value: string, type: string) => {
-    dispatch(changePassword({ body: { [field]: value }, type }));
-  };
+  const [fieldToVerify, setFieldToVerify] = useState('');
+
   useEffect(() => {
     dispatch(fetchUserProfile());
-  }, []);
+  }, [dispatch]);
+
+  useEffect(() => {
+    setMobile(userProfile[0]?.phoneNumber);
+    setEmail(userProfile[0]?.email);
+    setSupportEmail(userProfile[0]?.emailSupport);
+    setRecruitmentEmail(userProfile[0]?.emailRecruitment);
+  }, [userProfile]);
+
+  const updateUserData = async (field: string, value: string, type: string) => {
+    if (
+      field === 'mobile' ||
+      field === 'email' ||
+      field === 'supportEmail' ||
+      field === 'recruitmentEmail'
+    ) {
+      // Show OTP modal
+      setFieldToVerify(field);
+      setShowOtpModal(true);
+      dispatch(sentOtp({ body: { [field]: value }, type }));
+    } else {
+      // For other types, update data directly
+      dispatch(changePassword({ body: { [field]: value }, type }));
+    }
+  };
 
   return (
     <div>
@@ -65,7 +87,7 @@ function Profile() {
                     icon={<Phone size={19} />}
                     value={mobile}
                     editable
-                    notVerified={userProfile[0]?.emailVerify}
+                    notVerified={!userProfile[0]?.phoneVerify}
                     onUpdate={(newValue) => {
                       setMobile(newValue);
                       updateUserData('mobile', newValue, 'mobile=true');
@@ -76,7 +98,7 @@ function Profile() {
                     icon={<Mail size={19} />}
                     value={email}
                     editable
-                    notVerified={userProfile[0]?.emailVerify}
+                    notVerified={!userProfile[0]?.emailVerify}
                     onUpdate={(newValue) => {
                       setEmail(newValue);
                       updateUserData('email', newValue, 'email=true');
@@ -87,7 +109,7 @@ function Profile() {
                     icon={<Mail size={19} />}
                     value={supportEmail}
                     editable
-                    notVerified={userProfile[0]?.emailVerify}
+                    notVerified={userProfile[0]?.supportEmailVerify}
                     onUpdate={(newValue) => {
                       setSupportEmail(newValue);
                       updateUserData('email', newValue, 'supportEmail=true');
@@ -98,7 +120,7 @@ function Profile() {
                     icon={<Mail size={19} />}
                     value={recruitmentEmail}
                     editable
-                    notVerified={userProfile[0]?.emailVerify}
+                    notVerified={userProfile[0]?.recruitmentEmailVerify}
                     onUpdate={(newValue) => {
                       setRecruitmentEmail(newValue);
                       updateUserData(
@@ -114,6 +136,18 @@ function Profile() {
             <InfoCard />
           </div>
         </div>
+      )}
+      {showOtpModal && (
+        <OtpModal
+          isOpen={true}
+          field={fieldToVerify}
+          onClose={() => setShowOtpModal(false)}
+          onOtpVerified={(otp) => {
+            // Handle OTP verification
+            setShowOtpModal(false);
+            dispatch(verifyOtp({ body: { otp }, type: 'email=true' }));
+          }}
+        />
       )}
     </div>
   );
@@ -165,7 +199,7 @@ const SingleItem = ({
                   <p className="font-semibold">{label} is not verified</p>
                   <Button
                     className="w-full h-[27px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400"
-                    onClick={() => setShowOtpModal(true)}
+                    onClick={() => setIsEditing(true)}
                   >
                     Verify
                   </Button>

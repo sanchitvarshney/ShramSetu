@@ -79,7 +79,7 @@ const AddClient = (props: any) => {
               >
                 <div className="flex justify-center">
                   <div className="flex flex-col  gap-y-4">
-                    {props.branches.map((branch: any) => (
+                    {props?.branches?.map((branch: any) => (
                       <div className="flex items-center gap-2">
                         <RadioGroup value={branch.id} id={branch.id} />
                         <Label className="cursor-pointer" htmlFor={branch.id}>
