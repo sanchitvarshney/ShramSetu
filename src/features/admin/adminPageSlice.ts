@@ -34,6 +34,16 @@ export interface Department {
   value: string;
 }
 
+export interface Industry {
+  name: string;
+  industryID: string;
+}
+
+export interface SubIndustry {
+  name: string;
+  subIndustryID: string;
+}
+
 interface DepartmentResponse {
   data: Department[] | null;
   message: string;
@@ -91,6 +101,18 @@ interface ClientDetail {
 
 interface ClientResponse {
   data: ClientDetail[] | null;
+  message: string;
+  success: boolean;
+}
+
+interface IndustryResponse {
+  data: Industry[] | null;
+  message: string;
+  success: boolean;
+}
+
+interface SubIndustryResponse {
+  data: SubIndustry[] | null;
   message: string;
   success: boolean;
 }
@@ -173,6 +195,7 @@ interface AdminPageState {
   companies: Company[] | null;
   department: Department[] | null;
   designation: Designation[] | null;
+  industry: Industry[] | null;
   marriedStatus: SelectOptionType[] | null;
   states: SelectOptionType[] | null;
   universityList: SelectOptionType[] | null;
@@ -185,6 +208,7 @@ interface AdminPageState {
   corPincode: PinCode[] | null;
   perPincode: PinCode[] | null;
   workerInfo: [] | null;
+  subIndustry: SubIndustry[] | null;
   companyInfo: [] | null;
   loading: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
@@ -195,6 +219,7 @@ const initialState: AdminPageState = {
   department: [],
   marriedStatus: [],
   designation: [],
+  industry: [],
   universityList: [],
   educationStatus: [],
   states: [],
@@ -205,6 +230,7 @@ const initialState: AdminPageState = {
   branches: [],
   workerInfo: [],
   companyInfo: [],
+  subIndustry: [],
   corPincode: [],
   perPincode: [],
   loading: 'idle',
@@ -259,6 +285,18 @@ export const fetchDepartments = createAsyncThunk<DepartmentResponse, void>(
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch departments');
+    }
+  },
+);
+
+export const fetchIndustry = createAsyncThunk<IndustryResponse, void>(
+  'adminPage/fetchIndustry',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<IndustryResponse>(`/fetch/industry`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch industries');
     }
   },
 );
@@ -360,6 +398,43 @@ export const updateEmployeeDetails = createAsyncThunk<
   },
 );
 
+export const companyUpdate = createAsyncThunk<
+  UpdateEmployeeResponse,
+  any,
+  { rejectValue: string }
+>('adminPage/companyUpdate', async (companyData: any, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.put('/company/edit', companyData);
+    if (!response.data.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: response.data.message,
+      });
+    } else {
+      toast({
+        title: 'Success',
+        description: response.data.message,
+      });
+    }
+    return response.data.add;
+  } catch (error) {
+    return rejectWithValue('Failed to fetch employee');
+  }
+});
+export const branchUpdate = createAsyncThunk<
+  UpdateEmployeeResponse,
+  any,
+  { rejectValue: string }
+>('adminPage/branchupdate', async (companyData: any, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.put('/company/edit/branch', companyData);
+    return response.data;
+  } catch (error) {
+    return rejectWithValue('Failed to fetch employee');
+  }
+});
+
 export const getStreams = createAsyncThunk<DesignationResponse, void>(
   'adminPage/getStreams',
   async (_, { rejectWithValue }) => {
@@ -379,6 +454,18 @@ export const addWorker = createAsyncThunk(
   async (workerData: AddWorkerPayload, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post('/worker/add', workerData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to add company');
+    }
+  },
+);
+
+export const addBranch = createAsyncThunk(
+  'adminPage/addworker',
+  async (workerData: AddWorkerPayload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post('/company/add/branch', workerData);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to add company');
@@ -456,6 +543,20 @@ export const fetchWorkerDetails = createAsyncThunk<WorkersInfoResponse, string>(
     try {
       const response = await orshAxios.get<WorkersInfoResponse>(
         `/fetch/employeeAllInfo?username=${empId}`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch workers');
+    }
+  },
+);
+
+export const fetchSubIndustry = createAsyncThunk<SubIndustryResponse, string>(
+  'adminPage/fetchSubIndustry',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<SubIndustryResponse>(
+        `/industry/subIndustrys?industryID=${id}`,
       );
       return response.data;
     } catch (error) {
@@ -593,6 +694,11 @@ const adminPageSlice = createSlice({
         state.error = null;
         state.department = action.payload.data;
       })
+      .addCase(fetchIndustry.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.error = null;
+        state.industry = action.payload.data;
+      })
       .addCase(fetchDesignations.fulfilled, (state, action) => {
         state.loading = 'succeeded';
         state.error = null;
@@ -662,6 +768,11 @@ const adminPageSlice = createSlice({
       .addCase(fetchWorkerDetails.fulfilled, (state, action) => {
         state.loading = 'succeeded';
         state.workerInfo = action.payload.data;
+        state.error = null;
+      })
+      .addCase(fetchSubIndustry.fulfilled, (state, action) => {
+        state.loading = 'succeeded';
+        state.subIndustry = action.payload.data;
         state.error = null;
       })
       .addCase(getCompanyBranchOptions.fulfilled, (state, action) => {

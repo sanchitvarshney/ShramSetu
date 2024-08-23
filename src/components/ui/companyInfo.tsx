@@ -1,4 +1,6 @@
 // import SingleDetail from '@/components/shared/SingleDetail';
+import UpdateBranchModal from '@/components/admin/companies/UpdateBranchModal';
+import UpdateCompany from '@/components/admin/companies/UpdateCompany';
 import AddClient from '@/components/shared/AddClient';
 import {
   Accordion,
@@ -35,7 +37,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 export default function companyInfo() {
   const dispatch = useDispatch<AppDispatch>();
@@ -47,13 +49,13 @@ export default function companyInfo() {
   const [showAddBranchDialog, setShowAddBranchDialog] = useState(false);
 
   const [updatingBranch, setUpdatingBranch] = useState<null>(null);
-  const [editBranch, setEditbranch] = useState(false);
   const [showAddClientDialog, setShowAddClientDialog] =
+    useState<boolean>(false);
+  const [showUpdateComDialog, setShowUpdateComDialog] =
     useState<boolean>(false);
 
   console.log(companyInfo);
   useEffect(() => {
-    console.log(params?.id);
     dispatch(getCompanyInfo(params?.id));
     dispatch(getCompanyBranchOptions(params?.id));
   }, []);
@@ -63,6 +65,17 @@ export default function companyInfo() {
         branches={branches}
         show={showAddClientDialog}
         hide={() => setShowAddClientDialog(false)}
+      />
+      <UpdateCompany
+        branches={branches}
+        show={showUpdateComDialog}
+        hide={() => setShowUpdateComDialog(false)}
+      />
+      <UpdateBranchModal
+        branches={branches}
+        show={showAddBranchDialog}
+        hide={() => setShowAddBranchDialog(false)}
+        updatingBranch={updatingBranch}
       />
       <div className="flex justify-between items-center border-b-2 border-b-muted ">
         <div className="flex gap-2 items-center ml-[-10px]">
@@ -76,22 +89,8 @@ export default function companyInfo() {
           <DropDown
             setShowAddBranchDialog={setShowAddBranchDialog}
             setShowAddClientDialog={setShowAddClientDialog}
-            params={params}
+            setShowUpdateComDialog={setShowUpdateComDialog}
           />
-          {/* <Button
-            onClick={() => setShowAddClientDialog(true)}
-            icon={<PlusIcon size={18} />}
-          >
-            Add As Client
-          </Button>
-          <Link
-            to={routeConstatns.admin.company.update.replace(
-              ":id",
-              params?.id ?? "--"
-            )}
-          >
-            <IconButton tooltip="Update Company" icon={<Edit size={20} />} />
-          </Link> */}
         </div>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 px-8 gap-4">
@@ -191,7 +190,6 @@ export default function companyInfo() {
                           onClick={() => {
                             setShowAddBranchDialog(true);
                             setUpdatingBranch(row);
-                            setEditbranch('true');
                           }}
                           tooltip="Update Branch"
                           icon={<Edit size={17} />}
@@ -282,8 +280,8 @@ export default function companyInfo() {
 
 interface PropTypes {
   setShowAddClientDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  params: Readonly<Params<string>>;
   setShowAddBranchDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowUpdateComDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const DropDown = (props: PropTypes) => {
@@ -306,21 +304,17 @@ const DropDown = (props: PropTypes) => {
           </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="group">
-          <Link
-          to="_blank"
-            // to={routeConstatns.admin.company.update.replace(
-            //   ':id',
-            //   props.params?.id ?? '--',
-            // )}
-            className="flex items-center gap-2"
-          >
+        <DropdownMenuItem
+          className="group"
+          onClick={() => props.setShowUpdateComDialog(true)}
+        >
+          <div className="flex items-center gap-2">
             <Edit
               size={16}
               className="text-muted-foreground group-hover:text-white"
             />
             Update Company
-          </Link>
+          </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
