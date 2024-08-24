@@ -16,7 +16,9 @@ import Loading from '@/components/reusable/Loading';
 
 const ActivityLogPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { activityLogs } = useSelector((state: RootState) => state.adminPage);
+  const { activityLogs, loading } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
   const [rowData, setRowData] = useState<RowData[]>([]);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -114,7 +116,7 @@ const ActivityLogPage: React.FC = () => {
 
   return (
     <div>
-      {!Object.keys(activityLogs)?.length && <Loading />}
+      {loading && <Loading />}
       <div className="h-[50px] flex items-center justify-end px-[20px]">
         <Button className="flex items-center gap-[5px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400">
           <IoMdDownload className="h-[20px] w-[20px]" /> Download

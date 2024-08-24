@@ -72,7 +72,7 @@ const HomePage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [companiesArray, setCompaniesArray] = useState<string[]>([]);
-  const { searchCompanies } = useSelector((state: RootState) => state.homePage);
+  const { searchCompanies,loading } = useSelector((state: RootState) => state.homePage);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -116,7 +116,6 @@ const HomePage: React.FC = () => {
   };
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    console.log(data.companies);
     navigate('/employee-list');
     const payload:any = {
       company: companiesArray,
@@ -148,7 +147,7 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      {!searchCompanies?.length && <Loading />}
+      {loading && <Loading />}
       <Tabs defaultValue="filter">
         <div className="flex items-center justify-center">
           <TabsList className="h-[50px] ml-[10px] gap-[20px] bg-white shadow-sm shadow-stone-300 mt-[10px] px-[10px] rounded-full">

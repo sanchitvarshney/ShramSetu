@@ -9,6 +9,7 @@ import { SelectOptionType } from '@/types/general';
 import { cn } from '@/lib/utils';
 import { differenceInDays, parse } from 'date-fns';
 import { Link } from 'react-router-dom';
+import Loading from '@/components/reusable/Loading';
 
 interface WorkerDetailsProps {
   empId: string;
@@ -22,7 +23,9 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   showEdit,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { workerInfo } = useSelector((state: RootState) => state.adminPage);
+  const { workerInfo, loading } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
 
   useEffect(() => {
     dispatch(fetchWorkerDetails(empId));
@@ -30,6 +33,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
 
   return (
     <Card className="h-full w-full">
+      {loading && <Loading />}
       <CardHeader className="flex py-0 flex-row justify-between items-center">
         <CardTitle>Worker Details</CardTitle>
         <div className="flex items-center gap-2">
@@ -88,12 +92,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
             <EmployementDetails details={workerInfo} />
           )}
         </CardContent>
-      )}{' '}
-      {/* {loading("fetch") && (
-        <div className="fixed top-0 left-0 h-screen w-screen z-[999] bg-black bg-opacity-10">
-          <Loading size="lg" />
-        </div>
-      )} */}
+      )}
     </Card>
   );
 };

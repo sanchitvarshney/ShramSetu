@@ -11,7 +11,7 @@ import { IoMdDownload } from 'react-icons/io';
 
 const ListCompany: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { companies } = useSelector((state: RootState) => state.adminPage);
+  const { companies,loading } = useSelector((state: RootState) => state.adminPage);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
   const defaultColDef = useMemo(
@@ -54,13 +54,14 @@ const ListCompany: React.FC = () => {
     {
       headerName: 'Active Status',
       field: 'activeStatus',
-      valueGetter: (params) => (params.data.activeStatus === "true" ? 'Active' : 'Not Active'),
+      valueGetter: (params) =>
+        params.data.activeStatus === 'true' ? 'Active' : 'Not Active',
     },
   ];
 
   return (
     <div className="ag-theme-quartz h-[calc(100vh-140px)]">
-      {!companies?.length && <Loading />}
+      {loading && <Loading />}
       <div className="h-[50px] flex items-center justify-end px-[20px]">
         <Button className="flex items-center gap-[5px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400">
           <IoMdDownload className="h-[20px] w-[20px]" /> Download

@@ -22,7 +22,7 @@ import { advancedFilter } from '@/features/homePage/homePageSlice';
 
 const EmployeeData: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { advancedFilter: filterData } = useSelector(
+  const { advancedFilter: filterData,loading } = useSelector(
     (state: RootState) => state.homePage,
   );
 
@@ -82,17 +82,7 @@ const EmployeeData: React.FC = () => {
   const industryOptions = extractOptions(filterData?.industry);
   const districtOptions = extractOptions(filterData?.district);
   const stateOptions = extractOptions(filterData?.state);
-  console.log(
-    selectedCompanies,
-    selectedLocations,
-    selectedGenders,
-    selectedIndustries,
-    selectedDistricts,
-    selectedStates,
-  );
 
-  // useEffect(() => {
-  // const fetchFilteredData = async () => {
   const payload: any = {
     company: selectedCompanies,
     location: selectedLocations,
@@ -107,20 +97,10 @@ const EmployeeData: React.FC = () => {
   const handleSubmit = () => {
     dispatch(advancedFilter(payload));
   };
-  //   try {
-  //     await dispatch(advancedFilter(payload));
-  //     console.log('Filter applied successfully');
-  //   } catch (err) {
-  //     console.error('Failed to apply filter:', err);
-  //   }
-  // };
-
-  //   fetchFilteredData();
-  // }, [selectedCompanies, selectedLocations, selectedGenders, selectedIndustries, selectedDistricts, selectedStates, excludePreviousCompany, excludePreviousIndustry, dispatch]);
-
+  
   return (
     <div className="grid grid-cols-[350px_1fr]">
-      {!filterData?.result?.length && <Loading />}
+      {loading && <Loading />}
       <div className="h-[calc(100vh-70px)] overflow-hidden border-r">
         <div className="h-[50px] w-full bg-[#e0f2f1] flex items-center justify-between px-[10px]">
           <p className="flex gap-[5px] items-center font-[600]">
@@ -237,7 +217,7 @@ const EmployeeData: React.FC = () => {
             </AccordionItem>
           </Accordion>
         </div>
-        {!filterData?.result?.length && <Loading />}
+        {loading && <Loading />}
         <div className="bg-[#e0f2f1] h-[150px] w-full">
           <div className="h-[100px]">
             <div className="h-[50px] flex gap-[10px] items-center p-[10px]">

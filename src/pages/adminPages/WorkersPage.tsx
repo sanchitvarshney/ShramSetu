@@ -38,16 +38,16 @@ const WorkersPage: React.FC = () => {
         </TabsList>
         <Button
           className="text-[17px] shadow-neutral-400 flex items-center gap-[5px] bg-[#1d6f42] hover:bg-[#268f55]"
-          // onClick={() => setDialogOpen(true)}
-          onClick={() => setExcelModel(true)}
+          onClick={() => setDialogOpen(true)}
+          // onClick={() => setExcelModel(true)}
         >
           <FaFileExcel className="h-[20px] w-[20px]" /> Bulk Upload
         </Button>
       </div>
-      {/* {isDialogOpen && ( */}
-      <AddPOPopovers uiState={uiState} />
-      {/* // <FileUploadDialog onClose={() => setDialogOpen(false)} /> */}
-      {/* )} */}
+      {isDialogOpen && (
+      // <AddPOPopovers uiState={uiState} />
+      <FileUploadDialog onClose={() => setDialogOpen(false)} />
+      )}
       <TabsContent value="add-worker" className="h-[calc(100vh-140px)] m-0">
         <AddWorker />
       </TabsContent>

@@ -7,10 +7,13 @@ import { AppDispatch, RootState } from '@/store';
 import { fetchWorkers } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
 import WorkerDetails from '@/components/shared/WorkerDetails';
+import Loading from '@/components/reusable/Loading';
 
 const ListWorker: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const workers = useSelector((state: RootState) => state.adminPage.workers);
+  const { workers, loading } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
   const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
 
   const handleDateRangeUpdate = (values: {
@@ -54,6 +57,7 @@ const ListWorker: React.FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-50px)] p-5">
+      {loading && <Loading />}
       <div className="mb-4">
         <DateRangePicker
           align="center"

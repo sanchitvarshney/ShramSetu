@@ -63,7 +63,7 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
           </Button>
         </div>
         <div className="h-[calc(100vh-170px)] overflow-y-auto flex flex-col gap-[10px] px-[10px] py-[20px]">
-          {notifications.length > 0 ? (
+          {notifications?.length > 0 ? (
             notifications?.map((notification: any, index: any) => (
               <Card key={index} className="p-0 rounded-md">
                 <CardHeader className="p-[10px] flex justify-between flex-row">

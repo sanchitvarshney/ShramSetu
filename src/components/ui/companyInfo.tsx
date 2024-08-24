@@ -1,6 +1,7 @@
 // import SingleDetail from '@/components/shared/SingleDetail';
 import UpdateBranchModal from '@/components/admin/companies/UpdateBranchModal';
 import UpdateCompany from '@/components/admin/companies/UpdateCompany';
+import Loading from '@/components/reusable/Loading';
 import AddClient from '@/components/shared/AddClient';
 import {
   Accordion,
@@ -42,7 +43,7 @@ import { useParams } from 'react-router-dom';
 export default function companyInfo() {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams();
-  const { companyInfo: details, branches } = useSelector(
+  const { companyInfo: details, branches,loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
 
@@ -62,6 +63,7 @@ export default function companyInfo() {
 
   return (
     <div className="flex-1 bg-white flex flex-col gap-6 border rounded-lg p-8">
+      {loading && <Loading />}
       <AddClient
         branches={branches}
         show={showAddClientDialog}

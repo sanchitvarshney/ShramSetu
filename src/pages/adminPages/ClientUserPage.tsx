@@ -7,7 +7,7 @@ import { AppDispatch, RootState } from '@/store';
 import Loading from '@/components/reusable/Loading';
 const ClientUserPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { clientList } = useSelector((state: RootState) => state.adminPage);
+  const { clientList,loading } = useSelector((state: RootState) => state.adminPage);
 
   const defaultColDef = useMemo(() => {
     return {
@@ -22,7 +22,7 @@ const ClientUserPage: React.FC = () => {
 
   return (
     <div className=" ag-theme-quartz h-[calc(100vh-70px)]">
-      {!clientList.length && <Loading />}
+      {loading && <Loading />}
       <AgGridReact
         rowData={clientList}
         columnDefs={columnDefs}

@@ -389,7 +389,7 @@ export default function EmpUpdate() {
 
   return (
     <div className="overflow-y-auto">
-      {!Object.keys(workerInfo).length && <Loading />}
+      {!Object?.keys(workerInfo)?.length && <Loading />}
       <div className="p-[10px]">
         <div className="border-b-2 border-accent mb-2 flex items-center justify-between pb-2">
           <p className="text-[20px] font-[650] text-slate-600">

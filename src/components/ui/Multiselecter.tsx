@@ -240,7 +240,7 @@ export const MultipleSelect = React.forwardRef<
             )}
             <CommandList className="min-w-full">
               <CommandEmpty>No results found.</CommandEmpty>
-              {options.length === 0 ? (
+              {options?.length === 0 ? (
                 <p className="text-slate-500 my-[20px] mx-[20px] text-center">Options not found</p>
               ) : (
                 <CommandGroup className="w-full">
@@ -252,7 +252,7 @@ export const MultipleSelect = React.forwardRef<
                     <div
                       className={cn(
                         "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                        selectedValues.length === options.length
+                        selectedValues?.length === options?.length
                           ? "bg-teal-500 text-primary-foreground border-teal-500"
                           : "opacity-50 [&_svg]:invisible"
                       )}
@@ -261,7 +261,7 @@ export const MultipleSelect = React.forwardRef<
                     </div>
                     <span>(Select All)</span>
                   </CommandItem>
-                  {options.map((option) => {
+                  {options?.map((option) => {
                     const isSelected = selectedValues.includes(option.value);
                     return (
                       <CommandItem

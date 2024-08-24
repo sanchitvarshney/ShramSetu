@@ -4,8 +4,6 @@ import { UpdateEmployeeResponse } from '@/features/admin/adminPageTypes';
 import { SelectOptionType } from '@/types/general';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-const baseLink = 'https://esptest.mscorpres.net/';
-
 interface AddCompanyPayload {
   email: string;
   mobile: string;
@@ -210,7 +208,7 @@ interface AdminPageState {
   workerInfo: [] | null;
   subIndustry: SubIndustry[] | null;
   companyInfo: [] | null;
-  loading: 'idle' | 'loading' | 'succeeded' | 'failed';
+  loading: boolean;
   error: string | null;
 }
 
@@ -233,7 +231,7 @@ const initialState: AdminPageState = {
   subIndustry: [],
   corPincode: [],
   perPincode: [],
-  loading: 'idle',
+  loading: false,
   error: null,
 };
 
@@ -666,133 +664,245 @@ const adminPageSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(addCompany.pending, (state) => {
-        state.loading = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(addCompany.fulfilled, (state) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
       })
       .addCase(addCompany.rejected, (state, action) => {
-        state.loading = 'failed';
+        state.loading = false;
         state.error = action.payload as string;
       })
       .addCase(searchCompanies.pending, (state) => {
-        state.loading = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(searchCompanies.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.companies = action.payload.data;
       })
       .addCase(searchCompanies.rejected, (state, action) => {
-        state.loading = 'failed';
+        state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(fetchDepartments.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchDepartments.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.department = action.payload.data;
       })
+      .addCase(fetchDepartments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchIndustry.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchIndustry.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.industry = action.payload.data;
       })
+      .addCase(fetchIndustry.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchDesignations.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchDesignations.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.designation = action.payload.data;
       })
+      .addCase(fetchDesignations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchMarriedStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchMarriedStatus.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.marriedStatus = action.payload.data;
       })
+      .addCase(fetchMarriedStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchStates.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchStates.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.states = action.payload.data;
       })
+      .addCase(fetchStates.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(universitiesSearch.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(universitiesSearch.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.universityList = action.payload.data;
       })
+      .addCase(universitiesSearch.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getEducationStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(getEducationStatus.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.educationStatus = action.payload.data;
       })
+      .addCase(getEducationStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(addWorker.pending, (state) => {
-        state.loading = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(addWorker.fulfilled, (state) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
       })
       .addCase(addWorker.rejected, (state, action) => {
-        state.loading = 'failed';
+        state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(fetchActivityLogs.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
-        state.activityLogs = action.payload.data;
+      .addCase(fetchActivityLogs.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
+      .addCase(fetchActivityLogs.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.activityLogs = action.payload.data;
+      })
       .addCase(fetchActivityLogs.rejected, (state, action) => {
-        state.loading = 'failed';
+        state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(fetchClientList.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchClientList.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
+        state.error = null;
         state.clientList = action.payload.data;
+      })
+      .addCase(fetchClientList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchWorkers.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchWorkers.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
-        state.workers = action.payload.data; // Set the workers data
+        state.loading = false;
+        state.error = null;
+        state.workers = action.payload.data;
+      })
+      .addCase(fetchWorkers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getStreams.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(getStreams.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
-        state.streams = action.payload.data; // Set the workers data
+        state.loading = false;
+        state.error = null;
+        state.streams = action.payload.data;
+      })
+      .addCase(getStreams.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchWorkerDetails.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
-      .addCase(fetchWorkerDetails.rejected, (state, action) => {
-        state.loading = 'failed';
-        state.error = action.payload as string;
-        state.workers = [];
-      })
       .addCase(fetchWorkerDetails.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
+        state.error = null;
         state.workerInfo = action.payload.data;
+      })
+      .addCase(fetchWorkerDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.workerInfo = [];
+      })
+      .addCase(fetchSubIndustry.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchSubIndustry.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
+        state.error = null;
         state.subIndustry = action.payload.data;
+      })
+      .addCase(fetchSubIndustry.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getCompanyBranchOptions.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(getCompanyBranchOptions.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
-        state.branches = action.payload.data;
+        state.loading = false;
         state.error = null;
+        state.branches = action.payload.data;
       })
       .addCase(getCompanyBranchOptions.rejected, (state, action) => {
-        state.loading = 'failed';
+        state.loading = false;
         state.error = action.payload as string;
         state.branches = [];
       })
+      .addCase(getCompanyInfo.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(getCompanyInfo.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
+        state.error = null;
         state.companyInfo = action.payload.data;
+      })
+      .addCase(getCompanyInfo.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(getLocationsFromPinCode.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(getLocationsFromPinCode.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         const { addressType, data } = action.payload;
         if (addressType === 'corresponding') {
           state.corPincode = data;
@@ -800,6 +910,10 @@ const adminPageSlice = createSlice({
           state.perPincode = data;
         }
         state.error = null;
+      })
+      .addCase(getLocationsFromPinCode.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });

@@ -1,9 +1,5 @@
 import { orshAxios } from '@/axiosIntercepter';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-// API base URL
-const baseLink = 'https://esptest.mscorpres.net/';
 
 // Define types
 export interface Company {
@@ -11,6 +7,18 @@ export interface Company {
   value: string;
 }
 
+export interface Notification {
+  title: string;
+  message: string;
+  type: string;
+  notiInsertedAt: string;
+}
+
+export interface NotificationResponse {
+  success: string;
+  status: string;
+  data: Notification[] | null;
+}
 interface CompanyResponse {
   data: Company[];
   status: string;
@@ -27,7 +35,6 @@ export interface SearchCompany {
   companyID: string;
 }
 
-// Define the payload structure for the POST request
 export interface AdvancedFilterPayload {
   companies: string[];
   excludePreviousCompany: boolean;
@@ -41,11 +48,10 @@ interface HomePageState {
   selectedCompany: Company | null;
   error: string | null;
   advancedFilter: AdvancedFilterPayload[] | null;
-  notifications: [];
-  loading: 'idle' | 'loading' | 'succeeded' | 'failed';
+  notifications: NotificationResponse[] | null;
+  loading: boolean;
 }
 
-// Initial state
 const initialState: HomePageState = {
   companies: [],
   searchCompanies: [],
@@ -53,10 +59,9 @@ const initialState: HomePageState = {
   error: null,
   advancedFilter: [],
   notifications: [],
-  loading: 'idle',
+  loading: false,
 };
 
-// Async thunk for fetching companies
 export const fetchCompanies = createAsyncThunk<CompanyResponse, void>(
   'homePage/fetchCompanies',
   async (_, { rejectWithValue }) => {
@@ -71,27 +76,28 @@ export const fetchCompanies = createAsyncThunk<CompanyResponse, void>(
   },
 );
 
-export const fetchNotifications = createAsyncThunk<[], void>(
+export const fetchNotifications = createAsyncThunk<NotificationResponse, void>(
   'homePage/fetchNotifications',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<[]>('/fetch/notifications');
+      const response = await orshAxios.get<NotificationResponse>(
+        '/fetch/notifications',
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch companies');
+      return rejectWithValue('Failed to fetch notifications');
     }
   },
 );
 
-// Ensure that your API response data has unique identifiers
 export const fetchSearchCompanies = createAsyncThunk<SearchCompany[]>(
   'homePage/searchCompanies',
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get(`/company/company?search=`);
-      return response?.data?.data; // Ensure data has unique identifiers
+      return response?.data?.data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch companies');
+      return rejectWithValue('Failed to fetch search companies');
     }
   },
 );
@@ -106,11 +112,11 @@ export const advancedFilter = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue('Failed to add company');
+      return rejectWithValue('Failed to apply advanced filter');
     }
   },
 );
-// Create the slice
+
 const homePageSlice = createSlice({
   name: 'homePage',
   initialState,
@@ -125,51 +131,74 @@ const homePageSlice = createSlice({
       state.error = null;
     },
     clearSearchCompanies(state) {
-      state.searchCompanies = [];
+      state.searchCompanies = null;
+    },
+    clearLoading(state) {
+      state.loading = false;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCompanies.pending, (state) => {
-        state.loading = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchCompanies.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.companies = action.payload.data;
         state.error = null;
       })
       .addCase(fetchCompanies.rejected, (state, action) => {
-        state.loading = 'failed';
+        state.loading = false;
         state.error = action.payload as string;
       })
       .addCase(fetchSearchCompanies.pending, (state) => {
-        state.loading = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchSearchCompanies.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.searchCompanies = action.payload;
         state.error = null;
       })
       .addCase(fetchSearchCompanies.rejected, (state, action) => {
-        state.loading = 'failed';
+        state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(fetchNotifications.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.notifications = action.payload.data;
         state.error = null;
       })
+      .addCase(fetchNotifications.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(advancedFilter.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(advancedFilter.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.advancedFilter = action.payload.data;
         state.error = null;
+      })
+      .addCase(advancedFilter.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-// Export actions and reducer
-export const { selectCompany, clearSelectedCompany, clearCompanyError } =
-  homePageSlice.actions;
+export const {
+  selectCompany,
+  clearSelectedCompany,
+  clearCompanyError,
+  clearSearchCompanies,
+  clearLoading,
+} = homePageSlice.actions;
 export default homePageSlice.reducer;
