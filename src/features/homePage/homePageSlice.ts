@@ -1,4 +1,6 @@
 import { orshAxios } from '@/axiosIntercepter';
+import { toast } from '@/components/ui/use-toast';
+import { Industry, IndustryResponse } from '@/features/admin/adminPageSlice';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 // Define types
@@ -25,6 +27,11 @@ interface CompanyResponse {
   success: boolean;
 }
 
+interface CVResponse {
+  data: string;
+  success: boolean;
+}
+
 export interface SearchCompany {
   name: string;
   panNo: string;
@@ -46,6 +53,10 @@ interface HomePageState {
   companies: Company[] | null;
   searchCompanies: SearchCompany[] | null;
   selectedCompany: Company | null;
+  stateSearch: Company[] | null;
+  districtSearch: Company[] | null;
+  industrySearch: Industry[] | null;
+  gender: Company[] | null;
   error: string | null;
   advancedFilter: AdvancedFilterPayload[] | null;
   notifications: Notification[] | null;
@@ -55,6 +66,10 @@ interface HomePageState {
 const initialState: HomePageState = {
   companies: [],
   searchCompanies: [],
+  stateSearch: [],
+  districtSearch: [],
+  industrySearch: [],
+  gender: [],
   selectedCompany: null,
   error: null,
   advancedFilter: [],
@@ -76,11 +91,69 @@ export const fetchCompanies = createAsyncThunk<CompanyResponse, void>(
   },
 );
 
+export const presentState = createAsyncThunk<CompanyResponse, void>(
+  'fetch/empPresentState',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<CompanyResponse>(
+        '/fetch/empPresentState',
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch states');
+    }
+  },
+);
+
+export const presentDistrict = createAsyncThunk<CompanyResponse, void>(
+  'homePage/presentDistrict',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<CompanyResponse>(
+        '/fetch/empPresentDistrict?search=',
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch districts');
+    }
+  },
+);
+
+export const presentIndustry = createAsyncThunk<IndustryResponse, void>(
+  'homePage/fetchIndustries',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<IndustryResponse>(
+        '/industry/industry?search=',
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch industries');
+    }
+  },
+);
+
+export const genderSearch = createAsyncThunk<CompanyResponse, void>(
+  'homePage/genderSearch',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<CompanyResponse>(
+        '/fetch/genders?search=',
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch genders');
+    }
+  },
+);
+
 export const fetchNotifications = createAsyncThunk<NotificationResponse, void>(
   'homePage/fetchNotifications',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<NotificationResponse>('/fetch/notifications');
+      const response = await orshAxios.get<NotificationResponse>(
+        '/fetch/notifications',
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch notifications');
@@ -88,6 +161,26 @@ export const fetchNotifications = createAsyncThunk<NotificationResponse, void>(
   },
 );
 
+export const getCV = createAsyncThunk<CVResponse, string>(
+  'adminPage/getCV',
+  async (empId, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<CVResponse>(
+        `/worker/resumeDownload/${empId}`,
+      );
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: "Error Occurred",
+        });
+      }
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch link');
+    }
+  },
+);
 
 export const fetchSearchCompanies = createAsyncThunk<SearchCompany[]>(
   'homePage/searchCompanies',
@@ -109,6 +202,13 @@ export const advancedFilter = createAsyncThunk(
         '/fetch/advancedFilter',
         companyData,
       );
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      }
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to apply advanced filter');
@@ -148,6 +248,58 @@ const homePageSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchCompanies.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(presentState.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(presentState.fulfilled, (state, action) => {
+        state.loading = false;
+        state.stateSearch = action.payload.data;
+        state.error = null;
+      })
+      .addCase(presentState.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(presentDistrict.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(presentDistrict.fulfilled, (state, action) => {
+        state.loading = false;
+        state.districtSearch = action.payload.data;
+        state.error = null;
+      })
+      .addCase(presentDistrict.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(presentIndustry.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(presentIndustry.fulfilled, (state, action) => {
+        state.loading = false;
+        state.industrySearch = action.payload.data;
+        state.error = null;
+      })
+      .addCase(presentIndustry.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(genderSearch.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(genderSearch.fulfilled, (state, action) => {
+        state.loading = false;
+        state.gender = action.payload.data;
+        state.error = null;
+      })
+      .addCase(genderSearch.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

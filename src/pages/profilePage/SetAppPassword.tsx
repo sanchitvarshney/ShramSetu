@@ -14,7 +14,6 @@ const SetPassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [passwordStrength, setPasswordStrength] = useState({
     score: 0,
     label: '',
@@ -35,14 +34,7 @@ const SetPassword = () => {
       setError('New password and confirm password do not match.');
       return;
     }
-    dispatch(changePassword(payload));
-
-    setTimeout(() => {
-      console.log('Old Password:', oldPassword);
-      console.log('New Password:', newPassword);
-      setSuccess('Password successfully updated.');
-      setError('');
-    }, 500);
+    dispatch(changePassword({ body: payload, type: 'changePassword=true' }));
   };
 
   const payload: any = {
@@ -102,7 +94,6 @@ const SetPassword = () => {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <p className="text-red-500 mb-4">{error}</p>}
-          {success && <p className="text-green-500 mb-4">{success}</p>}
 
           {/* Old Password Field */}
           <div className="floating-label-group p-2 relative">
@@ -203,7 +194,12 @@ const SetPassword = () => {
             </div>
             <button
               type="submit"
-              className="py-2 bg-teal-500 hover:bg-teal-600 text-white rounded w-[20%] float-right"
+              className={`py-2 text-white rounded w-[20%] float-right 
+                ${
+                  isFormValid
+                    ? 'bg-teal-500 hover:bg-teal-600'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
               disabled={!isFormValid}
             >
               Set Password

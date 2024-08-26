@@ -103,7 +103,7 @@ interface ClientResponse {
   success: boolean;
 }
 
-interface IndustryResponse {
+export interface IndustryResponse {
   data: Industry[] | null;
   message: string;
   success: boolean;
@@ -542,12 +542,21 @@ export const fetchWorkerDetails = createAsyncThunk<WorkersInfoResponse, string>(
       const response = await orshAxios.get<WorkersInfoResponse>(
         `/fetch/employeeAllInfo?username=${empId}`,
       );
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      }
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch workers');
     }
   },
 );
+
+
 
 export const fetchSubIndustry = createAsyncThunk<SubIndustryResponse, string>(
   'adminPage/fetchSubIndustry',
@@ -556,6 +565,13 @@ export const fetchSubIndustry = createAsyncThunk<SubIndustryResponse, string>(
       const response = await orshAxios.get<SubIndustryResponse>(
         `/industry/subIndustrys?industryID=${id}`,
       );
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      }
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch workers');
@@ -580,7 +596,6 @@ export const getCompanyBranchOptions = createAsyncThunk<
           description: response.data.message,
         });
       }
-      console.log(response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch workers');
@@ -592,7 +607,6 @@ export const getCompanyInfo = createAsyncThunk<BranchInfoResponse, string>(
   'adminPage/getCompanyInfo',
   async (companyID, { rejectWithValue }) => {
     try {
-      console.log(companyID, 'iidd');
       const response = await orshAxios.get<BranchInfoResponse>(
         `/company/getDetails?companyID=${companyID}`,
       );

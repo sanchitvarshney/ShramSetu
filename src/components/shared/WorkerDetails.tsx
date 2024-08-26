@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { differenceInDays, parse } from 'date-fns';
 import { Link } from 'react-router-dom';
 import Loading from '@/components/reusable/Loading';
+import { getCV } from '@/features/homePage/homePageSlice';
 
 interface WorkerDetailsProps {
   empId: string;
@@ -52,7 +53,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
             </Link>
           )}
           <IconButton
-            // onClick={() => handleDownloadCV()}
+            onClick={() => dispatch(getCV(empId))}
             // loading={loading("cv")}
             // hoverBackground="hover:bg-transparent"
             // hoverColor="hover:text-black"
@@ -192,44 +193,7 @@ const PermanentAddress = ({ details }: any) => {
     </Card>
   );
 };
-// const EducationDetails = ({ details }: any) => {
-//   return (
-//     <Card>
-//       <CardHeader className="flex flex-row justify-between items-center">
-//         <CardTitle className="text-lg py-0 my-0 text-primary">
-//           Education Details
-//         </CardTitle>
-//         <p className="text-lg font-muted-foreground">
-//           {details?.educationInfo?.length} Found
-//         </p>
-//       </CardHeader>
-//       <CardContent>
-//         {details?.educationInfo?.map((emp, index) => (
-//           <div
-//             className={cn(
-//               "px-4 py-3 rounded-lg",
-//               index % 2 === 0 && "bg-muted"
-//             )}
-//             key={index}
-//           >
-//             <SingleDetail label="Degree/Level" value={emp?.degreeName} />
-//             <DetailRow>
-//               <SingleDetail label="Start Year" value={emp?.startYear ?? "--"} />
-//               <SingleDetail label="Passing Year" value={emp?.endYear} />
-//             </DetailRow>
-//             <DetailRow>
-//               <SingleDetail label="Grade" value={emp?.grade} />
-//               <SingleDetail label="University" value={emp?.universityName} />
-//             </DetailRow>
-//             {/* {index < details.employement.length - 1 && (
-//                 <div className="h-[2px] bg-muted" />
-//               )} */}
-//           </div>
-//         ))}
-//       </CardContent>
-//     </Card>
-//   );
-// };
+
 const EmployementDetails = ({ details }: any) => {
   const calculateExperience = (joiningDate: string, relievingDate: string) => {
     const format = 'dd-MM-yyyy'; // Your date format

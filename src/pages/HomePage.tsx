@@ -30,38 +30,32 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   advancedFilter,
+  fetchCompanies,
   fetchSearchCompanies,
+  genderSearch,
+  presentDistrict,
+  presentIndustry,
+  presentState,
   SearchCompany,
 } from '@/features/homePage/homePageSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import Loading from '@/components/reusable/Loading';
-
-const companyOptions = {
-  light: [
-    { value: 'Company1', label: 'light1' },
-    { value: 'Company2', label: 'light2' },
-  ],
-  dark: [
-    { value: 'Company3', label: 'dark3' },
-    { value: 'Company4', label: 'dark4' },
-  ],
-  system: [
-    { value: 'Company5', label: 'system1' },
-    { value: 'Company6', label: 'system2' },
-  ],
-  empty: [],
-};
-
-type FilterKeys = keyof typeof companyOptions;
+import { SelectOptionType } from '@/types/general';
+import { Industry } from '@/features/admin/adminPageSlice';
 
 interface RowData {
   id: number;
   filter: string;
   companies: string[];
+}
+
+interface Company {
+  companyID: string;
+  name: string;
 }
 
 const FormSchema = z.object({
@@ -72,9 +66,21 @@ const HomePage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [companiesArray, setCompaniesArray] = useState<string[]>([]);
-  const { searchCompanies, loading } = useSelector(
-    (state: RootState) => state.homePage,
-  );
+  const {
+    searchCompanies,
+    loading,
+    gender,
+    districtSearch,
+    stateSearch,
+    industrySearch,
+  } = useSelector((state: RootState) => state.homePage);
+
+  const [company, setCompany] = useState<Company[]>([]);
+  const [states, setStates] = useState<SelectOptionType[]>([]);
+  const [districts, setDistricts] = useState<SelectOptionType[]>([]);
+  const [industries, setIndustries] = useState<Industry[]>([]);
+  const [genders, setGenders] = useState<SelectOptionType[]>([]);
+  const [adFilter, setAdFilter] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -87,8 +93,10 @@ const HomePage: React.FC = () => {
     { id: Date.now(), filter: '', companies: [] },
   ]);
 
-  const isValidFilter = (filter: string): filter is FilterKeys => {
-    return ['light', 'dark', 'system'].includes(filter);
+  const isValidFilter = (filter: string): filter is any => {
+    return ['company', 'state', 'district', 'industry', 'gender'].includes(
+      filter,
+    );
   };
 
   const handleAddRow = () => {
@@ -99,12 +107,6 @@ const HomePage: React.FC = () => {
     setRows(rows.filter((row) => row.id !== id));
   };
 
-  const handleChange = (id: number, name: string, value: any) => {
-    setRows(
-      rows.map((row) => (row.id === id ? { ...row, [name]: value } : row)),
-    );
-  };
-
   const handleFilterChange = (id: number, value: string) => {
     setRows(
       rows.map((row) =>
@@ -113,24 +115,81 @@ const HomePage: React.FC = () => {
     );
   };
 
-  const handleCompanyChange = (id: number, selectedCompanies: string[]) => {
-    handleChange(id, 'companies', selectedCompanies);
+  const handleCompanyChange = (id: number, filter: string, value: string[]) => {
+    // Update the rows state
+    const updatedRows = rows.map((row) =>
+      row.id === id ? { ...row, companies: value } : row,
+    );
+    setRows(updatedRows);
+
+    switch (filter) {
+      case 'company':
+        // Update the companies state
+        setCompany(
+          searchCompanies.filter((company: Company) =>
+            value.includes(company.companyID),
+          ),
+        );
+        break;
+      case 'state':
+        // Update the states state
+        setStates(
+          stateSearch.filter((state: SelectOptionType) =>
+            value.includes(state.value),
+          ),
+        );
+        break;
+      case 'district':
+        // Update the districts state
+        setDistricts(
+          districtSearch.filter((district: SelectOptionType) =>
+            value.includes(district.value),
+          ),
+        );
+        break;
+      case 'industry':
+        // Update the industries state
+        setIndustries(
+          industrySearch.filter((industry: Industry) =>
+            value.includes(industry.industryID),
+          ),
+        );
+        break;
+      case 'gender':
+        // Update the genders state
+        setGenders(
+          gender.filter((gender: SelectOptionType) =>
+            value.includes(gender.value),
+          ),
+        );
+        break;
+    }
   };
 
   const onSubmit = async () => {
+    const payload2 = {
+      company: company.map((c) => c.companyID),
+      district: districts.map((d) => d.value),
+      gender: genders.map((g) => g.value),
+      industry: industries.map((i) => i.industryID),
+      state: states.map((s) => s.value),
+    };
+    const payload1 = {
+      company: companiesArray,
+    };
+
     navigate('/employee-list');
     const payload: any = {
-      company: companiesArray,
-      excludePreviousCompany: false, // Adjust as needed
-      excludePreviousIndustry: false, // Adjust as needed
-      limit: 100, // Adjust as needed
+      ...(adFilter ? payload2 : payload1),
+      excludePreviousCompany: false,
+      excludePreviousIndustry: false,
+      limit: 100,
     };
 
     try {
       await dispatch(advancedFilter(payload)).unwrap();
-      console.log('Company added successfully');
     } catch (err) {
-      console.error('Failed to add company:', err);
+      console.error('Failed to fetch data:', err);
     }
   };
 
@@ -138,14 +197,27 @@ const HomePage: React.FC = () => {
     dispatch(fetchSearchCompanies());
   }, [dispatch]);
 
-  // Use handleSubmit to validate form data
   const handleSubmitClick = async () => {
     try {
-      await form.handleSubmit(onSubmit)(); // Validate and submit
+      const isValid = await form.trigger();
+
+      if (isValid) {
+        await form.handleSubmit(onSubmit)();
+      }
     } catch (error) {
-      console.error('Validation failed', error);
+      console.error('Error during form submission', error);
     }
   };
+
+  useEffect(() => {
+    if (adFilter) {
+      dispatch(fetchCompanies());
+      dispatch(presentIndustry());
+      dispatch(presentDistrict());
+      dispatch(presentState());
+      dispatch(genderSearch());
+    }
+  }, [adFilter]);
 
   return (
     <>
@@ -153,10 +225,18 @@ const HomePage: React.FC = () => {
       <Tabs defaultValue="filter">
         <div className="flex items-center justify-center">
           <TabsList className="h-[50px] ml-[10px] gap-[20px] bg-white shadow-sm shadow-stone-300 mt-[10px] px-[10px] rounded-full">
-            <TabsTrigger value="filter" className={tabTriggerStyle}>
+            <TabsTrigger
+              value="filter"
+              className={tabTriggerStyle}
+              onClick={() => setAdFilter(false)}
+            >
               Filter
             </TabsTrigger>
-            <TabsTrigger value="advanceFilter" className={tabTriggerStyle}>
+            <TabsTrigger
+              value="advanceFilter"
+              className={tabTriggerStyle}
+              onClick={() => setAdFilter(true)}
+            >
               Advance filter
             </TabsTrigger>
           </TabsList>
@@ -188,8 +268,7 @@ const HomePage: React.FC = () => {
                                   field.onChange(selected);
                                   setCompaniesArray(selected);
                                 }}
-                                defaultValue={field.value}
-                                value={field.value}
+                                value={field.value} // Provide the value prop
                                 placeholder="Select a company..."
                                 variant="secondary"
                                 maxCount={3}
@@ -231,9 +310,9 @@ const HomePage: React.FC = () => {
                       />
                     </div>
                     <Button
-                      type="button" // Change type to "button" to prevent default form submission
+                      type="button"
                       className="flex rounded-full gap-[10px] bg-teal-500 hover:bg-teal-400 text-white shadow-sm shadow-stone-500 mt-[20px] py-[20px] px-[20px]"
-                      onClick={handleSubmitClick} // Use handleSubmitClick for validation and submission
+                      onClick={handleSubmitClick}
                     >
                       <SearchIcon className="w-[20px] h-[20px]" />
                       Search
@@ -308,19 +387,53 @@ const HomePage: React.FC = () => {
                             <MultipleSelect
                               options={
                                 isValidFilter(row.filter)
-                                  ? companyOptions[row.filter]
+                                  ? row.filter === 'company'
+                                    ? searchCompanies?.map(
+                                        (company: Company) => ({
+                                          value: company.companyID,
+                                          label: company.name,
+                                        }),
+                                      )
+                                    : row.filter === 'state'
+                                    ? stateSearch?.map(
+                                        (state: SelectOptionType) => ({
+                                          value: state.value,
+                                          label: state.text,
+                                        }),
+                                      )
+                                    : row.filter === 'district'
+                                    ? districtSearch?.map(
+                                        (district: SelectOptionType) => ({
+                                          value: district.value,
+                                          label: district.text,
+                                        }),
+                                      )
+                                    : row.filter === 'industry'
+                                    ? industrySearch?.map(
+                                        (industry: Industry) => ({
+                                          value: industry.industryID,
+                                          label: industry.name,
+                                        }),
+                                      )
+                                    : row.filter === 'gender'
+                                    ? gender?.map(
+                                        (gender: SelectOptionType) => ({
+                                          value: gender.value,
+                                          label: gender.text,
+                                        }),
+                                      )
+                                    : []
                                   : []
                               }
                               onValueChange={(value) => {
-                                handleCompanyChange(row.id, value);
+                                handleCompanyChange(row.id, row.filter, value);
                               }}
-                              defaultValue={row.companies}
-                              placeholder="Select a company..."
+                              value={row.companies}
+                              placeholder="Select an option..."
                               variant="secondary"
                               maxCount={3}
                               className="w-auto bg-white shadow-none hover:bg-white min-w-[600px]"
                               disabled={row.filter === ''}
-                              value={['value']}
                             />
                           </div>
                         </div>
@@ -339,17 +452,15 @@ const HomePage: React.FC = () => {
                 </ul>
               </CardContent>
               <CardFooter className="h-[60px] bg-neutral-50 shadow-sm border-t border-neutral-200">
-                <Link to={'/employee-list'}>
-                  <Button
-                    type="button" // Change type to "button" to prevent default form submission
-                    className="flex gap-[10px] bg-teal-500 hover:bg-teal-400 text-white shadow-sm shadow-stone-500 mt-[20px] py-[20px] px-[20px]"
-                    onClick={handleSubmitClick} // Use handleSubmitClick for validation and submission
-                    disabled={rows.length <= 0}
-                  >
-                    <SearchIcon className="w-[20px] h-[20px]" />
-                    Search
-                  </Button>
-                </Link>
+                <Button
+                  type="button"
+                  className="flex gap-[10px] bg-teal-500 hover:bg-teal-400 text-white shadow-sm shadow-stone-500 mt-[20px] py-[20px] px-[20px]"
+                  onClick={onSubmit}
+                  disabled={rows.length <= 0}
+                >
+                  <SearchIcon className="w-[20px] h-[20px]" />
+                  Search
+                </Button>
               </CardFooter>
             </Card>
           </div>
