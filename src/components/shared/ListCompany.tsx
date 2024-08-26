@@ -6,12 +6,12 @@ import { searchCompanies } from '@/features/admin/adminPageSlice';
 import { ColDef } from 'ag-grid-community';
 import Loading from '@/components/reusable/Loading';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { IoMdDownload } from 'react-icons/io';
 
 const ListCompany: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { companies,loading } = useSelector((state: RootState) => state.adminPage);
+  const { companies, loading } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
 
   const defaultColDef = useMemo(
     () => ({
@@ -60,11 +60,6 @@ const ListCompany: React.FC = () => {
   return (
     <div className="ag-theme-quartz h-[calc(100vh-140px)]">
       {loading && <Loading />}
-      <div className="h-[50px] flex items-center justify-end px-[20px]">
-        <Button className="flex items-center gap-[5px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400">
-          <IoMdDownload className="h-[20px] w-[20px]" /> Download
-        </Button>
-      </div>
       <AgGridReact
         rowData={companies || []}
         columnDefs={columnDefs}

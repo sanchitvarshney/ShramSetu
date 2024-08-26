@@ -329,6 +329,18 @@ const homePageSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      .addCase(getCV.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getCV.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(getCV.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(advancedFilter.pending, (state) => {
         state.loading = true;
         state.error = null;

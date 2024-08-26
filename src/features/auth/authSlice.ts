@@ -1,4 +1,5 @@
 import { orshAxios } from '@/axiosIntercepter';
+import { toast } from '@/components/ui/use-toast';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 // Define types
@@ -42,6 +43,13 @@ export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post('login/admin', credentials);
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      }
       return response.data; // Return only the user data part
     } catch (error) {
       return rejectWithValue('Login failed');

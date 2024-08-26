@@ -76,6 +76,9 @@ const PRESETS: Preset[] = [
   { name: 'yesterday', label: 'Yesterday' },
   { name: 'last7', label: 'Last 7 days' },
   { name: 'last14', label: 'Last 14 days' },
+  { name: 'last30', label: 'Last 30 days' },
+  { name: 'thisMonth', label: 'This Month' },
+  { name: 'lastMonth', label: 'Last Month' },
 ];
 
 /** The DateRangePicker component allows a user to select a range of dates */
@@ -156,6 +159,28 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
       case 'last7':
         from.setDate(from.getDate() - 6);
         from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case 'last14':
+        from.setDate(from.getDate() - 13);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case 'last30':
+        from.setDate(from.getDate() - 29);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case 'thisMonth':
+        from.setDate(1);
+        from.setHours(0, 0, 0, 0);
+        to.setHours(23, 59, 59, 999);
+        break;
+      case 'lastMonth':
+        from.setMonth(from.getMonth() - 1);
+        from.setDate(1);
+        from.setHours(0, 0, 0, 0);
+        to.setDate(0);
         to.setHours(23, 59, 59, 999);
         break;
     }
@@ -263,7 +288,14 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
   // Helper function to check if two date ranges are equal
   const areRangesEqual = (a?: DateRange, b?: DateRange): boolean => {
-    if (!a || !b) return a === b; // If either is undefined, return true if both are undefined
+    if (!a || !b) return a === b;
+
+    // Ensure `a.from` and `b.from` are valid Date objects
+    const aFromValid = a.from instanceof Date && !isNaN(a.from.getTime());
+    const bFromValid = b.from instanceof Date && !isNaN(b.from.getTime());
+
+    if (!aFromValid || !bFromValid) return false;
+
     return (
       a.from.getTime() === b.from.getTime() &&
       (!a.to || !b.to || a.to.getTime() === b.to.getTime())

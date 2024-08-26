@@ -28,13 +28,25 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
     (state: RootState) => state.adminPage,
   );
 
+  const { loading: loading2 } = useSelector(
+    (state: RootState) => state.homePage,
+  );
+
   useEffect(() => {
     dispatch(fetchWorkerDetails(empId));
   }, [empId]);
 
+  const handleDownload = () => {
+    dispatch(getCV(empId)).then((response: any) => {
+      if (response.payload.success) {
+        window.open(response?.payload?.data, '_blank');
+      }
+    });
+  };
+
   return (
     <Card className="h-full w-full">
-      {loading && <Loading />}
+      {loading || loading2 ? <Loading /> : null}
       <CardHeader className="flex py-0 flex-row justify-between items-center">
         <CardTitle>Worker Details</CardTitle>
         <div className="flex items-center gap-2">
@@ -53,10 +65,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
             </Link>
           )}
           <IconButton
-            onClick={() => dispatch(getCV(empId))}
-            // loading={loading("cv")}
-            // hoverBackground="hover:bg-transparent"
-            // hoverColor="hover:text-black"
+            onClick={handleDownload}
             color="text-primary"
             tooltip="Download CV"
             icon={<Download />}

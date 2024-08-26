@@ -556,8 +556,6 @@ export const fetchWorkerDetails = createAsyncThunk<WorkersInfoResponse, string>(
   },
 );
 
-
-
 export const fetchSubIndustry = createAsyncThunk<SubIndustryResponse, string>(
   'adminPage/fetchSubIndustry',
   async (id, { rejectWithValue }) => {

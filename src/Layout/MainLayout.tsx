@@ -39,6 +39,7 @@ import { logout } from '@/features/auth/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { Company, fetchCompanies } from '@/features/homePage/homePageSlice';
+import { IoSettingsOutline } from "react-icons/io5";
 
 interface Props {
   children: React.ReactNode;
@@ -130,7 +131,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                   className={NavlinkStyle}
                   onClick={() => setOpen(false)}
                 >
-                  <MdOutlineAdminPanelSettings className="w-6 h-6" />
+                  <IoSettingsOutline className="w-6 h-6" />
                   Setting
                 </NavLink>
               </nav>

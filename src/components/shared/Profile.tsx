@@ -17,7 +17,9 @@ import Loading from '@/components/reusable/Loading';
 
 function Profile() {
   const dispatch = useDispatch<AppDispatch>();
-  const { userProfile,loading } = useSelector((state: RootState) => state.profilePage);
+  const { userProfile, loading } = useSelector(
+    (state: RootState) => state.profilePage,
+  );
   const [mobile, setMobile] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [supportEmail, setSupportEmail] = useState<string>('');
@@ -48,8 +50,13 @@ function Profile() {
     ) {
       setFieldToVerify(type);
       setValueToVerify(value);
-      dispatch(sentOtp({ body: { [field]: value }, type: `${type}=true` }));
-      setShowOtpModal(true); // Show OTP modal
+      dispatch(
+        sentOtp({ body: { [field]: value }, type: `${type}=true` }),
+      ).then((response: any) => {
+        if (response.payload.code === 'NOTOK') {
+          setShowOtpModal(true);
+        }
+      });
     } else {
       dispatch(changePassword({ body: { [field]: value }, type }));
     }
@@ -58,8 +65,13 @@ function Profile() {
   const handleVerifyClick = (field: string, value: string, type: string) => {
     setFieldToVerify(type);
     setValueToVerify(value);
-    dispatch(sentOtp({ body: { [field]: value }, type: `${type}=true` }));
-    setShowOtpModal(true);
+    dispatch(sentOtp({ body: { [field]: value }, type: `${type}=true` })).then(
+      (response: any) => {
+        if (response.payload.code === 'NOTOK') {
+          setShowOtpModal(true);
+        }
+      },
+    );
   };
 
   return (
@@ -99,7 +111,9 @@ function Profile() {
                       setMobile(newValue);
                       updateUserData('mobile', newValue, 'mobile');
                     }}
-                    onVerify={() => handleVerifyClick('phoneNumber', mobile, 'mobile')}
+                    onVerify={() =>
+                      handleVerifyClick('phoneNumber', mobile, 'mobile')
+                    }
                   />
                   <SingleItem
                     label="E-Mail"
@@ -123,7 +137,13 @@ function Profile() {
                       setSupportEmail(newValue);
                       updateUserData('email', newValue, 'supportEmail');
                     }}
-                    onVerify={() => handleVerifyClick('emailSupport', supportEmail, 'supportEmail')}
+                    onVerify={() =>
+                      handleVerifyClick(
+                        'emailSupport',
+                        supportEmail,
+                        'supportEmail',
+                      )
+                    }
                   />
                   <SingleItem
                     label="Recruitment E-mail"
@@ -135,7 +155,13 @@ function Profile() {
                       setRecruitmentEmail(newValue);
                       updateUserData('email', newValue, 'recruitmentEmail');
                     }}
-                    onVerify={() => handleVerifyClick('emailRecruitment', recruitmentEmail, 'recruitmentEmail')}
+                    onVerify={() =>
+                      handleVerifyClick(
+                        'emailRecruitment',
+                        recruitmentEmail,
+                        'recruitmentEmail',
+                      )
+                    }
                   />
                 </div>
               </CardContent>
