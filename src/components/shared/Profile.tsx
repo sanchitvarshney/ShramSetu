@@ -75,11 +75,11 @@ function Profile() {
   };
 
   return (
-    <div>
+    <div style={{ backgroundColor: '#f5f5f5' }} className='h-full'>
       {loading && <Loading />}
       {userProfile && (
-        <div className="flex flex-col items-center mt-[50px]">
-          <div className="w-3/4 flex flex-col gap-4">
+        <div className="flex flex-col items-center ">
+          <div className="w-3/4 flex flex-col gap-4 mt-[50px]">
             <Card>
               <CardHeader>
                 <CardTitle>

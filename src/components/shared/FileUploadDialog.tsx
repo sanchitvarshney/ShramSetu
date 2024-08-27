@@ -124,17 +124,22 @@ export function FileUploadDialog({ onClose }: FileUploadDialogProps) {
             </h2>
             <br />
             <ol className="text-slate-500 text-[15px] ml-[10px] list-decimal">
-              <li>
+              <li className="p-1">
                 Please refer to the "References" sheet for the necessary code.
               </li>
-              <li>Do not delete, remove, or edit row number [1].</li>
-              <li>
+              <li className="p-1">
+                Do not delete, remove, or edit row number [1].
+              </li>
+              <li className="p-1">
                 The colored cells in row 2 of the sheet named "Sample Data"
                 indicate the corresponding columns and rows in the "References"
                 sheet for "Value" and "Code."
               </li>
-              <li>Ensure the file being uploaded is in .csv format.</li>
-              <li>
+              <li className="p-1">
+                Ensure the file being uploaded is in .csv format.
+              </li>
+              <li className="p-1">
+                Download
                 <a
                   href="https://esptest.mscorpres.net/UPLOADS/employeeSample/ESPSample.xlsx"
                   target="_blank"

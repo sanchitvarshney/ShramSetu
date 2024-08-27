@@ -4,7 +4,7 @@ const actionCellRenderer = (params: any) => {
   const { toggleShowDetails } = params.context;
   console.log(params);
   return (
-    <div className="flex justify-center">
+    <div className="flex">
       <button
         onClick={() => toggleShowDetails(params.data.employeeID)}
         className="text-teal-500 hover:text-teal-600"
