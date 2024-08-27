@@ -41,7 +41,6 @@ import { AppDispatch, RootState } from '@/store';
 import {
   fetchDepartments,
   fetchDesignations,
-  fetchMarriedStatus,
   fetchStates,
   fetchWorkerDetails,
   getCompanyBranchOptions,
@@ -290,7 +289,6 @@ export default function EmpUpdate() {
       dispatch(fetchWorkerDetails(params?.id?.replace(':', '')));
       dispatch(fetchDepartments());
       dispatch(fetchDesignations());
-      dispatch(fetchMarriedStatus());
       dispatch(universitiesSearch());
       dispatch(fetchStates());
       dispatch(getEducationStatus());
