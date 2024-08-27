@@ -58,7 +58,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
                 icon={
                   <Edit
                     size={20}
-                    className="text-muted-foreground group-hover:text-white text-black"
+                    className="mt-2 group-hover:text-white text-black"
                   />
                 }
               />

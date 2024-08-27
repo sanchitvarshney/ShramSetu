@@ -65,10 +65,14 @@ export function FileUploadDialog({ onClose }: FileUploadDialogProps) {
   };
   const loading = false;
   const isDragActive = true;
+
   return (
     <>
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="grid grid-cols-2 gap-6 p-8 max-w-5xl">
+        <DialogContent
+          className="grid grid-cols-2 gap-6 p-8 max-w-5xl"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <div className="border-dashed border-2 border-gray-300 rounded-lg p-4 flex flex-col items-center">
             <FileUploader
               value={files}
@@ -79,7 +83,7 @@ export function FileUploadDialog({ onClose }: FileUploadDialogProps) {
               <FileInput>
                 <div className="flex items-center flex-col justify-center h-full px-[20px]">
                   <input accept=".xlsx, .xls" />
-                  <div className="flex items-center flex-col justify-center w-full h-full py-[20px]  border-slate-400">
+                  <div className="flex items-center flex-col justify-center w-full h-full py-[20px] border-slate-400">
                     <div className="w-[150px] h-[150px] bg-[#21734621] rounded-full flex justify-center items-center">
                       {loading ? (
                         <ReloadIcon className="h-[50px] w-[50px] text-[#217346] animate-spin" /> // Placeholder for a spinner
@@ -115,10 +119,11 @@ export function FileUploadDialog({ onClose }: FileUploadDialogProps) {
             </FileUploader>
           </div>
           <div>
-            <h2 className="text-[16px] text-slate-600 font-bold">
+            <h2 className="text-[18px] text-slate-600 font-bold">
               Upload Instructions
             </h2>
-            <ol className="text-slate-500 text-[14px] ml-[10px] list-decimal">
+            <br />
+            <ol className="text-slate-500 text-[15px] ml-[10px] list-decimal">
               <li>
                 Please refer to the "References" sheet for the necessary code.
               </li>
@@ -128,8 +133,16 @@ export function FileUploadDialog({ onClose }: FileUploadDialogProps) {
                 indicate the corresponding columns and rows in the "References"
                 sheet for "Value" and "Code."
               </li>
+              <li>Ensure the file being uploaded is in .csv format.</li>
               <li>
-              Ensure the file being uploaded is in .csv format.
+                <a
+                  href="https://esptest.mscorpres.net/UPLOADS/employeeSample/ESPSample.xlsx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-500 hover:underline"
+                >
+                  Sample File
+                </a>
               </li>
             </ol>
             <div className="flex flex-row pt-24 gap-5">

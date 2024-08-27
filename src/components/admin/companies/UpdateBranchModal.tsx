@@ -133,7 +133,10 @@ const UpdateBranchModal = (props: any) => {
 
   return (
     <Dialog open={props.show} onOpenChange={props.hide}>
-      <DialogContent className="min-w-[800px]">
+      <DialogContent
+        className="min-w-[800px]"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>
             Edit Branch in {props?.updatingBranch?.companyName}
@@ -227,7 +230,7 @@ const UpdateBranchModal = (props: any) => {
               <Button
                 onClick={handleUpdateCompany}
                 icon={<Check size={18} />}
-                className='bg-teal-500 hover:bg-teal-600'
+                className="bg-teal-500 hover:bg-teal-600"
                 disabled={!branchName || !email}
               >
                 Add

@@ -52,6 +52,7 @@ export interface AdvancedFilterPayload {
 interface HomePageState {
   companies: Company[] | null;
   searchCompanies: SearchCompany[] | null;
+  topSearchCompanies: SearchCompany[] | null;
   selectedCompany: Company | null;
   stateSearch: Company[] | null;
   districtSearch: Company[] | null;
@@ -66,6 +67,7 @@ interface HomePageState {
 const initialState: HomePageState = {
   companies: [],
   searchCompanies: [],
+  topSearchCompanies: [],
   stateSearch: [],
   districtSearch: [],
   industrySearch: [],
@@ -172,7 +174,7 @@ export const getCV = createAsyncThunk<CVResponse, string>(
         toast({
           variant: 'destructive',
           title: 'Error',
-          description: "Error Occurred",
+          description: 'Error Occurred',
         });
       }
       return response.data;
@@ -190,6 +192,18 @@ export const fetchSearchCompanies = createAsyncThunk<SearchCompany[]>(
       return response?.data?.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch search companies');
+    }
+  },
+);
+
+export const topSearchCompanies = createAsyncThunk<SearchCompany[]>(
+  'homePage/topSearchCompanies',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get(`/company/topSearch`);
+      return response?.data?.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch top search companies');
     }
   },
 );
@@ -313,6 +327,19 @@ const homePageSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchSearchCompanies.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(topSearchCompanies.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(topSearchCompanies.fulfilled, (state, action) => {
+        state.loading = false;
+        state.topSearchCompanies = action.payload;
+        state.error = null;
+      })
+      .addCase(topSearchCompanies.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

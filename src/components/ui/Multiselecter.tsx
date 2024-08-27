@@ -131,15 +131,15 @@ export const MultipleSelect = React.forwardRef<
       onValueChange(newSelectedValues);
     };
 
-    const toggleAll = () => {
-      if (selectedValues.length === options.length) {
-        handleClear();
-      } else {
-        const allValues = options.map((option) => option.value);
-        setSelectedValues(allValues);
-        onValueChange(allValues);
-      }
-    };
+    // const toggleAll = () => {
+    //   if (selectedValues.length === options.length) {
+    //     handleClear();
+    //   } else {
+    //     const allValues = options.map((option) => option.value);
+    //     setSelectedValues(allValues);
+    //     onValueChange(allValues);
+    //   }
+    // };
 
     return (
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
@@ -244,7 +244,7 @@ export const MultipleSelect = React.forwardRef<
                 <p className="text-slate-500 my-[20px] mx-[20px] text-center">Options not found</p>
               ) : (
                 <CommandGroup className="w-full">
-                  <CommandItem
+                  {/* <CommandItem
                     key="all"
                     onSelect={toggleAll}
                     className="w-full min-w-full cursor-pointer"
@@ -260,7 +260,7 @@ export const MultipleSelect = React.forwardRef<
                       <CheckIcon className="w-4 h-4" />
                     </div>
                     <span>(Select All)</span>
-                  </CommandItem>
+                  </CommandItem> */}
                   {options?.map((option) => {
                     const isSelected = selectedValues?.includes(option.value);
                     return (
