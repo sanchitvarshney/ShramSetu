@@ -22,7 +22,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent className={`bg-teal-700 shadow ${className}`} side={side}>
+        <TooltipContent className={`bg-teal-700 shadow ${className}`} side={side} onMouseEnter={(e)=>{e.preventDefault();e.stopPropagation()}} >
           <p>{message}</p>
         </TooltipContent>
       </Tooltip>

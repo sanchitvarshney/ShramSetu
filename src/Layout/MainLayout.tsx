@@ -55,7 +55,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const { companies } = useSelector((state: RootState) => state.homePage);
   const [selectedCompany, setSelectedCompany] = useState<string>('');
-
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
   let user = localStorage.getItem('loggedInUser') ?? 'null';
   const data = JSON.parse(user);
 
@@ -82,7 +82,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
     navigate('/login');
     toast({ description: 'Logged Out Successfully' });
   };
-
+console.log(buttonRef.current?.offsetWidth! + 15)
   return (
     <>
       <AlertDialogPopup
@@ -97,95 +97,100 @@ const MainLayout: React.FC<Props> = ({ children }) => {
         <Sidebar open={open} onOpenChange={setOpen}>
           <SidebarContent
             side={'left'}
-            className="top-[20px] left-[20px] bottom-[20px] h-auto rounded-xl bg-teal-800 border-0 min-w-[300px] shadow shadow-stone-400 p-[20px]"
+            className=" bg-transparent border-none shadow-none p-[20px]"
           >
-            <SidebarHeader className="bg-blue-100 rounded-lg p-[20px] ">
-              <img src="/main-logo.svg" alt="" className="w-[100%]" />
-            </SidebarHeader>
-            <aside className="flex-col mt-[20px] rounded-lg">
-              <nav className="grid grid-cols-3 gap-[10px] p-[10px]">
-                <NavLink
-                  to="/"
-                  className={NavlinkStyle}
-                  onClick={() => setOpen(false)}
-                >
-                  <Home className="w-5 h-5" />
-                  Dashboard
-                </NavLink>
-                <NavLink
-                  to="/invitation/mail"
-                  className={NavlinkStyle}
-                  onClick={() => setOpen(false)}
-                >
-                  <Mail className="w-5 h-5" />
-                  Invitation
-                </NavLink>
-                <NavLink
-                  to="/company/list"
-                  className={NavlinkStyle}
-                  onClick={() => setOpen(false)}
-                >
-                  <MdOutlineAdminPanelSettings className="w-6 h-6" />
-                  Admin
-                </NavLink>
-                <NavLink
-                  to="/profile"
-                  className={NavlinkStyle}
-                  onClick={() => setOpen(false)}
-                >
-                  <User className="w-6 h-6" />
-                  Profile
-                </NavLink>
-                <NavLink
-                  to="/company/list"
-                  className={NavlinkStyle}
-                  onClick={() => setOpen(false)}
-                >
-                  <IoSettingsOutline className="w-6 h-6" />
-                  Setting
-                </NavLink>
-              </nav>
-            </aside>
-            <SidebarFooter className="absolute bottom-[20px] left-[20px] right-[20px] bg-white/20 rounded-lg p-[10px]">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <div className="flex items-center justify-between w-full cursor-pointer">
-                    <div className="flex items-center gap-[5px]">
-                      <Avatar>
-                        <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback>CN</AvatarFallback>
-                      </Avatar>
-                      <Separator orientation="vertical" className="" />
-                      <div className="flex flex-col font-[500] gap-0 text-white">
-                        {data?.firstName} {data?.lastName}
-                        <span className="text-[13px] font-[400]">
-                          Software Developer
-                        </span>
+            <div className=" relative  rounded-xl bg-teal-800 border-0 min-w-[300px] shadow shadow-stone-400 p-[20px] h-[calc(100vh-40px)]  ">
+              <SidebarHeader className="bg-blue-100 rounded-lg p-[20px] ">
+                <img src="/main-logo.svg" alt="" className="w-[100%]" />
+              </SidebarHeader>
+              <aside className="flex-col mt-[20px] rounded-lg">
+                <nav className="grid grid-cols-3 gap-[10px] p-[10px]">
+                  <NavLink
+                    to="/"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <Home className="w-5 h-5" />
+                    Dashboard
+                  </NavLink>
+                  <NavLink
+                    to="/invitation/mail"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <Mail className="w-5 h-5" />
+                    Invitation
+                  </NavLink>
+                  <NavLink
+                    to="/company/list"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <MdOutlineAdminPanelSettings className="w-6 h-6" />
+                    Admin
+                  </NavLink>
+                  <NavLink
+                    to="/profile"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <User className="w-6 h-6" />
+                    Profile
+                  </NavLink>
+                  <NavLink
+                    to="/company/list"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <IoSettingsOutline className="w-6 h-6" />
+                    Setting
+                  </NavLink>
+                </nav>
+              </aside>
+              <SidebarFooter className="absolute bottom-[20px] left-[20px] right-[20px] bg-white/20 rounded-lg p-[10px]">
+                <DropdownMenu >
+                  <DropdownMenuTrigger asChild ref={buttonRef} >
+                    <div className="flex items-center justify-between w-full cursor-pointer">
+                      <div className="flex items-center gap-[5px]">
+                        <Avatar>
+                          <AvatarImage src="https://github.com/shadcn.png" />
+                          <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        <Separator orientation="vertical" className="" />
+                        <div className="flex flex-col font-[500] gap-0 text-white">
+                          {data?.firstName} {data?.lastName}
+                          <span className="text-[13px] font-[400]">
+                            Software Developer
+                          </span>
+                        </div>
+                      </div>
+                      <div>
+                        <FaChevronDown className="h-[20px] w-[20px] text-white/70 mr-[10px]" />
                       </div>
                     </div>
-                    <div>
-                      <FaChevronDown className="h-[20px] w-[20px] text-white/70 mr-[10px]" />
-                    </div>
-                  </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  className="shadow-sm shadow-stone-500 ml-[300px]"
-                  side="top"
-                >
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel onClick={() => navigate('/profile')}>
-                    Profile
-                  </DropdownMenuLabel>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Support</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarFooter>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className={`shadow-sm  shadow-stone-500 mb-[10px] bg-white/20 text-white border-white/20 w-[274px]`}
+                    side="top"
+                    align="center"
+                   
+                  >
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-white/20" />
+
+                    <DropdownMenuItem onClick={() => navigate('/profile')} className='cursor-pointer'>
+                      Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className='cursor-pointer'>Settings</DropdownMenuItem>
+                    <DropdownMenuItem className='cursor-pointer'>Support</DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-white/20" />
+                    <DropdownMenuItem onClick={handleLogout} className='cursor-pointer'>
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarFooter>
+            </div>
           </SidebarContent>
         </Sidebar>
         <div className="border-t-[10px] border-[#04b0a8] h-[70px] flex shadow shadow-neutral-300 fixed top-0 left-0 right-0 z-[30] bg-white">
