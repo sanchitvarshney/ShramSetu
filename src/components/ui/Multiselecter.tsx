@@ -83,8 +83,7 @@ export const MultipleSelect = React.forwardRef<
       PannelClassName,
       handleSubmit,
       ...props
-    },
-    ref
+    }
   ) => {
     const [selectedValues, setSelectedValues] = React.useState<string[]>(value);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
@@ -140,12 +139,14 @@ export const MultipleSelect = React.forwardRef<
     //     onValueChange(allValues);
     //   }
     // };
+    const buttonRef = React.useRef<HTMLButtonElement>(null);
 
     return (
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
         <PopoverTrigger asChild>
           <Button
-            ref={ref}
+           
+            ref={buttonRef}
             {...props}
             onClick={handleTogglePopover}
             className={cn(
@@ -228,6 +229,10 @@ export const MultipleSelect = React.forwardRef<
         </PopoverTrigger>
         <PopoverContent
           className={cn("min-w-[600px] p-0 shadow-sm shadow-stone-500 ", PannelClassName)}
+          style={{
+            minWidth: buttonRef.current?.offsetWidth,
+            width: "auto",
+          }}
           align="start"
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >

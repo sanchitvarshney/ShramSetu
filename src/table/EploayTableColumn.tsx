@@ -1,14 +1,15 @@
 import { ColDef } from 'ag-grid-community';
 
 const actionCellRenderer = (params: any) => {
-  const { toggleShowDetails } = params.context;
+  const { toggleShowDetails,setOpen } = params.context;
 
   return (
     <div className="flex justify-center">
       <button
-        onClick={() => toggleShowDetails(params?.data?.employeeCode)}
-        className="text-teal-500 hover:text-teal-600"
+        onClick={() => {toggleShowDetails(params?.data?.employeeCode);setOpen(true)}}
+        className="w-full text-teal-500 text-start hover:text-teal-600"
         aria-label="Show Name"
+      
       >
         {params.data.firstName}
       </button>

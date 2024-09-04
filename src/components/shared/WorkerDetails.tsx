@@ -9,28 +9,29 @@ import { SelectOptionType } from '@/types/general';
 import { cn } from '@/lib/utils';
 import { differenceInDays, parse } from 'date-fns';
 import { Link } from 'react-router-dom';
-import Loading from '@/components/reusable/Loading';
+// import Loading from '@/components/reusable/Loading';
 import { getCV } from '@/features/homePage/homePageSlice';
+// import CustomTooltip from '../reusable/CustomTooltip';
+import { Button } from '../ui/button';
 
 interface WorkerDetailsProps {
   empId: string;
   toggleDetails: (empId?: string) => void;
   showEdit?: boolean;
+  setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   empId,
-  toggleDetails,
+  setOpen,
   showEdit,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { workerInfo, loading } = useSelector(
+  const { workerInfo, } = useSelector(
     (state: RootState) => state.adminPage,
   );
 
-  const { loading: loading2 } = useSelector(
-    (state: RootState) => state.homePage,
-  );
+ 
 
   useEffect(() => {
     dispatch(fetchWorkerDetails(empId));
@@ -45,9 +46,9 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   };
 
   return (
-    <Card className="h-full w-full">
-      {loading || loading2 ? <Loading /> : null}
-      <CardHeader className="flex py-0 flex-row justify-between items-center">
+    <Card className="relative w-full h-full border-none shadow-none">
+      {/* {loading || loading2 ? <Loading /> : null} */}
+      <CardHeader className="flex flex-row items-center justify-between py-0 bg-muted h-[50px]  border-b">
         <CardTitle>Worker Details</CardTitle>
         <div className="flex items-center gap-2">
           {showEdit && (
@@ -58,20 +59,23 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
                 icon={
                   <Edit
                     size={20}
-                    className="mt-2 group-hover:text-white text-black"
+                    className="mt-2 text-black group-hover:text-white"
                   />
                 }
               />
             </Link>
           )}
-          <IconButton
+          {/* <IconButton
             onClick={handleDownload}
             color="text-primary"
             tooltip="Download CV"
-            icon={<Download />}
-          />
+            icon={}
+          /> */}
+         
+              <Button title='Download CV' onClick={handleDownload} variant={"outline"} className='p-0 bg-transparent border-none hover:bg-transparent'><Download className='h-[20px] w-[20px] text-slate-500' /></Button>
+          
           <IconButton
-            onClick={() => toggleDetails()}
+            onClick={() =>setOpen &&  setOpen(false)}
             hoverBackground="hover:bg-transparent"
             hoverColor="hover:text-black"
             icon={<X />}
@@ -79,7 +83,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
         </div>
       </CardHeader>
       {workerInfo && (
-        <CardContent className="flex flex-col gap-2 h-full overflow-auto">
+        <CardContent className="flex flex-col h-[calc(100vh-50px)] overflow-y-auto gap-2 overflow-auto p-[20px]">
           {workerInfo?.basicInfo && (
             <BasicDetails details={workerInfo?.basicInfo} />
           )}
@@ -122,7 +126,7 @@ const SingleDetail = ({
 }) => {
   return (
     <div className="flex justify-between">
-      <strong>{label}</strong>
+      <p className='font-[500]'>{label}</p>
       <p>{typeof value === 'object' ? value?.text : value ?? '--'}</p>
     </div>
   );
@@ -130,8 +134,8 @@ const SingleDetail = ({
 const BasicDetails = ({ details }: { details: any }) => {
   return (
     <Card>
-      <CardHeader className="flex flex-row justify-between items-center">
-        <CardTitle className="text-lg py-0 my-0 text-primary">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="py-0 my-0 text-lg text-primary">
           Basic Details
         </CardTitle>
       </CardHeader>
@@ -163,8 +167,8 @@ const BasicDetails = ({ details }: { details: any }) => {
 const CurrentAddress = ({ details }: any) => {
   return (
     <Card>
-      <CardHeader className="flex flex-row justify-between items-center">
-        <CardTitle className="text-lg py-0 my-0 text-primary">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="py-0 my-0 text-lg text-primary">
           Current Address
         </CardTitle>
       </CardHeader>
@@ -184,8 +188,8 @@ const CurrentAddress = ({ details }: any) => {
 const PermanentAddress = ({ details }: any) => {
   return (
     <Card>
-      <CardHeader className="flex flex-row justify-between items-center">
-        <CardTitle className="text-lg py-0 my-0 text-primary">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="py-0 my-0 text-lg text-primary">
           Permanent Address
         </CardTitle>
       </CardHeader>
@@ -220,8 +224,8 @@ const EmployementDetails = ({ details }: any) => {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row justify-between items-center">
-        <CardTitle className="text-lg py-0 my-0 text-primary">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="py-0 my-0 text-lg text-primary">
           Employments
         </CardTitle>
         <p className="text-lg font-muted-foreground">
@@ -229,7 +233,7 @@ const EmployementDetails = ({ details }: any) => {
         </p>
       </CardHeader>
       <CardContent className="max-h-[500px] overflow-hidden flex pb-10">
-        <div className="flex flex-col w-full overflow-y-scroll px-2 max-h-full">
+        <div className="flex flex-col w-full max-h-full px-2 overflow-y-auto">
           {details.companyInfo?.map((emp: any, index: any) => (
             <div
               className={cn(

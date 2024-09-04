@@ -246,20 +246,20 @@ const HomePage: React.FC = () => {
         </div>
         <TabsContent value="filter" className="m-0 h-[calc(100vh-130px)]">
           <div className="flex items-center justify-center w-full h-full">
-            <Card className="flex flex-col overflow-hidden rounded-lg max-w-max min-w-[600px] bg-transparent border-none shadow-none">
+            <Card className="flex flex-col overflow-hidden rounded-lg   min-w-[600px] bg-transparent border-none shadow-none">
               <CardHeader className="flex items-center justify-center p-0">
                 <img src="main-logo.svg" alt="" className="w-[400px]" />
               </CardHeader>
               <CardContent className="bg-transparent mt-[30px]">
                 <Form {...form}>
                   <div className="w-full flex flex-col gap-[20px] items-center justify-center">
-                    <div className="min-w-[300px] rounded">
+                    <div className="min-w-[300px] rounded ">
                       <FormField
                         control={form.control}
                         name="companies"
                         render={({ field }) => (
-                          <FormItem className="flex flex-col items-center">
-                            <FormControl>
+                          <FormItem className="flex flex-col items-center ">
+                            <FormControl className='w-auto'>
                               <MultipleSelect
                                 options={topSearchCompanies?.map(
                                   (company: SearchCompany) => ({
@@ -275,11 +275,11 @@ const HomePage: React.FC = () => {
                                 placeholder="Select a company..."
                                 variant="secondary"
                                 maxCount={3}
-                                className="min-w-[600px] rounded-full h-[50px] bg-white border border-neutral-300 shadow hover:bg-white"
+                                className="min-w-[600px]  rounded-full h-[50px] bg-white border border-neutral-300 shadow hover:bg-white"
                               />
                             </FormControl>
                             <FormMessage />
-                            <div className="flex items-center justify-center gap-[10px] flex-wrap flex-row pt-[20px] max-w-[550px]">
+                            <div className="flex items-center justify-center gap-[10px] flex-wrap flex-row pt-[20px] max-w-[60%]">
                               {topSearchCompanies
                                 ?.filter(
                                   (item: SearchCompany) =>
@@ -299,7 +299,7 @@ const HomePage: React.FC = () => {
                                       );
                                     }}
                                     key={list.name}
-                                    className="hover:bg-white bg-white border-gray-200 shadow min-w-[calc((100%/3)-10px)] justify-between rounded-full text-slate-600 px-[18px] py-[5px] flex items-center gap-[10px] text-[15px] cursor-pointer"
+                                    className="hover:bg-white bg-white border-gray-200 shadow  max-w-max justify-between rounded-full text-slate-600 px-[18px] py-[5px] flex items-center gap-[10px] text-[15px] cursor-pointer"
                                   >
                                     <span className="flex items-center gap-[5px]">
                                       <Search className="w-4 h-4" /> {list.name}
