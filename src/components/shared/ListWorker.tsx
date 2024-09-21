@@ -83,6 +83,7 @@ const ListWorker: React.FC = () => {
           <div className="flex-1 h-full">
             <WorkerDetails
               showEdit
+              setOpen={() => toggleShowDetails()}
               empId={selectedEmpId} // Pass the selected employee ID
               toggleDetails={toggleShowDetails} // Pass the function to close details
             />

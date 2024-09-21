@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Edit, X } from 'lucide-react';
+import { Check, Download, Edit, X } from 'lucide-react';
 import IconButton from '@/components/ui/IconButton';
 import { fetchWorkerDetails } from '@/features/admin/adminPageSlice';
 import { SelectOptionType } from '@/types/general';
@@ -27,11 +27,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   showEdit,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { workerInfo, } = useSelector(
-    (state: RootState) => state.adminPage,
-  );
-
- 
+  const { workerInfo } = useSelector((state: RootState) => state.adminPage);
 
   useEffect(() => {
     dispatch(fetchWorkerDetails(empId));
@@ -44,11 +40,11 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
       }
     });
   };
-
+console.log(setOpen, 'setOpen');
   return (
-    <Card className="relative w-full h-full border-none shadow-none">
+    <Card className="relative w-full h-[calc(100vh-230px)] border-none shadow-none flex flex-col">
       {/* {loading || loading2 ? <Loading /> : null} */}
-      <CardHeader className="flex flex-row items-center justify-between py-0 bg-muted h-[50px]  border-b">
+      <CardHeader className="flex flex-row items-center justify-between py-0 bg-muted h-[50px] border-b">
         <CardTitle>Worker Details</CardTitle>
         <div className="flex items-center gap-2">
           {showEdit && (
@@ -65,17 +61,16 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
               />
             </Link>
           )}
-          {/* <IconButton
+          <Button
+            title="Download CV"
             onClick={handleDownload}
-            color="text-primary"
-            tooltip="Download CV"
-            icon={}
-          /> */}
-         
-              <Button title='Download CV' onClick={handleDownload} variant={"outline"} className='p-0 bg-transparent border-none hover:bg-transparent'><Download className='h-[20px] w-[20px] text-slate-500' /></Button>
-          
+            variant={'outline'}
+            className="p-0 bg-transparent border-none hover:bg-transparent"
+          >
+            <Download className="h-[20px] w-[20px] text-slate-500" />
+          </Button>
           <IconButton
-            onClick={() =>setOpen &&  setOpen(false)}
+            onClick={() => setOpen && setOpen(false)}
             hoverBackground="hover:bg-transparent"
             hoverColor="hover:text-black"
             icon={<X />}
@@ -83,7 +78,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
         </div>
       </CardHeader>
       {workerInfo && (
-        <CardContent className="flex flex-col h-[calc(100vh-50px)] overflow-y-auto gap-2 overflow-auto p-[20px]">
+        <CardContent className="flex-grow overflow-y-auto p-[20px]">
           {workerInfo?.basicInfo && (
             <BasicDetails details={workerInfo?.basicInfo} />
           )}
@@ -101,12 +96,23 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
               )}
             </div>
           )}
-          {/* {workerInfo?.educationInfo && <EducationDetails details={workerInfo} />} */}
           {workerInfo?.companyInfo && (
             <EmployementDetails details={workerInfo} />
           )}
+          {workerInfo?.bankDetails && (
+            <BankDetails details={workerInfo?.bankDetails} />
+          )}
         </CardContent>
       )}
+      <div className="flex justify-end p-2 bg-white">
+        <Button className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 me-2">
+          <X className="h-[18px] w-[18px] pr-2px" /> Reject
+        </Button>
+        <Button className="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5">
+          <Check className="h-[18px] w-[18px] pr-2px" />
+          Approve
+        </Button>
+      </div>
     </Card>
   );
 };
@@ -126,12 +132,13 @@ const SingleDetail = ({
 }) => {
   return (
     <div className="flex justify-between">
-      <p className='font-[500]'>{label}</p>
+      <p className="font-[500]">{label}</p>
       <p>{typeof value === 'object' ? value?.text : value ?? '--'}</p>
     </div>
   );
 };
 const BasicDetails = ({ details }: { details: any }) => {
+  const { workerInfo } = useSelector((state: RootState) => state.adminPage);
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -145,19 +152,22 @@ const BasicDetails = ({ details }: { details: any }) => {
           <SingleDetail label="Last Name" value={details?.lastName} />
         </DetailRow>
         <DetailRow>
+          <SingleDetail
+            label="Father's Name"
+            value={workerInfo?.familyInfo?.fatherName}
+          />
           <SingleDetail label="DOB" value={details?.dob} />
+        </DetailRow>
+        <DetailRow>
           <SingleDetail
             label="Gender"
             value={typeof details?.gender === 'object' && details?.gender.text}
           />
-        </DetailRow>
-        <DetailRow>
-          <SingleDetail label="Adhaar Number" value={details?.aadhaarNo} />
           <SingleDetail label="Phone" value={details?.mobile} />
         </DetailRow>
         <DetailRow>
+          <SingleDetail label="Adhaar Number" value={details?.aadhaarNo} />
           <SingleDetail label="E-mail" value={details?.email} />
-          {/* <SingleDetail label="Phone" value={details.basic?.phone} /> */}
         </DetailRow>
       </CardContent>
     </Card>
@@ -233,14 +243,9 @@ const EmployementDetails = ({ details }: any) => {
         </p>
       </CardHeader>
       <CardContent className="max-h-[500px] overflow-hidden flex pb-10">
-        <div className="flex flex-col w-full max-h-full px-2 overflow-y-auto">
-          {details.companyInfo?.map((emp: any, index: any) => (
-            <div
-              className={cn(
-                'px-4 py-3 rounded-lg',
-                index % 2 === 0 && 'bg-muted',
-              )}
-            >
+        <div className="flex flex-col w-full max-h-full px-2 overflow-y-auto gap-2">
+          {details?.companyInfo?.map((emp: any) => (
+            <div className={cn('px-4 py-3 rounded-lg border-2')}>
               <SingleDetail label="Company" value={emp?.companyName} />
               <SingleDetail label="Industry" value={emp?.industry} />
               <DetailRow>
@@ -267,6 +272,28 @@ const EmployementDetails = ({ details }: any) => {
               </DetailRow>
             </div>
           ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const BankDetails = ({ details }: any) => {
+  const { workerInfo } = useSelector((state: RootState) => state.adminPage);
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="py-0 my-0 text-lg text-primary">
+          Bank details
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-2">
+          <SingleDetail label="Bank Name" value={details?.bankName} />
+          <SingleDetail label="Account Number" value={details?.accountNo} />
+          <SingleDetail label="IFSC Code" value={details?.ifsCode} />
+          <SingleDetail label="ESI" value={workerInfo?.basicInfo?.esi} />
+          <SingleDetail label="UAN" value={workerInfo?.basicInfo?.uan} />
         </div>
       </CardContent>
     </Card>
