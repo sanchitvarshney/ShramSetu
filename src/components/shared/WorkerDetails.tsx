@@ -40,7 +40,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
       }
     });
   };
-console.log(setOpen, 'setOpen');
+
   return (
     <Card className="relative w-full h-[calc(100vh-230px)] border-none shadow-none flex flex-col">
       {/* {loading || loading2 ? <Loading /> : null} */}

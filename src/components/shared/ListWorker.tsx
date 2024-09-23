@@ -56,7 +56,7 @@ const ListWorker: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh-50px)] ">
+    <div className="flex flex-col h-[calc(100vh-140px)] ">
       {loading && <Loading />}
       <div className="mb-4 pl-5 pt-5">
         <DateRangePicker
