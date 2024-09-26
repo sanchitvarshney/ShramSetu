@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
 import { BiSolidLogInCircle } from 'react-icons/bi';
 import { Input } from '../ui/input';
 import { inputStyle } from '@/style/CustomStyles';
@@ -27,16 +26,8 @@ import { CiMail } from 'react-icons/ci';
 import { IoIosLock } from 'react-icons/io';
 import { LiaClipboardListSolid } from 'react-icons/lia';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { cn } from '@/lib/utils';
-
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover } from '@/components/ui/popover';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   addWorker,
@@ -46,6 +37,7 @@ import {
   fetchDesignations,
 } from '@/features/admin/adminPageSlice';
 import { AppDispatch, RootState } from '@/store';
+import { DatePicker, DatePickerProps } from 'antd';
 
 const AddWorker = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -58,13 +50,22 @@ const AddWorker = () => {
   const [empMiddleName, setEmpMiddleName] = useState('');
   const [empLastName, setEmpLastName] = useState('');
   const [empEmail, setEmpEmail] = useState('');
-  const [empDOB, setEmpDOB] = useState<Date | undefined>(undefined);
+  const [empDOB, setEmpDOB] = useState<any>(undefined);
   const [empDepartment, setEmpDepartment] = useState('');
   const [empDesignation, setEmpDesignation] = useState('');
   const [empMobile, setEmpMobile] = useState('');
   const [empPassword, setEmpPassword] = useState('');
   const [empGender, setEmpGender] = useState('');
 
+  const onChange: DatePickerProps['onChange'] = (dateString) => {
+    console.log(dateString,dateString?.toDate());
+    if (dateString) {
+      setEmpDOB(dateString.toDate()); // Convert to JavaScript Date
+    } else {
+      setEmpDOB(undefined); // Handle case where date is cleared
+    }
+  };
+console.log(empDOB)
   const handleSubmit = () => {
     if (
       empFirstName &&
@@ -72,7 +73,7 @@ const AddWorker = () => {
       empEmail &&
       empMobile &&
       empPassword &&
-      empDOB &&
+      empDOB && 
       empDepartment &&
       empDesignation
     ) {
@@ -199,30 +200,11 @@ const AddWorker = () => {
                   </span>
                 </Label>
                 <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={'outline'}
-                      className={cn(
-                        `${inputStyle} w-full justify-start hover:bg-transparent`,
-                        !empDOB && 'text-[#9e9e9e]',
-                      )}
-                    >
-                      <CalendarIcon className="w-4 h-4 mr-2" />
-                      {empDOB ? (
-                        format(empDOB, 'PPP')
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={empDOB}
-                      onSelect={setEmpDOB}
-                      initialFocus
-                    />
-                  </PopoverContent>
+                  <DatePicker
+                    onChange={onChange}
+                    className={`${inputStyle} input2  focus:ring-0 w-[100%]`}
+                    format={"YYYY/MM/DD"}
+                  />
                 </Popover>
               </div>
               <div className="floating-label-group">

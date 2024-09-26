@@ -447,6 +447,21 @@ export const getStreams = createAsyncThunk<DesignationResponse, void>(
   },
 );
 
+export const handleEmpStatus = createAsyncThunk(
+  'adminPage/handleEmpStatus',
+  async (workerData: any, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.put(
+        '/worker/updateMasterStatus',
+        workerData,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to update status');
+    }
+  },
+);
+
 export const addWorker = createAsyncThunk(
   'adminPage/addworker',
   async (workerData: AddWorkerPayload, { rejectWithValue }) => {

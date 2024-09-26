@@ -4,7 +4,10 @@ import { AppDispatch, RootState } from '@/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, Download, Edit, X } from 'lucide-react';
 import IconButton from '@/components/ui/IconButton';
-import { fetchWorkerDetails } from '@/features/admin/adminPageSlice';
+import {
+  fetchWorkerDetails,
+  handleEmpStatus,
+} from '@/features/admin/adminPageSlice';
 import { SelectOptionType } from '@/types/general';
 import { cn } from '@/lib/utils';
 import { differenceInDays, parse } from 'date-fns';
@@ -13,6 +16,7 @@ import { Link } from 'react-router-dom';
 import { getCV } from '@/features/homePage/homePageSlice';
 // import CustomTooltip from '../reusable/CustomTooltip';
 import { Button } from '../ui/button';
+import { toast } from '@/components/ui/use-toast';
 
 interface WorkerDetailsProps {
   empId: string;
@@ -37,6 +41,25 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
     dispatch(getCV(empId)).then((response: any) => {
       if (response.payload.success) {
         window.open(response?.payload?.data, '_blank');
+      }
+    });
+  };
+
+  const handleStatus = (status: string) => {
+    dispatch(
+      handleEmpStatus({
+        empUid: empId,
+        empStatus: status,
+      }),
+    ).then((response: any) => {
+      if (response.payload.success) {
+        toast({ title: 'Success!!', description: response.payload.message });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.payload.message,
+        });
       }
     });
   };
@@ -105,10 +128,16 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
         </CardContent>
       )}
       <div className="flex justify-end p-2 bg-white">
-        <Button className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 me-2">
+        <Button
+          className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 me-2"
+          onClick={() => handleStatus('REJ')}
+        >
           <X className="h-[18px] w-[18px] pr-2px" /> Reject
         </Button>
-        <Button className="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5">
+        <Button
+          className="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5"
+          onClick={() => handleStatus('APR')}
+        >
           <Check className="h-[18px] w-[18px] pr-2px" />
           Approve
         </Button>
