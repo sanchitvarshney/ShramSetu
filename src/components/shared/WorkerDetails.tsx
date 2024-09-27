@@ -17,18 +17,27 @@ import { getCV } from '@/features/homePage/homePageSlice';
 // import CustomTooltip from '../reusable/CustomTooltip';
 import { Button } from '../ui/button';
 import { toast } from '@/components/ui/use-toast';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 
 interface WorkerDetailsProps {
   empId: string;
   toggleDetails: (empId?: string) => void;
   showEdit?: boolean;
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   empId,
-  setOpen,
   showEdit,
+  open,
+  onOpenChange,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { workerInfo } = useSelector((state: RootState) => state.adminPage);
@@ -65,87 +74,90 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   };
 
   return (
-    <Card className="relative w-full h-[calc(100vh-230px)] border-none shadow-none flex flex-col">
-      {/* {loading || loading2 ? <Loading /> : null} */}
-      <CardHeader className="flex flex-row items-center justify-between py-0 bg-muted h-[50px] border-b">
-        <CardTitle>Worker Details</CardTitle>
-        <div className="flex items-center gap-2">
-          {showEdit && (
-            <Link target="_blank" to={`/employee-update/:${empId}`}>
-              <IconButton
-                color="text-primary"
-                tooltip="Update Worker"
-                icon={
-                  <Edit
-                    size={20}
-                    className="mt-2 text-black group-hover:text-white"
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        className="min-w-[40%] flex-grow overflow-y-auto p-4"
+        onInteractOutside={(e: any) => {
+          e.preventDefault();
+        }}
+      >
+        {/* <SheetContent className="flex-grow overflow-y-auto p-4 max-w-[80%] mx-auto" style={{ width: '90%', maxWidth: '1000px' }}> */}
+        <SheetHeader className="flex flex-row items-center justify-between py-0 h-[50px] border-b">
+          <div className="flex justify-between items-center w-full">
+            <SheetTitle className="text-slate-600">Worker Details</SheetTitle>
+            <div className="flex items-center gap-2">
+              {showEdit && (
+                <Link target="_blank" to={`/employee-update/:${empId}`}>
+                  <IconButton
+                    color="text-primary"
+                    tooltip="Update Worker"
+                    icon={
+                      <Edit
+                        size={20}
+                        className="mt-2 text-black group-hover:text-white"
+                      />
+                    }
                   />
-                }
-              />
-            </Link>
-          )}
-          <Button
-            title="Download CV"
-            onClick={handleDownload}
-            variant={'outline'}
-            className="p-0 bg-transparent border-none hover:bg-transparent"
-          >
-            <Download className="h-[20px] w-[20px] text-slate-500" />
-          </Button>
-          <IconButton
+                </Link>
+              )}
+              <Button
+                title="Download CV"
+                onClick={handleDownload}
+                variant={'outline'}
+                className="p-0 bg-transparent border-none hover:bg-transparent"
+              >
+                <Download className="h-[20px] w-[20px] text-slate-500" />
+              </Button>
+              {/* <IconButton
             onClick={() => setOpen && setOpen(false)}
             hoverBackground="hover:bg-transparent"
             hoverColor="hover:text-black"
             icon={<X />}
-          />
-        </div>
-      </CardHeader>
-      {workerInfo && (
-        <CardContent className="flex-grow overflow-y-auto p-[20px]">
-          {workerInfo?.basicInfo && (
-            <BasicDetails details={workerInfo?.basicInfo} />
-          )}
-          {workerInfo?.basicInfo && (
+          /> */}
+            </div>
+          </div>
+        </SheetHeader>
+        {workerInfo && (
+          <div className=''>
+            {workerInfo.basicInfo && (
+              <BasicDetails details={workerInfo.basicInfo} />
+            )}
             <div className="grid grid-cols-2 gap-2">
-              {workerInfo?.basicInfo?.presentAddress && (
-                <CurrentAddress
-                  details={workerInfo?.basicInfo?.presentAddress}
-                />
+              {workerInfo.basicInfo?.presentAddress && (
+                <CurrentAddress details={workerInfo.basicInfo.presentAddress} />
               )}
-              {workerInfo?.basicInfo?.permanentAddress && (
+              {workerInfo.basicInfo?.permanentAddress && (
                 <PermanentAddress
-                  details={workerInfo?.basicInfo?.permanentAddress}
+                  details={workerInfo.basicInfo.permanentAddress}
                 />
               )}
             </div>
-          )}
-          {workerInfo?.companyInfo && (
-            <EmployementDetails details={workerInfo} />
-          )}
-          {workerInfo?.bankDetails && (
-            <BankDetails details={workerInfo?.bankDetails} />
-          )}
-        </CardContent>
-      )}
-      <div className="flex justify-end p-2 bg-white">
-        <Button
-          className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 me-2"
-          onClick={() => handleStatus('REJ')}
-        >
-          <X className="h-[18px] w-[18px] pr-2px" /> Reject
-        </Button>
-        <Button
-          className="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5"
-          onClick={() => handleStatus('APR')}
-        >
-          <Check className="h-[18px] w-[18px] pr-2px" />
-          Approve
-        </Button>
-      </div>
-    </Card>
+            {workerInfo.companyInfo && (
+              <EmployementDetails details={workerInfo} />
+            )}
+            {workerInfo.bankDetails && (
+              <BankDetails details={workerInfo.bankDetails} />
+            )}
+          </div>
+        )}
+        <div className="flex justify-end p-2 bg-white">
+          <Button
+            className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 me-2"
+            onClick={() => handleStatus('REJ')}
+          >
+            <X className="h-[18px] w-[18px] pr-2px" /> Reject
+          </Button>
+          <Button
+            className="text-white bg-green-700 hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300 font-medium rounded-full text-sm px-5 py-2.5"
+            onClick={() => handleStatus('APR')}
+          >
+            <Check className="h-[18px] w-[18px] pr-2px" /> Approve
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
-
 export default WorkerDetails;
 
 const DetailRow = ({ children }: { children: React.ReactNode }) => {

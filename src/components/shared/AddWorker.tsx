@@ -65,7 +65,7 @@ const AddWorker = () => {
       setEmpDOB(undefined); // Handle case where date is cleared
     }
   };
-console.log(empDOB)
+
   const handleSubmit = () => {
     if (
       empFirstName &&

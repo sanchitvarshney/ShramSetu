@@ -514,13 +514,13 @@ export const fetchClientList = createAsyncThunk<ClientResponse, void>(
 
 export const fetchWorkers = createAsyncThunk<
   WorkersResponse,
-  { startDate: string; endDate: string }
+  { startDate: string; endDate: string, empStatus: string }
 >(
   'adminPage/fetchWorkers',
-  async ({ startDate, endDate }, { rejectWithValue }) => {
+  async ({ startDate, endDate ,empStatus}, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<WorkersResponse>(
-        `/worker/list?data=${startDate}-${endDate}&wise=createdDate`,
+        `/worker/list?data=${startDate}-${endDate}&wise=createdDate&empStatus=${empStatus}`,
       );
       if (!response.data.success) {
         toast({

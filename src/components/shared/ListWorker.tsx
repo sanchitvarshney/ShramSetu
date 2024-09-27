@@ -1,36 +1,63 @@
 import React, { useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { columnDefs } from '@/table/ListWorkerTable';
-import { DatePicker, Space } from 'antd';
+import { DatePicker, Space, Select } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { fetchWorkers } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
 import WorkerDetails from '@/components/shared/WorkerDetails';
 import Loading from '@/components/reusable/Loading';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
+
 const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 const ListWorker: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { workers, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
+
   const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
+  const [status, setStatus] = useState('APR'); // Default status
+  const [startDateRange, setStartDate] = useState<string>('');
+  const [endDateRange, setEndDate] = useState<string>('');
 
   const handleDateRangeUpdate = (dates: any) => {
     if (dates && dates.length === 2) {
       const [startDate, endDate] = dates;
       const formattedStartDate = format(startDate.toDate(), 'dd-MM-yyyy');
       const formattedEndDate = format(endDate.toDate(), 'dd-MM-yyyy');
+
+      setStartDate(formattedStartDate);
+      setEndDate(formattedEndDate);
+
+      console.log(formattedStartDate, formattedEndDate);
+
+      // Dispatch the fetchWorkers with the formatted dates
       dispatch(
         fetchWorkers({
           startDate: formattedStartDate,
           endDate: formattedEndDate,
+          empStatus: status,
         }),
       );
     } else {
       console.error('Invalid date range');
     }
+  };
+
+  const handleStatusChange = (value: any) => {
+    setStatus(value);
+    dispatch(
+      fetchWorkers({
+        startDate: startDateRange,
+        endDate: endDateRange,
+        empStatus: value,
+      }),
+    );
   };
 
   const toggleShowDetails = (empId?: string) => {
@@ -49,12 +76,32 @@ const ListWorker: React.FC = () => {
     <div className="flex flex-col h-[calc(100vh-140px)]">
       {loading && <Loading />}
       <div className="mb-4 pl-5 pt-5">
-        <Space direction="vertical" size={12}>
+        <Space direction="vertical" size={12} className="flex-row">
           <RangePicker
             onChange={handleDateRangeUpdate}
             format="DD-MM-YYYY"
             className="w-full"
           />
+          <Select
+            defaultValue={status}
+            onChange={(value) => {
+              handleStatusChange(value);
+            }}
+            className="w-[120px]"
+            style={{ marginBottom: '16px' }}
+          >
+            <Option value="APR">Approved</Option>
+            <Option value="REJ">Reject</Option>
+            <Option value="PEN">Pending</Option>
+          </Select>
+          <Button
+            type="submit"
+            className="shadow bg-teal-500 hover:bg-teal-600 shadow-slate-500 w-[120px] gap-2 h-8"
+            onClick={() => handleStatusChange(status)}
+          >
+            <Search className="h-[18px] w-[18px]" />
+            Fetch
+          </Button>
         </Space>
       </div>
       <div className="flex flex-1">
@@ -71,14 +118,18 @@ const ListWorker: React.FC = () => {
           </div>
         </div>
         {selectedEmpId && (
-          <div className="flex-1 h-full">
-            <WorkerDetails
-              showEdit
-              setOpen={() => toggleShowDetails()}
-              empId={selectedEmpId} // Pass the selected employee ID
-              toggleDetails={toggleShowDetails} // Pass the function to close details
-            />
-          </div>
+          // <div className="flex-1 h-full">
+          <WorkerDetails
+            showEdit
+            setOpen={() => toggleShowDetails()}
+            empId={selectedEmpId} // Pass the selected employee ID
+            toggleDetails={toggleShowDetails} // Pass the function to close details
+            open={Boolean(selectedEmpId)} // or your condition for opening
+            onOpenChange={(open) =>
+              setSelectedEmpId(open ? selectedEmpId : null)
+            }
+          />
+          // </div>
         )}
       </div>
     </div>
