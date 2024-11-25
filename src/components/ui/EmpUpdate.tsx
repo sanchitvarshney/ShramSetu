@@ -49,6 +49,7 @@ import {
   getStreams,
   universitiesSearch,
   updateEmployeeDetails,
+  uploadFamilyPhoto,
 } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
 import { fetchSearchCompanies } from '@/features/homePage/homePageSlice';
@@ -109,6 +110,10 @@ export default function EmpUpdate() {
   const [corArea, setCorArea] = useState<string>('');
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const [children, setChildren] = useState<Child[]>([]);
+  const [empPhotoUrl, setEmpPhotoUrl] = useState<string>('');
+  const [empPhoto, setEmpPhoto] = useState<File | null>(null);
+  const [empFamilyPhotoUrl, setEmpFamilyPhotoUrl] = useState<string>('');
+  const [empFamilyPhoto, setEmpFamilyPhoto] = useState<File | null>(null);
   const [educationDetails, setEducationDetails] = useState<EducationDetail[]>([
     {
       degree: '',
@@ -127,7 +132,6 @@ export default function EmpUpdate() {
   const formatDate = (date: Date | null): string => {
     return date ? format(date, 'dd-MM-yyyy') : 'Pick a date';
   };
-  
 
   useEffect(() => {
     if (workerInfo) {
@@ -155,6 +159,8 @@ export default function EmpUpdate() {
       setMotherName(workerInfo?.familyInfo?.motherName || '');
       setSpouseName(workerInfo?.familyInfo?.spouseName || '');
       setChildrenCount(workerInfo?.familyInfo?.childCount || '');
+      setEmpFamilyPhotoUrl(workerInfo?.familyInfo?.familyPhoto || '');
+      setEmpPhotoUrl(workerInfo?.basicInfo?.empPhoto || '');
       setPerPinCode(
         workerInfo?.basicInfo?.permanentAddress?.pincodePermanent || '',
       );
@@ -336,9 +342,8 @@ export default function EmpUpdate() {
   }, [isChecked, perPinCode, perHouseNo, perArea]);
   const isValidDate = (date: any): date is Date =>
     date instanceof Date && !isNaN(date.getTime());
-  
+
   const validDate = isValidDate(empDOB) ? empDOB : null;
-  
 
   const payload = {
     empId: workerInfo?.basicInfo?.uid,
@@ -386,6 +391,31 @@ export default function EmpUpdate() {
     },
     empFamilyKey: 'Chandra',
     uan: uan,
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      setEmpPhoto(file);
+      const imageUrl = URL.createObjectURL(file); // Generate URL for the selected image file
+      setEmpPhotoUrl(imageUrl); // Store the URL in state for immediate display
+      console.log(empPhoto);
+      dispatch(
+        uploadFamilyPhoto({ file: file, id: workerInfo?.basicInfo?.uid, type: 'emp' }),
+      );
+    }
+  };
+  const handleFamilyPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      setEmpFamilyPhoto(file);
+      const imageUrl = URL.createObjectURL(file); // Generate URL for the selected image file
+      setEmpFamilyPhotoUrl(imageUrl); // Store the URL in state for immediate display
+      console.log(empFamilyPhoto);
+      dispatch(
+        uploadFamilyPhoto({ file: file, id: workerInfo?.basicInfo?.uid, type: 'family' }),
+      );
+    }
   };
 
   return (
@@ -1066,7 +1096,75 @@ export default function EmpUpdate() {
               </div>
             </CardContent>
           </Card>
+          <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0 w-1/2">
+            <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
+              <CardTitle className="text-[20px] font-[650] text-slate-600">
+                Upload Profile Photo
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex gap-20 py-[10px] overflow-x-auto">
+              <div className="w-1/3 bg-gray-50 p-[20px] rounded-xl shadow-lg flex flex-col items-center">
+                <div className="relative w-[150px] h-[150px] mb-4 overflow-hidden rounded-full bg-gray-200">
+                  <img
+                    src={empPhotoUrl || './ProfileImage.png'}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Optional overlay to indicate upload */}
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center opacity-0 hover:opacity-100 transition-opacity">
+                    <label
+                      htmlFor="profile-upload"
+                      className="cursor-pointer text-white text-lg font-bold"
+                    >
+                      <span>Change</span>
+                    </label>
+                  </div>
+                </div>
+
+                <input
+                  id="profile-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <button className="bg-teal-500 text-white rounded-md px-4 py-2 mt-2 hover:bg-teal-600 transition">
+                  Upload Profile Photo
+                </button>
+              </div>
+              <div className="w-1/3 bg-gray-50 p-[20px] rounded-xl shadow-lg flex flex-col items-center">
+                <div className="relative w-[150px] h-[150px] mb-4 overflow-hidden rounded-full bg-gray-200">
+                  <img
+                    src={empFamilyPhotoUrl || './ProfileImage.png'}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Optional overlay to indicate upload */}
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center opacity-0 hover:opacity-100 transition-opacity">
+                    <label
+                      htmlFor="profile-upload"
+                      className="cursor-pointer text-white text-lg font-bold"
+                    >
+                      <span>Change</span>
+                    </label>
+                  </div>
+                </div>
+
+                <input
+                  id="profile-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFamilyPhotoChange}
+                  className="hidden"
+                />
+                <button className="bg-teal-500 text-white rounded-md px-4 py-2 mt-2 hover:bg-teal-600 transition">
+                  Upload Family Photo
+                </button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
         <div className="p-4">
           <Button
             type="submit"
@@ -1199,7 +1297,7 @@ export const DatePickerWithLabel: React.FC<DatePickerWithLabelProps> = ({
 }) => {
   // Convert null to undefined for the Calendar component
   const validDate = isValidDate(date) ? date : undefined;
-  
+
   return (
     <div className={className}>
       <Label className="floating-label gap-[10px]">
