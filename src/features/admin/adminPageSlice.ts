@@ -464,14 +464,31 @@ export const handleEmpStatus = createAsyncThunk(
   },
 );
 
+// export const addWorker = createAsyncThunk(
+//   'adminPage/addworker',
+//   async (workerData: AddWorkerPayload, { rejectWithValue }) => {
+//     try {
+//       const response = await orshAxios.post('/worker/add', workerData);
+//       return response.data;
+//     } catch (error) {
+//       return rejectWithValue('Failed to add company');
+//     }
+//   },
+// );
+
 export const addWorker = createAsyncThunk(
   'adminPage/addworker',
-  async (workerData: AddWorkerPayload, { rejectWithValue }) => {
+  async (workerData: FormData, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.post('/worker/add', workerData);
+      // Make sure to pass formData as the request body
+      const response = await orshAxios.post('/worker/add', workerData, {
+        headers: {
+          'Content-Type': 'multipart/form-data', // Set the content type to multipart/form-data
+        },
+      });
       return response.data;
     } catch (error) {
-      return rejectWithValue('Failed to add company');
+      return rejectWithValue('Failed to add worker');
     }
   },
 );

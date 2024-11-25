@@ -20,7 +20,6 @@ import { Input } from '../ui/input';
 import { inputStyle } from '@/style/CustomStyles';
 import { Label } from '../ui/label';
 import { AiOutlineUser } from 'react-icons/ai';
-
 import { BsTelephone } from 'react-icons/bs';
 import { CiMail } from 'react-icons/ci';
 import { IoIosLock } from 'react-icons/io';
@@ -56,13 +55,14 @@ const AddWorker = () => {
   const [empMobile, setEmpMobile] = useState('');
   const [empPassword, setEmpPassword] = useState('');
   const [empGender, setEmpGender] = useState('');
+  const [empPhoto, setEmpPhoto] = useState<any>(null);
+  const [empPhotoUrl, setEmpPhotoUrl] = useState<any>(null);
 
   const onChange: DatePickerProps['onChange'] = (dateString) => {
-    console.log(dateString,dateString?.toDate());
     if (dateString) {
-      setEmpDOB(dateString.toDate()); // Convert to JavaScript Date
+      setEmpDOB(dateString.toDate());
     } else {
-      setEmpDOB(undefined); // Handle case where date is cleared
+      setEmpDOB(undefined);
     }
   };
 
@@ -73,23 +73,44 @@ const AddWorker = () => {
       empEmail &&
       empMobile &&
       empPassword &&
-      empDOB && 
+      empDOB &&
       empDepartment &&
       empDesignation
     ) {
+      const formData = new FormData();
+    formData.append('empFirstName', empFirstName);
+    formData.append('empMiddleName', empMiddleName);
+    formData.append('empLastName', empLastName);
+    formData.append('empEmail', empEmail);
+    formData.append('empDOB', format(empDOB, 'dd-MM-yyyy'));
+    formData.append('empDepartment', empDepartment);
+    formData.append('empDesignation', empDesignation);
+    formData.append('empMobile', empMobile);
+    formData.append('empPassword', empPassword);
+    formData.append('empGender', empGender);
+
+    // Only append the photo if it is not null
+    console.log(empPhoto)
+    if (empPhoto instanceof File) {
+      formData.append('empPhoto', empPhoto);  // Append the file object, not the URL
+    }
       dispatch(
-        addWorker({
-          empFirstName,
-          empMiddleName,
-          empLastName,
-          empEmail,
-          empDOB: format(empDOB, 'dd-MM-yyyy'),
-          empDepartment,
-          empDesignation,
-          empMobile,
-          empPassword,
-          empGender,
-        }),
+        addWorker(
+        //   {
+        //   empFirstName,
+        //   empMiddleName,
+        //   empLastName,
+        //   empEmail,
+        //   empDOB: format(empDOB, 'dd-MM-yyyy'),
+        //   empDepartment,
+        //   empDesignation,
+        //   empMobile,
+        //   empPassword,
+        //   empGender,
+        //   empPhoto,
+        // }
+        formData
+      ),
       ).then((response: any) => {
         if (response.payload.success) {
           toast({ title: 'Success!!', description: response.payload.message });
@@ -109,6 +130,15 @@ const AddWorker = () => {
       });
     }
   };
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      setEmpPhoto(file);
+      const imageUrl = URL.createObjectURL(file);  // Generate URL for the selected image file
+      setEmpPhotoUrl(imageUrl);  // Store the URL in state for immediate display
+    }
+  };
+  
 
   useEffect(() => {
     dispatch(fetchDepartments());
@@ -119,7 +149,7 @@ const AddWorker = () => {
     <div className="overflow-y-auto ">
       <div className="p-[10px]">
         <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0">
-          <CardHeader className=" border-b p-0 px-[20px]  h-[70px] gap-0 flex justify-center ">
+          <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center ">
             <CardTitle className="text-[20px] font-[650] text-slate-600">
               Add Worker
             </CardTitle>
@@ -129,7 +159,39 @@ const AddWorker = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="py-[10px] h-[calc(100vh-330px)] overflow-x-auto">
-            <div className="grid grid-cols-3 gap-[20px]">
+            <div className="flex gap-[20px]">
+              {/* Left Section: Profile Photo Upload */}
+              <div className="w-1/3 bg-gray-50 p-[20px] rounded-xl shadow-lg flex flex-col items-center">
+                <div className="relative w-[150px] h-[150px] mb-4 overflow-hidden rounded-full bg-gray-200">
+                  <img
+                    src={empPhotoUrl || './ProfileImage.png'}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Optional overlay to indicate upload */}
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center opacity-0 hover:opacity-100 transition-opacity">
+                    <label
+                      htmlFor="profile-upload"
+                      className="cursor-pointer text-white text-lg font-bold"
+                    >
+                      <span>Change</span>
+                    </label>
+                  </div>
+                </div>
+
+                <input
+                  id="profile-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <button className="bg-teal-500 text-white rounded-md px-4 py-2 mt-2 hover:bg-teal-600 transition">
+                  Upload Photo
+                </button>
+              </div>
+            
+            <div className="w-2/3 grid grid-cols-3 gap-[20px]">
               <div className="floating-label-group">
                 <Input
                   required
@@ -203,7 +265,7 @@ const AddWorker = () => {
                   <DatePicker
                     onChange={onChange}
                     className={`${inputStyle} input2  focus:ring-0 w-[100%]`}
-                    format={"YYYY/MM/DD"}
+                    format={'YYYY/MM/DD'}
                   />
                 </Popover>
               </div>
@@ -312,11 +374,11 @@ const AddWorker = () => {
                   </span>
                 </Label>
               </div>
-            </div>
+            </div></div>
           </CardContent>
-          <CardFooter className="p-0 px-[20px] flex justify-end items-center border-t h-[50px] ">
+          <CardFooter className="p-0 px-[20px] flex justify-end items-center border-t h-[50px]">
             <Button
-              className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px] "
+              className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px]"
               onClick={handleSubmit}
             >
               <BiSolidLogInCircle className="h-[25px] w-[25px]" />
