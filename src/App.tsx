@@ -22,6 +22,10 @@ import { Toaster } from '@/components/ui/toaster';
 import EmpUpdate from '@/components/ui/EmpUpdate';
 import CompanyInfo from '@/components/ui/companyInfo';
 import ProfilePage from '@/pages/profilePage/ProfilePage';
+import PageNotFound from './pages/PageNotFound';
+import JobLayout from './Layout/JobLayout';
+import JobAddPage from './pages/jobPages/JobAddPage';
+import JobListPage from './pages/jobPages/JobListPage';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -159,6 +163,30 @@ const router = createBrowserRouter([
       </Protected>
     ),
   },
+    {
+    path: '/job/job-create',
+    element: (
+      <Protected authentication>
+         <MainLayout>
+        <JobLayout>
+          <JobAddPage />
+        </JobLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+   {
+    path: '/job/job-list',
+    element: (
+      <Protected authentication>
+         <MainLayout>
+        <JobLayout>
+          <JobListPage />
+        </JobLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
   {
     path: '/login',
     element: <Login />,
@@ -166,6 +194,10 @@ const router = createBrowserRouter([
   {
     path: '/loading',
     element: <Loading />,
+  },
+   {
+    path: '*',
+    element: <PageNotFound />,
   },
 ]);
 function App() {

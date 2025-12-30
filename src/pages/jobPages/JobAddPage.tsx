@@ -1,0 +1,446 @@
+import { useEffect } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { Form } from '@/components/ui/form';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store';
+import { fetchCompanies } from '@/features/homePage/homePageSlice';
+import { getCompanyBranchOptions } from '@/features/admin/adminPageSlice';
+import {
+  fetchDepartments,
+  fetchDesignations,
+} from '@/features/admin/adminPageSlice';
+import { inputStyle } from '@/style/CustomStyles';
+
+interface Inputs {
+  company: string;
+  branch: string;
+  jobType: string;
+  designation: string;
+  department: string;
+  minSalary: number;
+  maxSalary: number;
+  skills: string;
+  jobTitle: string;
+  qualification: string;
+  experience: string;
+  jobStatus: string;
+}
+
+const JobAddPage = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { companies } = useSelector((state: RootState) => state.homePage);
+  const { branches, department, designation } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
+
+  const form = useForm<Inputs>({
+    defaultValues: {
+      company: '',
+      branch: '',
+      jobType: '',
+      designation: '',
+      department: '',
+      minSalary: 0,
+      maxSalary: 0,
+      skills: '',
+      jobTitle: '',
+      qualification: '',
+      experience: '',
+      jobStatus: '',
+    },
+  });
+
+  const selectedCompany = form.watch('company');
+
+  useEffect(() => {
+    dispatch(fetchCompanies());
+    dispatch(fetchDepartments());
+    dispatch(fetchDesignations());
+  }, [dispatch]);
+
+
+
+  useEffect(() => {
+    if (selectedCompany) {
+      dispatch(getCompanyBranchOptions(selectedCompany));
+
+      form.setValue('branch', '');
+    }
+  }, [selectedCompany, dispatch, form]);
+
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    console.log(data);
+  };
+
+  return (
+    <div className="p-4 max-h-[calc(100vh-75px)] overflow-y-auto">
+      <Card className="rounded-lg">
+        <CardHeader>
+          <CardTitle className="text-[20px] font-[650] text-slate-600">
+            Add Job
+          </CardTitle>
+          <CardDescription>
+            Fill in the details to create a new job posting
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                {/* Company Select */}
+                <FormField
+                  control={form.control}
+                  name="company"
+                  rules={{ required: 'Company is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputStyle}>
+                            <SelectValue placeholder="Select Company" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {companies?.map((company: any) => (
+                            <SelectItem
+                              key={company.companyID}
+                              value={company.companyID}
+                            >
+                              {company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Branch Select */}
+                <FormField
+                  control={form.control}
+                  name="branch"
+                  rules={{ required: 'Branch is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Branch *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={!selectedCompany}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputStyle}>
+                            <SelectValue placeholder="Select Branch" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {branches?.map((branch: any) => (
+                            <SelectItem
+                              key={branch.branchID}
+                              value={branch.branchID}
+                            >
+                              {branch.branchName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Job Type */}
+                <FormField
+                  control={form.control}
+                  name="jobType"
+                  rules={{ required: 'Job Type is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Type *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputStyle}>
+                            <SelectValue placeholder="Select Job Type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="full-time">Full Time</SelectItem>
+                          <SelectItem value="part-time">Part Time</SelectItem>
+                          <SelectItem value="contract">Contract</SelectItem>
+                          <SelectItem value="internship">Internship</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Job Title */}
+                <FormField
+                  control={form.control}
+                  name="jobTitle"
+                  rules={{ required: 'Job Title is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Title *</FormLabel>
+                      <FormControl>
+                        <Input
+                          className={inputStyle}
+                          placeholder="Enter Job Title"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Department */}
+                <FormField
+                  control={form.control}
+                  name="department"
+                  rules={{ required: 'Department is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Department *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputStyle}>
+                            <SelectValue placeholder="Select Department" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {department?.map((dept: any) => (
+                            <SelectItem key={dept.value} value={dept.value}>
+                              {dept.text}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Designation */}
+                <FormField
+                  control={form.control}
+                  name="designation"
+                  rules={{ required: 'Designation is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Designation *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputStyle}>
+                            <SelectValue placeholder="Select Designation" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {designation?.map((desg: any) => (
+                            <SelectItem key={desg.value} value={desg.value}>
+                              {desg.text}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Min Salary */}
+                <FormField
+                  control={form.control}
+                  name="minSalary"
+                  rules={{ required: 'Minimum Salary is required', min: 0 }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Minimum Salary *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          className={inputStyle}
+                          placeholder="Enter Minimum Salary"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value) || 0)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Max Salary */}
+                <FormField
+                  control={form.control}
+                  name="maxSalary"
+                  rules={{ required: 'Maximum Salary is required', min: 0 }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Maximum Salary *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          className={inputStyle}
+                          placeholder="Enter Maximum Salary"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value) || 0)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Experience */}
+                <FormField
+                  control={form.control}
+                  name="experience"
+                  rules={{ required: 'Experience is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Experience *</FormLabel>
+                      <FormControl>
+                        <Input
+                          className={inputStyle}
+                          placeholder="e.g., 2-5 years"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Job Status */}
+                <FormField
+                  control={form.control}
+                  name="jobStatus"
+                  rules={{ required: 'Job Status is required' }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Status *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputStyle}>
+                            <SelectValue placeholder="Select Job Status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                          <SelectItem value="draft">Draft</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Skills */}
+              <FormField
+                control={form.control}
+                name="skills"
+                rules={{ required: 'Skills are required' }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Skills *</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className={inputStyle}
+                        placeholder="Enter required skills (comma separated)"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Qualification */}
+              <FormField
+                control={form.control}
+                name="qualification"
+                rules={{ required: 'Qualification is required' }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Qualification *</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className={inputStyle}
+                        placeholder="Enter required qualifications"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <CardFooter className="flex justify-end px-0 pt-4">
+                <Button
+                  type="submit"
+                  className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400"
+                >
+                  Submit
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default JobAddPage;

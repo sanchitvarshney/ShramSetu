@@ -84,7 +84,7 @@ export const fetchCompanies = createAsyncThunk<CompanyResponse, void>(
   async (_, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<CompanyResponse>(
-        '/fetch/companyList',
+        'company/list',
       );
       return response.data;
     } catch (error) {

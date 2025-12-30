@@ -38,7 +38,7 @@ import { logout } from '@/features/auth/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { Company, fetchCompanies } from '@/features/homePage/homePageSlice';
-import { IoSettingsOutline } from 'react-icons/io5';
+import { IoAddOutline, IoSettingsOutline } from 'react-icons/io5';
 import { FiLogOut } from 'react-icons/fi';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 
@@ -82,7 +82,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
     navigate('/login');
     toast({ description: 'Logged Out Successfully' });
   };
-console.log(buttonRef.current?.offsetWidth! + 15)
+
   return (
     <>
       <AlertDialogPopup
@@ -144,6 +144,14 @@ console.log(buttonRef.current?.offsetWidth! + 15)
                   >
                     <IoSettingsOutline className="w-6 h-6" />
                     Setting
+                  </NavLink>
+                     <NavLink
+                    to="/job/job-create"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <IoAddOutline className="w-6 h-6" />
+                    Add Job
                   </NavLink>
                 </nav>
               </aside>
