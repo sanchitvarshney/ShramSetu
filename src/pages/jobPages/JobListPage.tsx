@@ -35,6 +35,7 @@ import { AppDispatch, RootState } from '@/store';
 import {
   fetchDepartments,
   fetchDesignations,
+  fetchJobs,
 } from '@/features/admin/adminPageSlice';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 import { useForm } from 'react-hook-form';
@@ -76,63 +77,15 @@ const JobListPage = () => {
   useEffect(() => {
     setLoading(true);
     // TODO: Replace with actual API call
-    // dispatch(fetchJobs()).then((response: any) => {
-    //   setJobs(response.payload.data || []);
-    //   setFilteredJobs(response.payload.data || []);
-    //   setLoading(false);
-    // });
-
-    // Mock data for demonstration
-    const mockJobs: JobRowData[] = [
-      {
-        jobID: '1',
-        jobTitle: 'Senior Software Engineer',
-        companyName: 'Tech Corp',
-        branchName: 'Bangalore',
-        jobType: 'full-time',
-        department: 'Engineering',
-        designation: 'Senior Developer',
-        minSalary: 800000,
-        maxSalary: 1200000,
-        experience: '5-8 years',
-        jobStatus: 'currently-hiring',
-        createdAt: new Date().toISOString(),
-      },
-      {
-        jobID: '2',
-        jobTitle: 'Product Manager',
-        companyName: 'Tech Corp',
-        branchName: 'Mumbai',
-        jobType: 'full-time',
-        department: 'Product',
-        designation: 'Product Manager',
-        minSalary: 1000000,
-        maxSalary: 1500000,
-        experience: '3-5 years',
-        jobStatus: 'closed',
-        createdAt: new Date().toISOString(),
-      },
-      {
-        jobID: '3',
-        jobTitle: 'UI/UX Designer',
-        companyName: 'Design Studio',
-        branchName: 'Delhi',
-        jobType: 'contract',
-        department: 'Design',
-        designation: 'Designer',
-        minSalary: 600000,
-        maxSalary: 900000,
-        experience: '2-4 years',
-        jobStatus: 'currently-hiring',
-        createdAt: new Date().toISOString(),
-      },
-    ];
-
-    setTimeout(() => {
-      setJobs(mockJobs);
-      setFilteredJobs(mockJobs);
+    dispatch(fetchJobs()).then((response: any) => {
+      setJobs(response.payload.data || []);
+      setFilteredJobs(response.payload.data || []);
       setLoading(false);
-    }, 500);
+    });
+
+
+
+  
   }, [dispatch]);
 
   const defaultColDef = useMemo<ColDef>(

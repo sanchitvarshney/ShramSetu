@@ -211,6 +211,7 @@ interface AdminPageState {
   companyInfo: BranchDetail[] | null;
   loading: boolean;
   error: string | null;
+  isFetchingJobsLoading: boolean;
 }
 
 const initialState: AdminPageState = {
@@ -235,6 +236,7 @@ const initialState: AdminPageState = {
   perPincode: [],
   loading: false,
   error: null,
+  isFetchingJobsLoading: false,
 };
 
 // Define the async thunk for adding a company
@@ -565,7 +567,69 @@ export const fetchCountStatus = createAsyncThunk<any, void>(
     }
   },
 );
+export const fetchJobs = createAsyncThunk<any, void>(
+  'adminPage/fetchJobs',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<any>(`/job/getJobs`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch universities');
+    }
+  },
+);
 
+interface CreateJobPayload {
+  company: string;
+  branch: string;
+  jobType: string;
+  designation: string;
+  department: string;
+  minSalary: number;
+  maxSalary: number;
+  skills: string;
+  jobTitle: string;
+  qualification: string;
+  experience: string;
+  jobStatus: string;
+  jobDescription: string;
+}
+
+interface CreateJobResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+export const createJob = createAsyncThunk<CreateJobResponse, CreateJobPayload>(
+  'adminPage/createJob',
+  async (jobData: CreateJobPayload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post<CreateJobResponse>(
+        '/job/createJob',
+        jobData,
+      );
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+        return rejectWithValue(response.data.message);
+      }
+      return response.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || 'Failed to create job';
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: errorMessage,
+      });
+      return rejectWithValue(errorMessage);
+    }
+  },
+);
 export const bulkUpload = createAsyncThunk<void, File, { rejectValue: string }>(
   'adminPage/bulkUpload',
   async (file: File, { rejectWithValue }) => {
@@ -720,6 +784,30 @@ const adminPageSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+         .addCase(fetchJobs.pending, (state) => {
+        state.isFetchingJobsLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchJobs.fulfilled, (state) => {
+        state.isFetchingJobsLoading = false;
+        state.error = null;
+      })
+      .addCase(fetchJobs.rejected, (state, action) => {
+        state.isFetchingJobsLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(createJob.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createJob.fulfilled, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(createJob.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(addCompany.pending, (state) => {
         state.loading = true;
         state.error = null;

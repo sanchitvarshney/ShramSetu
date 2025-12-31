@@ -12,7 +12,7 @@ const statusCellRenderer = (params: ICellRendererParams) => {
   const statusInfo = statusMap[status] || { label: status, color: 'text-gray-600' };
 
   return (
-    <span className={`font-medium ${statusInfo.color}`}>{statusInfo.label}</span>
+    <span className={`font-medium ${statusInfo.color}`}>{statusInfo.label.toUpperCase()}</span>
   );
 };
 
@@ -28,18 +28,19 @@ export const jobColumnDefs = (
     sortable: true,
     filter: true,
     flex: 1,
-    minWidth: 150,
+    minWidth: 250,
     editable: true,
     cellEditor: 'agTextCellEditor',
   },
   {
     headerName: 'Company',
-    field: 'companyName',
+    field: 'company',
     sortable: true,
     filter: true,
     flex: 1,
-    minWidth: 120,
+    minWidth: 250,
     editable: false,
+
   },
   {
     headerName: 'Branch',
@@ -158,7 +159,7 @@ export const jobColumnDefs = (
   },
   {
     headerName: 'Created Date',
-    field: 'createdAt',
+    field: 'insertDt',
     sortable: true,
     filter: true,
     flex: 1,

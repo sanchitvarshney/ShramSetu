@@ -29,12 +29,14 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { fetchCompanies } from '@/features/homePage/homePageSlice';
-import { getCompanyBranchOptions } from '@/features/admin/adminPageSlice';
 import {
+  getCompanyBranchOptions,
+  createJob,
   fetchDepartments,
   fetchDesignations,
 } from '@/features/admin/adminPageSlice';
 import { inputStyle } from '@/style/CustomStyles';
+import { toast } from '@/components/ui/use-toast';
 
 interface Inputs {
   company: string;
@@ -49,12 +51,13 @@ interface Inputs {
   qualification: string;
   experience: string;
   jobStatus: string;
+  jobDescription: string;
 }
 
 const JobAddPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { companies } = useSelector((state: RootState) => state.homePage);
-  const { branches, department, designation } = useSelector(
+  const { branches, department, designation, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
 
@@ -72,6 +75,7 @@ const JobAddPage = () => {
       qualification: '',
       experience: '',
       jobStatus: '',
+      jobDescription: '',
     },
   });
 
@@ -84,7 +88,6 @@ const JobAddPage = () => {
   }, [dispatch]);
 
 
-
   useEffect(() => {
     if (selectedCompany) {
       dispatch(getCompanyBranchOptions(selectedCompany));
@@ -93,8 +96,22 @@ const JobAddPage = () => {
     }
   }, [selectedCompany, dispatch, form]);
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    try {
+      const response = await dispatch(createJob(data)).unwrap();
+      if (response.success) {
+        toast({
+          title: 'Success!!',
+          description: response.message || 'Job created successfully',
+        });
+      
+        form.reset();
+
+      }
+    } catch (error: any) {
+     
+      console.error('Failed to create job:', error);
+    }
   };
 
   return (
@@ -132,10 +149,10 @@ const JobAddPage = () => {
                         <SelectContent>
                           {companies?.map((company: any) => (
                             <SelectItem
-                              key={company.companyID}
-                              value={company.companyID}
+                              key={company.value || company.companyID}
+                              value={company.value || company.companyID}
                             >
-                              {company.name}
+                              {company.text || company.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -292,7 +309,7 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="minSalary"
-                  rules={{ required: 'Minimum Salary is required', min: 0 }}
+                  rules={{ required: 'Minimum Salary is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Minimum Salary *</FormLabel>
@@ -316,7 +333,7 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="maxSalary"
-                  rules={{ required: 'Maximum Salary is required', min: 0 }}
+                  rules={{ required: 'Maximum Salary is required'}}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Maximum Salary *</FormLabel>
@@ -374,9 +391,9 @@ const JobAddPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                          <SelectItem value="draft">Draft</SelectItem>
+                          <SelectItem value="A">Active</SelectItem>
+                          <SelectItem value="C">Inactive</SelectItem>
+                          <SelectItem value="H">Hold</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -427,12 +444,34 @@ const JobAddPage = () => {
                 )}
               />
 
+              {/* Job Description */}
+              <FormField
+                control={form.control}
+                name="jobDescription"
+                rules={{ required: 'Job Description is required' }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Job Description *</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className={inputStyle}
+                        placeholder="Enter job description and responsibilities"
+                        rows={4}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <CardFooter className="flex justify-end px-0 pt-4">
                 <Button
                   type="submit"
                   className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400"
+                  disabled={loading}
                 >
-                  Submit
+                  {loading ? 'Creating...' : 'Submit'}
                 </Button>
               </CardFooter>
             </form>
