@@ -30,7 +30,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { fetchCompanies } from '@/features/homePage/homePageSlice';
 import {
-  getCompanyBranchOptions,
+  // getCompanyBranchOptions,
   createJob,
   fetchDepartments,
   fetchDesignations,
@@ -41,6 +41,7 @@ import { toast } from '@/components/ui/use-toast';
 interface Inputs {
   company: string;
   branch: string;
+  address: string;
   jobType: string;
   designation: string;
   department: string;
@@ -57,14 +58,15 @@ interface Inputs {
 const JobAddPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { companies } = useSelector((state: RootState) => state.homePage);
-  const { branches, department, designation, loading } = useSelector(
+  const { department, designation, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
 
   const form = useForm<Inputs>({
     defaultValues: {
       company: '',
-      branch: '',
+      // branch: '',
+      address: '',
       jobType: '',
       designation: '',
       department: '',
@@ -79,7 +81,7 @@ const JobAddPage = () => {
     },
   });
 
-  const selectedCompany = form.watch('company');
+  // const selectedCompany = form.watch('company');
 
   useEffect(() => {
     dispatch(fetchCompanies());
@@ -87,29 +89,42 @@ const JobAddPage = () => {
     dispatch(fetchDesignations());
   }, [dispatch]);
 
+  // useEffect(() => {
+  //   if (selectedCompany) {
+  //     dispatch(getCompanyBranchOptions(selectedCompany));
 
-  useEffect(() => {
-    if (selectedCompany) {
-      dispatch(getCompanyBranchOptions(selectedCompany));
-
-      form.setValue('branch', '');
-    }
-  }, [selectedCompany, dispatch, form]);
+  //     form.setValue('branch', '');
+  //   }
+  // }, [selectedCompany, dispatch, form]);
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    const payload: any = {
+      company: data.company,
+      // branch: data.branch,
+      address: data.address,
+      jobType: data.jobType,
+      designation: data.designation,
+      department: data.department,
+      minSalary: data.minSalary,
+      maxSalary: data.maxSalary,
+      skills: data.skills,
+      jobTitle: data.jobTitle,
+      qualification: data.qualification,
+      experience: data.experience,
+      jobStatus: data.jobStatus,
+      jobDescription: data.jobDescription,
+    };
     try {
-      const response = await dispatch(createJob(data)).unwrap();
+      const response = await dispatch(createJob(payload)).unwrap();
       if (response.success) {
         toast({
           title: 'Success!!',
           description: response.message || 'Job created successfully',
         });
-      
-        form.reset();
 
+        form.reset();
       }
     } catch (error: any) {
-     
       console.error('Failed to create job:', error);
     }
   };
@@ -163,7 +178,7 @@ const JobAddPage = () => {
                 />
 
                 {/* Branch Select */}
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="branch"
                   rules={{ required: 'Branch is required' }}
@@ -194,7 +209,7 @@ const JobAddPage = () => {
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                /> */}
 
                 {/* Job Type */}
                 <FormField
@@ -333,7 +348,7 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="maxSalary"
-                  rules={{ required: 'Maximum Salary is required'}}
+                  rules={{ required: 'Maximum Salary is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Maximum Salary *</FormLabel>
@@ -391,9 +406,9 @@ const JobAddPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="A">Active</SelectItem>
-                          <SelectItem value="C">Inactive</SelectItem>
-                          <SelectItem value="H">Hold</SelectItem>
+                          <SelectItem value="Active">Active</SelectItem>
+                          <SelectItem value="Cancel">Inactive</SelectItem>
+                          <SelectItem value="Hold">Hold</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -401,6 +416,27 @@ const JobAddPage = () => {
                   )}
                 />
               </div>
+
+              {/* {Address} */}
+              <FormField
+                control={form.control}
+                name="address"
+                rules={{ required: 'Address are required' }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address *</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className={inputStyle}
+                        placeholder="Enter Address (B-88, Sector 2, Noida, Uttar Pradesh, 201301)"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Skills */}
               <FormField

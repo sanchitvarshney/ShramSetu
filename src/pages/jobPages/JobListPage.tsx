@@ -72,7 +72,7 @@ const JobListPage = () => {
   useEffect(() => {
     dispatch(fetchDepartments());
     dispatch(fetchDesignations());
-  }, [dispatch]);
+  }, [ isEditDialogOpen]);
 
   useEffect(() => {
     setLoading(true);
@@ -82,10 +82,6 @@ const JobListPage = () => {
       setFilteredJobs(response.payload.data || []);
       setLoading(false);
     });
-
-
-
-  
   }, [dispatch]);
 
   const defaultColDef = useMemo<ColDef>(
@@ -298,12 +294,7 @@ const JobListPage = () => {
           <div className="ag-theme-quartz h-[calc(100vh-400px)] min-h-[450px]">
             <AgGridReact
               rowData={filteredJobs}
-              columnDefs={jobColumnDefs(
-                department,
-                designation,
-                handleEdit,
-                handleDelete,
-              )}
+              columnDefs={jobColumnDefs(handleEdit, handleDelete)}
               defaultColDef={defaultColDef}
               pagination={true}
               paginationPageSize={20}
@@ -316,19 +307,7 @@ const JobListPage = () => {
                 const newValue = params.newValue;
 
                 if (jobId && field) {
-                  if (field === 'department' && department) {
-                    const dept = department.find(
-                      (d: any) => d.text === newValue || d.value === newValue,
-                    );
-                    handleJobUpdate(jobId, field, dept?.text || newValue);
-                  } else if (field === 'designation' && designation) {
-                    const desg = designation.find(
-                      (d: any) => d.text === newValue || d.value === newValue,
-                    );
-                    handleJobUpdate(jobId, field, desg?.text || newValue);
-                  } else {
-                    handleJobUpdate(jobId, field, newValue);
-                  }
+                  handleJobUpdate(jobId, field, newValue);
                 }
               }}
             />

@@ -17,8 +17,6 @@ const statusCellRenderer = (params: ICellRendererParams) => {
 };
 
 export const jobColumnDefs = (
-  departments?: any[],
-  designations?: any[],
   onEdit?: (job: JobRowData) => void,
   onDelete?: (jobId: string) => void,
 ): ColDef[] => [
@@ -44,7 +42,7 @@ export const jobColumnDefs = (
   },
   {
     headerName: 'Branch',
-    field: 'branchName',
+    field: 'address',
     sortable: true,
     filter: true,
     flex: 1,
@@ -78,11 +76,11 @@ export const jobColumnDefs = (
     filter: true,
     flex: 1,
     minWidth: 120,
-    editable: true,
-    cellEditor: departments && departments.length > 0 ? 'agSelectCellEditor' : 'agTextCellEditor',
-    cellEditorParams: departments && departments.length > 0 ? {
-      values: departments.map((dept) => dept.text || dept.value),
-    } : undefined,
+    editable: false,
+    // cellEditor: departments && departments.length > 0 ? 'agSelectCellEditor' : 'agTextCellEditor',
+    // cellEditorParams: departments && departments.length > 0 ? {
+    //   values: departments.map((dept) => dept.text || dept.value),
+    // } : undefined,
   },
   {
     headerName: 'Designation',
@@ -91,11 +89,11 @@ export const jobColumnDefs = (
     filter: true,
     flex: 1,
     minWidth: 120,
-    editable: true,
-    cellEditor: designations && designations.length > 0 ? 'agSelectCellEditor' : 'agTextCellEditor',
-    cellEditorParams: designations && designations.length > 0 ? {
-      values: designations.map((desg) => desg.text || desg.value),
-    } : undefined,
+    editable: false,
+    // cellEditor: designations && designations.length > 0 ? 'agSelectCellEditor' : 'agTextCellEditor',
+    // cellEditorParams: designations && designations.length > 0 ? {
+    //   values: designations.map((desg) => desg.text || desg.value),
+    // } : undefined,
   },
   {
     headerName: 'Min Salary',
