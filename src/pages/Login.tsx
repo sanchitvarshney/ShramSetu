@@ -94,9 +94,19 @@ const Login: React.FC = () => {
               </Button>
             </form>
             <div className="mt-4 text-sm text-center">
-              First time user?
+              Don't have account?
               <Link to="#" className="font-[600] text-teal-600 ml-[5px]">
                 REGISTER HERE
+              </Link>
+            </div>
+            <div className="mt-2 text-sm text-center">
+              You agree to the
+              <Link to="/terms-of-service" className="font-[600] text-teal-600 mx-[5px] underline">
+                Term of service 
+              </Link>
+               &
+              <Link to="/privacy-policy" className="font-[600] text-teal-600 ml-[5px] underline">
+                Privacy policy
               </Link>
             </div>
           </CardContent>
@@ -137,7 +147,8 @@ const Login: React.FC = () => {
   );
 };
 const Wrapper = styled.div`
-  background-image: linear-gradient(
+  background-image:
+    linear-gradient(
       to right,
       rgb(218, 218, 218),
       rgb(212, 212, 212),
