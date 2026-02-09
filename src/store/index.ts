@@ -3,6 +3,7 @@ import authReducer from '../features/auth/authSlice'; // Adjust path as needed
 import homePageSlice from '@/features/homePage/homePageSlice';
 import adminPageSlice from '@/features/admin/adminPageSlice';
 import profilePageSlice from '@/features/profile/profilePageSlice';
+import jobSlice from '@/features/jobFeatures/jobsSlices';
 
 export const store:any = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store:any = configureStore({
     homePage: homePageSlice,
     adminPage:adminPageSlice,
     profilePage:profilePageSlice,
+    jobslice:jobSlice
   },
 });
 

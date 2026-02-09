@@ -26,6 +26,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { inputStyle } from '@/style/CustomStyles';
 import { JobRowData } from '@/table/JobTableColumns';
+import { useSelector } from 'react-redux';
+import { CircularProgress } from '@mui/material';
 
 interface EditJobDialogProps {
   open: boolean;
@@ -35,6 +37,7 @@ interface EditJobDialogProps {
   onCancel: () => void;
   department: any[];
   designation: any[];
+  companies?: any[];
 }
 
 const EditJobDialog = ({
@@ -45,7 +48,9 @@ const EditJobDialog = ({
   onCancel,
   department,
   designation,
+  companies = [],
 }: EditJobDialogProps) => {
+ const { isUpdateLoading } = useSelector((state: any) => state.jobslice);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -58,6 +63,40 @@ const EditJobDialog = ({
             className="space-y-4"
           >
             <div className="grid grid-cols-2 gap-4">
+              {/* Company – same as Create Job */}
+              {companies && companies.length > 0 && (
+                <FormField
+                  control={form.control}
+                  name="company"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputStyle}>
+                            <SelectValue placeholder="Select Company" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {companies.map((company: any) => (
+                            <SelectItem
+                              key={company.value ?? company.companyID}
+                              value={company.value ?? company.companyID}
+                            >
+                              {company.text ?? company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
               <FormField
                 control={form.control}
                 name="jobTitle"
@@ -121,7 +160,7 @@ const EditJobDialog = ({
                         </FormControl>
                         <SelectContent>
                           {department.map((dept: any) => (
-                            <SelectItem key={dept.value} value={dept.text}>
+                            <SelectItem key={dept.value} value={dept.value}>
                               {dept.text}
                             </SelectItem>
                           ))}
@@ -159,7 +198,7 @@ const EditJobDialog = ({
                         </FormControl>
                         <SelectContent>
                           {designation.map((desg: any) => (
-                            <SelectItem key={desg.value} value={desg.text}>
+                            <SelectItem key={desg.value} value={desg.value}>
                               {desg.text}
                             </SelectItem>
                           ))}
@@ -257,12 +296,9 @@ const EditJobDialog = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="currently-hiring">
-                          Currently Hiring
-                        </SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
-                        <SelectItem value="draft">Draft</SelectItem>
-                        <SelectItem value="on-hold">On Hold</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Cancel">Inactive</SelectItem>
+                        <SelectItem value="Hold">Hold</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -270,6 +306,26 @@ const EditJobDialog = ({
                 )}
               />
             </div>
+
+            {/* Address – same as Create Job */}
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      className={inputStyle}
+                      placeholder="Enter Address (e.g. B-88, Sector 2, Noida, Uttar Pradesh, 201301)"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -309,6 +365,26 @@ const EditJobDialog = ({
               )}
             />
 
+            {/* Job Description – same as Create Job */}
+            <FormField
+              control={form.control}
+              name="jobDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Job Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      className={inputStyle}
+                      placeholder="Enter job description and responsibilities"
+                      rows={4}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="facilities"
@@ -336,7 +412,12 @@ const EditJobDialog = ({
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-teal-500 hover:bg-teal-600">
+              <Button disabled={isUpdateLoading} type="submit" className="bg-teal-500 hover:bg-teal-600">
+                {
+                  isUpdateLoading && (
+                    <CircularProgress size={20} color="inherit" sx={{ marginRight: "5px"}} />
+                  ) 
+                }
                 Save Changes
               </Button>
             </DialogFooter>

@@ -4,9 +4,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 // Define types
 interface AuthState {
-  user: LoginResponseData | null; // Add user property to store login data
+  user: LoginResponseData | null; 
   error: string | null;
-  loading: 'idle' | 'loading' | 'succeeded' | 'failed';
+  loading: boolean
 }
 
 interface LoginCredentials {
@@ -17,7 +17,7 @@ interface LoginCredentials {
 const initialState: AuthState = {
   user: null, // Initialize with null
   error: null,
-  loading: 'idle',
+  loading: false
 };
 
 interface LoginResponseData {
@@ -68,7 +68,7 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       state.error = null;
-      state.loading = 'idle';
+      
       // localStorage.removeItem('loggedInUser'); // Clear user data from local storage
       // localStorage.clear();
     },
@@ -76,11 +76,11 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {
-        state.loading = 'loading';
+        state.loading = true;
         state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
-        state.loading = 'succeeded';
+        state.loading = false;
         state.error = null;
         state.user = action.payload.data; // Save user data to state
         // Optionally store user data in localStorage
@@ -91,7 +91,7 @@ const authSlice = createSlice({
           );
       })
       .addCase(login.rejected, (state, action) => {
-        state.loading = 'failed';
+        state.loading = false;
         state.error = action.payload as string; // Ensure payload is a string
       });
   },

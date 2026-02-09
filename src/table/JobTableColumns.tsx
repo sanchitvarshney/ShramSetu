@@ -3,6 +3,9 @@ import { ColDef, ICellRendererParams } from 'ag-grid-community';
 const statusCellRenderer = (params: ICellRendererParams) => {
   const status = params.value;
   const statusMap: { [key: string]: { label: string; color: string } } = {
+    Active: { label: 'Active', color: 'text-green-600' },
+    Cancel: { label: 'Inactive', color: 'text-red-600' },
+    Hold: { label: 'Hold', color: 'text-blue-600' },
     'currently-hiring': { label: 'Currently Hiring', color: 'text-green-600' },
     closed: { label: 'Closed', color: 'text-red-600' },
     draft: { label: 'Draft', color: 'text-yellow-600' },
@@ -156,7 +159,7 @@ export const jobColumnDefs = (
     cellEditor: 'agSelectCellEditor',
     cellRenderer: statusCellRenderer,
     cellEditorParams: {
-      values: ['currently-hiring', 'closed', 'draft', 'on-hold'],
+      values: ['Active', 'Cancel', 'Hold'],
     },
   },
   {
@@ -217,7 +220,9 @@ export interface JobRowData {
   id?: string;
   jobTitle: string;
   companyName: string;
-  branchName: string;
+  company?: string; // company id for select (create/edit)
+  branchName?: string;
+  address?: string;
   jobType: string;
   department: string;
   designation: string;
@@ -228,5 +233,6 @@ export interface JobRowData {
   createdAt?: string;
   skills?: string;
   qualification?: string;
+  jobDescription?: string;
   facilities?: string;
 }

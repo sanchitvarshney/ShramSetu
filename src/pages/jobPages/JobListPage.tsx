@@ -12,53 +12,64 @@ import {
   fetchDesignations,
   fetchJobs,
 } from '@/features/admin/adminPageSlice';
+import { fetchCompanies } from '@/features/homePage/homePageSlice';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 import EditJobDialog from '@/components/shared/EditJobDialog';
 import { useForm } from 'react-hook-form';
+import { updatejobs } from '@/features/jobFeatures/jobsSlices';
 
 const JobListPage = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { department, designation } = useSelector(
+  const { department, designation,isFetchingJobsLoading } = useSelector(
     (state: RootState) => state.adminPage,
   );
+  const { companies } = useSelector((state: RootState) => state.homePage);
   const [jobs, setJobs] = useState<JobRowData[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<JobRowData[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<JobRowData | null>(null);
+  const [selectedJob, setSelectedJob] = useState<any | null>(null);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
 
   const form = useForm<JobRowData>({
     defaultValues: {
       jobTitle: '',
       jobType: '',
+      company: '',
       department: '',
       designation: '',
       minSalary: 0,
       maxSalary: 0,
       experience: '',
       jobStatus: '',
+      address: '',
       skills: '',
       qualification: '',
+      jobDescription: '',
       facilities: '',
     },
   });
 
   useEffect(() => {
-    dispatch(fetchDepartments());
+    if( department.length === 0 || designation.length === 0){
+      dispatch(fetchDepartments());
     dispatch(fetchDesignations());
+    dispatch(fetchCompanies());
+    }
   }, [ isEditDialogOpen]);
-
-  useEffect(() => {
-    setLoading(true);
-    // TODO: Replace with actual API call
-    dispatch(fetchJobs()).then((response: any) => {
+  const handleFetchJobs = () => {
+      dispatch(fetchJobs()).then((response: any) => {
       setJobs(response.payload.data || []);
       setFilteredJobs(response.payload.data || []);
-      setLoading(false);
+     
     });
-  }, [dispatch]);
+  }
+
+  useEffect(() => {
+  
+    handleFetchJobs()
+  
+  }, []);
 
   const defaultColDef = useMemo<ColDef>(
     () => ({
@@ -78,41 +89,43 @@ const JobListPage = () => {
       ),
     );
 
-    // TODO: Replace with actual API call
-    // dispatch(updateJob({ jobId, field, value: newValue })).then(
-    //   (response: any) => {
-    //     if (response.payload.success) {
-    //       toast({
-    //         title: 'Success!!',
-    //         description: 'Job updated successfully',
-    //       });
-    //     } else {
-    //       toast({
-    //         variant: 'destructive',
-    //         title: 'Error',
-    //         description: response.payload.message,
-    //       });
-    //     }
-    //   },
-    // );
-
-    toast({
-      title: 'Success!!',
-      description: `${field} updated successfully`,
-    });
   };
 
   const handleEdit = (job: JobRowData) => {
     setSelectedJob(job);
+    const companyName = job.companyName ?? job.company;
+    const companyByName = companies?.find(
+      (c: any) => (c.text ?? c.name) === companyName,
+    );
+    const companyId =
+      companyByName?.value ??
+      companyByName?.companyID ??
+      (companies?.some(
+        (c: any) => c.value === job.company || c.companyID === job.company,
+      )
+        ? job.company
+        : '');
+    const departmentId =
+      department?.find((d: any) => d.text === job.department)?.value ??
+      department?.find((d: any) => d.value === job.department)?.value ??
+      job.department ??
+      '';
+    const designationId =
+      designation?.find((d: any) => d.text === job.designation)?.value ??
+      designation?.find((d: any) => d.value === job.designation)?.value ??
+      job.designation ??
+      '';
     form.reset({
       jobTitle: job.jobTitle || '',
       jobType: job.jobType || '',
-      department: job.department || '',
-      designation: job.designation || '',
+      company: companyId || '',
+      department: departmentId,
+      designation: designationId,
       minSalary: job.minSalary || 0,
       maxSalary: job.maxSalary || 0,
       experience: job.experience || '',
       jobStatus: job.jobStatus || '',
+      address: job.address ?? '',
       skills: job.skills || '',
       qualification: job.qualification || '',
       facilities: job.facilities || '',
@@ -159,52 +172,68 @@ const JobListPage = () => {
   };
 
   const handleSaveEdit = (data: JobRowData) => {
-    if (selectedJob) {
-      const jobId = selectedJob.jobID || selectedJob.id;
-      const updatedJob = {
-        ...selectedJob,
-        ...data,
-      };
-
-      setJobs((prevJobs) =>
-        prevJobs.map((job) =>
-          job.jobID === jobId || job.id === jobId ? updatedJob : job,
-        ),
-      );
-
-      // TODO: Replace with actual API call
-      // dispatch(updateJob({ jobId, ...data })).then((response: any) => {
-      //   if (response.payload.success) {
-      //     toast({
-      //       title: 'Success!!',
-      //       description: 'Job updated successfully',
-      //     });
-      //   } else {
-      //     toast({
-      //       variant: 'destructive',
-      //       title: 'Error',
-      //       description: response.payload.message,
-      //     });
-      //   }
-      // });
-
+    console.log(data, selectedJob,"data")
+    if (!selectedJob) {
       toast({
-        title: 'Success!!',
-        description: 'Job updated successfully',
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please select a job to update',
       });
-      setIsEditDialogOpen(false);
-      setSelectedJob(null);
+      return;
     }
+    const jobId = String(selectedJob.uniqueID ?? selectedJob.id ?? '');
+    if (!jobId) return;
+
+    const updatedJob = { ...selectedJob, ...data };
+    setJobs((prevJobs) =>
+      prevJobs.map((job) =>
+        job.jobID === jobId || job.id === jobId ? updatedJob : job,
+      ),
+    );
+
+    const payload: any = {
+      uniqueID: jobId,
+      company: data.company,
+      address: data.address,
+      jobTitle: data.jobTitle ?? '',
+      jobType: data.jobType ?? '',
+      department: data.department ?? '',
+      designation: data.designation ?? '',
+      minSalary: Number(data.minSalary) || 0,
+      maxSalary: Number(data.maxSalary) || 0,
+      experience: data.experience ?? '',
+      jobStatus: data.jobStatus ?? '',
+      skills: data.skills,
+      qualification: data.qualification,
+      jobDescription: data.jobDescription,
+      facilities: data.facilities,
+    };
+
+    dispatch(updatejobs(payload)).then((response: any) => {
+      if (response.payload?.success) {
+        toast({
+          title: 'Success!!',
+          description: 'Job updated successfully',
+        });
+        setIsEditDialogOpen(false);
+        setSelectedJob(null);
+        handleFetchJobs();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.payload?.message ?? 'Failed to update job',
+        });
+      }
+    });
   };
 
   const getStatusCounts = () => {
     return {
       all: jobs.length,
-      'currently-hiring': jobs.filter((j) => j.jobStatus === 'currently-hiring')
-        .length,
-      closed: jobs.filter((j) => j.jobStatus === 'closed').length,
-      draft: jobs.filter((j) => j.jobStatus === 'draft').length,
-      'on-hold': jobs.filter((j) => j.jobStatus === 'on-hold').length,
+      Active: jobs.filter((j) => j.jobStatus === 'Active').length,
+      Cancel: jobs.filter((j) => j.jobStatus === 'Cancel').length,
+      Hold: jobs.filter((j) => j.jobStatus === 'Hold').length,
     };
   };
 
@@ -230,7 +259,7 @@ const JobListPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {loading && <Loading />}
+          {isFetchingJobsLoading && <Loading />}
           <div className="mb-2 space-y-2">
             <div className="flex flex-wrap gap-4 p-2 bg-gray-50 rounded-lg">
               <div className="flex items-center gap-2">
@@ -240,29 +269,21 @@ const JobListPage = () => {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-green-600">
-                  Currently Hiring:
-                </span>
+                <span className="font-semibold text-green-600">Active:</span>
                 <span className="text-lg font-bold text-green-700">
-                  {statusCounts['currently-hiring']}
+                  {statusCounts.Active}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-red-600">Closed:</span>
+                <span className="font-semibold text-red-600">Inactive:</span>
                 <span className="text-lg font-bold text-red-700">
-                  {statusCounts.closed}
+                  {statusCounts.Cancel}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-yellow-600">Draft:</span>
-                <span className="text-lg font-bold text-yellow-700">
-                  {statusCounts.draft}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-blue-600">On Hold:</span>
+                <span className="font-semibold text-blue-600">Hold:</span>
                 <span className="text-lg font-bold text-blue-700">
-                  {statusCounts['on-hold']}
+                  {statusCounts.Hold}
                 </span>
               </div>
             </div>
@@ -303,6 +324,7 @@ const JobListPage = () => {
         }}
         department={department}
         designation={designation}
+        companies={companies}
       />
     </div>
   );

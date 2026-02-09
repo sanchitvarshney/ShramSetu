@@ -239,6 +239,8 @@ const initialState: AdminPageState = {
   isFetchingJobsLoading: false,
 };
 
+
+
 // Define the async thunk for adding a company
 export const addCompany = createAsyncThunk(
   'adminPage/addCompany',
