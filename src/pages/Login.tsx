@@ -93,19 +93,25 @@ const Login: React.FC = () => {
                 Login
               </Button>
             </form>
-            <div className="mt-4 text-sm text-center">
+            {/* <div className="mt-4 text-sm text-center">
               Don't have account?
               <Link to="#" className="font-[600] text-teal-600 ml-[5px]">
                 REGISTER HERE
               </Link>
-            </div>
+            </div> */}
             <div className="mt-2 text-sm text-center">
               You agree to the
-              <Link to="/terms-of-service" className="font-[600] text-teal-600 mx-[5px] underline">
-                Term of service 
+              <Link
+                to="/terms-of-service"
+                className="font-[600] text-teal-600 mx-[5px] underline"
+              >
+                Term of service
               </Link>
-               &
-              <Link to="/privacy-policy" className="font-[600] text-teal-600 ml-[5px] underline">
+              &
+              <Link
+                to="/privacy-policy"
+                className="font-[600] text-teal-600 ml-[5px] underline"
+              >
                 Privacy policy
               </Link>
             </div>
