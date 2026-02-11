@@ -68,9 +68,9 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       state.error = null;
-      
-      // localStorage.removeItem('loggedInUser'); // Clear user data from local storage
-      // localStorage.clear();
+
+      localStorage.removeItem('loggedInUser');
+      localStorage.removeItem('companySelect');
     },
   },
   extraReducers: (builder) => {

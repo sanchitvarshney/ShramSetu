@@ -25,7 +25,7 @@ const ListWorker: React.FC = () => {
     (state: RootState) => state.adminPage,
   );
 
-  const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
+  const [selectedEmpId, setSelectedEmpId] = useState<any | null>(null);
   const [status, setStatus] = useState('PEN'); // Default status
   const [startDateRange, setStartDate] = useState<string>('');
   const [endDateRange, setEndDate] = useState<string>('');
@@ -81,9 +81,14 @@ const ListWorker: React.FC = () => {
   }, [dispatch]);
 
   const handleStatus = (status: string) => {
+    const empUid =
+      typeof selectedEmpId === 'object' && selectedEmpId?.employeeID
+        ? selectedEmpId.employeeID
+        : selectedEmpId;
+    if (!empUid) return;
     dispatch(
       handleEmpStatus({
-        empUid: selectedEmpId,
+        empUid,
         empStatus: status,
       }),
     ).then((response: any) => {
@@ -160,20 +165,16 @@ const ListWorker: React.FC = () => {
           </div>
         </div>
         {selectedEmpId && (
-          // <div className="flex-1 h-full">
           <WorkerDetails
             showEdit
-            setOpen={() => toggleShowDetails()}
-            empId={selectedEmpId} // Pass the selected employee ID
-            toggleDetails={toggleShowDetails} // Pass the function to close details
-            open={Boolean(selectedEmpId)} // or your condition for opening
+            worker={selectedEmpId}
+            toggleDetails={toggleShowDetails}
+            open={Boolean(selectedEmpId)}
             onOpenChange={(open) =>
               setSelectedEmpId(open ? selectedEmpId : null)
             }
-            loading={loading}
             handleStatus={handleStatus}
           />
-          // </div>
         )}
       </div>
     </div>

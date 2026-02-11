@@ -106,7 +106,7 @@ const EmployeeData: React.FC = () => {
       <Sidebar open={open} onOpenChange={setOpen}>
         <SidebarContent className='min-w-[50%] p-0'>
           <WorkerDetails
-            empId={selectedEmpId!}
+            worker={selectedEmpId!}
             toggleDetails={toggleShowDetails}
             setOpen={setOpen}
           />

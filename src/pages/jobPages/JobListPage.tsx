@@ -261,7 +261,7 @@ const JobListPage = () => {
         description="Are you sure you want to delete this job? This action cannot be undone."
       />
 
-      <Card className="rounded-lg">
+      <Card className="rounded-lg " style={{padding:-1}}>
         <CardHeader>
           <CardTitle className="text-[20px] font-[650] text-slate-600">
             Job List

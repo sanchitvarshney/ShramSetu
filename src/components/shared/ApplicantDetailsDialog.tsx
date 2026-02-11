@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Loader } from 'lucide-react';
 
 function buildResumeHtml(d: ApplicantDetail): string {
   const name = d.empName ?? d.applicantName ?? 'Applicant';
@@ -92,7 +93,6 @@ export default function ApplicantDetailsDialog({
 
   useEffect(() => {
     if (open && appliedKey) {
-      console.log(appliedKey, 'data');
       dispatch(fetchApplicationDetails(appliedKey));
     }
     if (!open) {
@@ -117,6 +117,11 @@ export default function ApplicantDetailsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-xl shadow-lg">
+        {applicationDetailsLoading && (
+          <div className="flex items-center justify-center w-full h-full">
+            <Loader />
+          </div>
+        )}
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-slate-800 mb-4">
             {d?.empName ?? 'Applicant Name'}
@@ -129,7 +134,7 @@ export default function ApplicantDetailsDialog({
           </div>
         </DialogHeader>
 
-        {!applicationDetailsLoading && d && (
+        { d && (
           <div className="space-y-6 text-sm">
             {/* Education */}
             <section>
@@ -181,7 +186,7 @@ export default function ApplicantDetailsDialog({
           </div>
         )}
 
-        {!applicationDetailsLoading && !d && open && appliedKey && (
+        { !d && open && appliedKey && (
           <p className="text-slate-500 py-4">No details available.</p>
         )}
 

@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import DownloadIndecator from '@/components/shared/DownloadIndicater';
 import {
   Sidebar,
   SidebarContent,
@@ -37,7 +36,7 @@ import NotificationSheet from '@/components/shared/NotificationSheet';
 import { logout } from '@/features/auth/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
-import { Company, fetchCompanies } from '@/features/homePage/homePageSlice';
+import { fetchCompanies } from '@/features/homePage/homePageSlice';
 import { IoAddOutline, IoSettingsOutline } from 'react-icons/io5';
 import { FiLogOut } from 'react-icons/fi';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
@@ -65,9 +64,9 @@ const MainLayout: React.FC<Props> = ({ children }) => {
 
   useEffect(() => {
     if (companies?.length > 0) {
-      // Set default company or fetch from local storage if needed
-      const defaultCompany =
-        localStorage.getItem('companySelect') || companies[0].value;
+      
+
+      const defaultCompany = companies[0]?.companyID;
       setSelectedCompany(defaultCompany);
     }
   }, [companies]);
@@ -145,7 +144,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <IoSettingsOutline className="w-6 h-6" />
                     Setting
                   </NavLink>
-                     <NavLink
+                  <NavLink
                     to="/job/job-create"
                     className={NavlinkStyle}
                     onClick={() => setOpen(false)}
@@ -156,8 +155,8 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                 </nav>
               </aside>
               <SidebarFooter className="absolute bottom-[20px] left-[20px] right-[20px] bg-white/20 rounded-lg p-[10px]">
-                <DropdownMenu >
-                  <DropdownMenuTrigger asChild ref={buttonRef} >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild ref={buttonRef}>
                     <div className="flex items-center justify-between w-full cursor-pointer">
                       <div className="flex items-center gap-[5px]">
                         <Avatar>
@@ -181,18 +180,27 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     className={`shadow-sm  shadow-stone-500 mb-[10px] bg-white/20 text-white border-white/20 w-[274px]`}
                     side="top"
                     align="center"
-                   
                   >
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-white/20" />
 
-                    <DropdownMenuItem onClick={() => navigate('/profile')} className='cursor-pointer'>
+                    <DropdownMenuItem
+                      onClick={() => navigate('/profile')}
+                      className="cursor-pointer"
+                    >
                       Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem className='cursor-pointer'>Settings</DropdownMenuItem>
-                    <DropdownMenuItem className='cursor-pointer'>Support</DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer">
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer">
+                      Support
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-white/20" />
-                    <DropdownMenuItem onClick={handleLogout} className='cursor-pointer'>
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer"
+                    >
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -224,18 +232,21 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <SelectValue placeholder="Choose Company" />
                   </SelectTrigger>
                   <SelectContent className="shadow-sm shadow-stone-500">
-                    {companies?.map((company: Company) => (
-                      <SelectItem value={company?.value} key={company?.value}>
-                        {company?.text}
+                    {companies?.map((company: any) => (
+                      <SelectItem
+                        value={company?.companyID}
+                        key={company?.companyID}
+                      >
+                        {company?.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="download">
+              {/* <div className="download">
                 <DownloadIndecator />
-              </div>
+              </div> */}
 
               <CustomTooltip message="Notification" side="bottom">
                 <div
