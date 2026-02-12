@@ -11,17 +11,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { NavLink, useNavigate } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CustomTooltip from '@/components/reusable/CustomTooltip';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from '@/components/ui/select';
 import {
   Sidebar,
   SidebarContent,
@@ -34,9 +34,8 @@ import { MdOutlineAdminPanelSettings } from 'react-icons/md';
 import { NavlinkStyle } from '@/style/CustomStyles';
 import NotificationSheet from '@/components/shared/NotificationSheet';
 import { logout } from '@/features/auth/authSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/store';
-import { fetchCompanies } from '@/features/homePage/homePageSlice';
+import { useDispatch,  } from 'react-redux';
+import { AppDispatch,  } from '@/store';
 import { IoAddOutline, IoSettingsOutline } from 'react-icons/io5';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 
@@ -51,29 +50,29 @@ const MainLayout: React.FC<Props> = ({ children }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [notification, setNotification] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const { companies } = useSelector((state: RootState) => state.homePage);
-  const [selectedCompany, setSelectedCompany] = useState<string>('');
+  // const { companies } = useSelector((state: RootState) => state.homePage);
+  // const [selectedCompany, setSelectedCompany] = useState<string>('');
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   let user = localStorage.getItem('loggedInUser') ?? 'null';
   const data = JSON.parse(user);
 
-  useEffect(() => {
-    dispatch(fetchCompanies());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchCompanies());
+  // }, [dispatch]);
 
-  useEffect(() => {
-    if (companies?.length > 0) {
+  // useEffect(() => {
+  //   if (companies?.length > 0) {
       
 
-      const defaultCompany = companies[0]?.companyID;
-      setSelectedCompany(defaultCompany);
-    }
-  }, [companies]);
+  //     const defaultCompany = companies[0]?.companyID;
+  //     setSelectedCompany(defaultCompany);
+  //   }
+  // }, [companies]);
 
-  useEffect(() => {
-    // Persist selected company to local storage
-    localStorage.setItem('companySelect', selectedCompany);
-  }, [selectedCompany]);
+  // useEffect(() => {
+  //   // Persist selected company to local storage
+  //   localStorage.setItem('companySelect', selectedCompany);
+  // }, [selectedCompany]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -216,7 +215,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
               <img src="/subtext.svg" alt="Brand logo" className="w-[200px]" />
             </div>
             <div className="flex items-center gap-[20px]">
-              <div>
+              {/* <div>
                 <Select
                   value={selectedCompany}
                   onValueChange={setSelectedCompany}
@@ -235,7 +234,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
 
               {/* <div className="download">
                 <DownloadIndecator />

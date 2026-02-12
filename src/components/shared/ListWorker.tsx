@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { columnDefs } from '@/table/ListWorkerTable';
-import { DatePicker, Space, Select } from 'antd';
+import { DatePicker, Space } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import {
@@ -13,15 +13,15 @@ import { format } from 'date-fns';
 import WorkerDetails from '@/components/shared/WorkerDetails';
 import Loading from '@/components/reusable/Loading';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { SearchOutlined } from '@mui/icons-material';
 
 const { RangePicker } = DatePicker;
-const { Option } = Select;
+
 
 const ListWorker: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { workers, loading, workersStatusCount } = useSelector(
+  const { workers, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
 
@@ -38,14 +38,11 @@ const ListWorker: React.FC = () => {
       setStartDate(formattedStartDate);
       setEndDate(formattedEndDate);
 
-      console.log(formattedStartDate, formattedEndDate);
-
       // Dispatch the fetchWorkers with the formatted dates
       dispatch(
         fetchWorkers({
           startDate: formattedStartDate,
           endDate: formattedEndDate,
-          empStatus: status,
         }),
       );
     } else {
@@ -53,13 +50,20 @@ const ListWorker: React.FC = () => {
     }
   };
 
+
+  useEffect(() => {
+     dispatch(
+      //@ts-ignore
+        fetchWorkers({}),
+      );
+  }, [])
+  
   const handleStatusChange = (value: any) => {
     setStatus(value);
     dispatch(
       fetchWorkers({
         startDate: startDateRange,
         endDate: endDateRange,
-        empStatus: value,
       }),
     );
   };
@@ -115,7 +119,7 @@ const ListWorker: React.FC = () => {
             format="DD-MM-YYYY"
             className="w-full"
           />
-          <Select
+          {/* <Select
             defaultValue={status}
             onChange={(value) => {
               handleStatusChange(value);
@@ -126,16 +130,16 @@ const ListWorker: React.FC = () => {
             <Option value="APR">Approved</Option>
             <Option value="REJ">Reject</Option>
             <Option value="PEN">Pending</Option>
-          </Select>
+          </Select> */}
           <Button
             type="submit"
             className="shadow bg-teal-500 hover:bg-teal-600 shadow-slate-500 w-[120px] gap-2 h-8"
             onClick={() => handleStatusChange(status)}
           >
-            <Search className="h-[18px] w-[18px]" />
-            Fetch
+           <SearchOutlined />
+            Search
           </Button>
-          <div className="flex gap-4 pl-4 rounded-lg ">
+          {/* <div className="flex gap-4 pl-4 rounded-lg ">
             <p className="text-green-600 font-semibold text-[24px]">
               Approved:{' '}
               <span className="text-black">{workersStatusCount[0]?.apr}</span>
@@ -148,7 +152,7 @@ const ListWorker: React.FC = () => {
               Pending:{' '}
               <span className="text-black">{workersStatusCount[0]?.pen}</span>
             </p>
-          </div>
+          </div> */}
         </Space>
       </div>
       <div className="flex flex-1">

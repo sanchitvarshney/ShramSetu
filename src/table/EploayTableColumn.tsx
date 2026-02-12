@@ -1,17 +1,19 @@
 import { ColDef } from 'ag-grid-community';
 
 const actionCellRenderer = (params: any) => {
-  const { toggleShowDetails,setOpen } = params.context;
+  const { toggleShowDetails, setOpen } = params.context;
 
   return (
     <div className="flex justify-center">
       <button
-        onClick={() => {toggleShowDetails(params?.data?.employeeCode);setOpen(true)}}
+        onClick={() => {
+          toggleShowDetails(params?.data?.uid);
+          setOpen(true);
+        }}
         className="w-full text-teal-500 text-start hover:text-teal-600"
         aria-label="Show Name"
-      
       >
-        {params.data.firstName}
+        {params.data.empFirstName}
       </button>
     </div>
   );
@@ -26,12 +28,17 @@ export const columnDefs: ColDef[] = [
   },
   {
     headerName: 'Name',
-    field: 'firstName',
+    field: 'empFirstName',
     sortable: true,
     filter: true,
     cellRenderer: actionCellRenderer,
   },
-  { headerName: 'Last Name', field: 'lastName', sortable: true, filter: true },
+  {
+    headerName: 'Last Name',
+    field: 'empLastName',
+    sortable: true,
+    filter: true,
+  },
   { headerName: 'Gender', field: 'gender', sortable: true, filter: true },
   { headerName: 'DOB', field: 'dob', sortable: true, filter: true },
   {

@@ -47,6 +47,9 @@ export const deleteJob = createAsyncThunk<
 
 
 
+
+
+
 // Create the slice
 const jobSlice = createSlice({
   name: 'adminPage',

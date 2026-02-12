@@ -1,9 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaUserGroup } from 'react-icons/fa6';
 import { BsBuildingUp } from 'react-icons/bs';
 import { GrUserWorker } from 'react-icons/gr';
-import { TbLayoutGridFilled } from 'react-icons/tb';
 
 interface Props {
   children: React.ReactNode;
@@ -26,7 +24,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             </div>
             Company
           </NavLink>
-          <NavLink
+          {/* <NavLink
             to="/client-user"
             className={({ isActive }) =>
               `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
@@ -38,7 +36,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
               <FaUserGroup className="h-[20px] w-[20px]" />
             </div>
             Client & Users
-          </NavLink>
+          </NavLink> */}
           <NavLink
             to="/workers"
             className={({ isActive }) =>
@@ -53,7 +51,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             Workers
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             to="/activity-log"
             className={({ isActive }) =>
               `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
@@ -65,7 +63,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
               <TbLayoutGridFilled className="h-[20px] w-[20px]" />
             </div>
             Activity Log
-          </NavLink>
+          </NavLink> */}
         </nav>
       </div>
       <div>{children}</div>

@@ -28,7 +28,7 @@ interface WorkerDetailsProps {
 }
 
 const isFlatEmployee = (data: any): boolean =>
-  data != null && typeof data === 'object' && 'firstName' in data && !('basicInfo' in data);
+  data != null && typeof data === 'object' && ('empFirstName' in data || 'firstName' in data) && !('basicInfo' in data);
 
 // const getEmployeeId = (worker: any): string | undefined =>
 //   typeof worker === 'string' ? worker : worker?.employeeID ?? worker?.empId;
@@ -179,9 +179,9 @@ const BasicDetailsFlat = ({ details }: { details: any }) => {
         <CardTitle className="text-base font-semibold text-slate-800">
           Basic Details
         </CardTitle>
-        {details?.photo && (
+        {details?.empPhoto && (
           <img
-            src={details.photo}
+            src={details.empPhoto}
             alt="No Image"
             className="h-16 w-16 rounded-full object-cover border-2 border-slate-200"
           />
@@ -189,32 +189,35 @@ const BasicDetailsFlat = ({ details }: { details: any }) => {
       </CardHeader>
       <CardContent className="pt-0 space-y-1">
         <DetailRow>
-          <SingleDetail label="First Name" value={details?.firstName} />
-          <SingleDetail label="Middle Name" value={details?.middleName} />
+          <SingleDetail label="First Name" value={details?.empFirstName} />
+          <SingleDetail label="Middle Name" value={details?.empMiddleName} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Last Name" value={details?.lastName} />
-          <SingleDetail label="DOB" value={details?.DOB} />
+          <SingleDetail label="Last Name" value={details?.empLastName} />
+          <SingleDetail label="DOB" value={details?.empDOB} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Father's Name" value={details?.fatherName} />
-          <SingleDetail label="Gender" value={details?.gender === 'M' ? 'Male' : details?.gender === 'F' ? 'Female' : details?.gender} />
+          <SingleDetail label="Gender" value={details?.empGender === 'M' ? 'Male' : details?.empGender === 'F' ? 'Female' : details?.empGender} />
+          <SingleDetail label="Phone" value={details?.empMobile} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Phone" value={details?.mobile} />
-          <SingleDetail label="Aadhaar Number" value={details?.aadhaarNo} />
+          <SingleDetail label="Email" value={details?.empEmail} />
+          <SingleDetail label="Marital Status" value={details?.MaritalStatus === 'M' ? 'Married' : details?.MaritalStatus === 'UM' ? 'Unmarried' : details?.MaritalStatus} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="PAN Number" value={details?.panNo} />
-          <SingleDetail label="Blood Group" value={details?.bloodGroup} />
+          <SingleDetail label="Hobbies" value={details?.empHobbies} />
+          <SingleDetail label="Inserted At" value={details?.empInsertedAt} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Department" value={details?.department} />
-          <SingleDetail label="Designation" value={details?.designation} />
+          <SingleDetail label="Aadhaar Number" value={details?.empAadhaarNo} />
+          <SingleDetail label="PAN Number" value={details?.empPanNo} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Marital Status" value={details?.maritalStatus === 'M' ? 'Married' : details?.maritalStatus === 'UM' ? 'Unmarried' : details?.maritalStatus} />
-          <SingleDetail label="Hobbies" value={details?.hobbies} />
+          <SingleDetail label="Blood Group" value={details?.empBloodGroup} />
+          <SingleDetail label="Department" value={details?.empDepartment} />
+        </DetailRow>
+        <DetailRow>
+          <SingleDetail label="Designation" value={details?.empDesignation} />
         </DetailRow>
       </CardContent>
     </Card>
@@ -223,10 +226,12 @@ const BasicDetailsFlat = ({ details }: { details: any }) => {
 
 const CurrentAddressFlat = ({ details }: { details: any }) => {
   const hasAny =
-    details?.cityPresent ||
-    details?.districtPresent ||
-    (typeof details?.statepresent === 'object' && details?.statepresent?.text) ||
-    details?.countryPresent;
+    details?.present_houseNo ||
+    details?.present_colony ||
+    details?.present_city ||
+    details?.present_state ||
+    details?.present_country ||
+    details?.present_pincode;
   if (!hasAny) return null;
   return (
     <Card className="shadow-sm border-slate-200/80">
@@ -237,10 +242,12 @@ const CurrentAddressFlat = ({ details }: { details: any }) => {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-0">
-          <SingleDetail label="State" value={details?.statepresent} />
-          <SingleDetail label="City" value={details?.cityPresent} />
-          <SingleDetail label="District" value={details?.districtPresent} />
-          <SingleDetail label="Country" value={details?.countryPresent} />
+          <SingleDetail label="House No." value={details?.present_houseNo} />
+          <SingleDetail label="Colony" value={details?.present_colony} />
+          <SingleDetail label="City" value={details?.present_city} />
+          <SingleDetail label="State" value={details?.present_state} />
+          <SingleDetail label="Country" value={details?.present_country} />
+          <SingleDetail label="Pin Code" value={details?.present_pincode} />
         </div>
       </CardContent>
     </Card>

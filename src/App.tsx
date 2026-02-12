@@ -11,7 +11,6 @@ import EmployeeData from './pages/EmployeeData';
 import AdminLayout from './Layout/AdminLayout';
 import CompanyPage from './pages/adminPages/CompanyPage';
 import WorkersPage from './pages/adminPages/WorkersPage';
-import ClientUserPage from './pages/adminPages/ClientUserPage';
 import ActivityLogPage from './pages/adminPages/ActivityLogPage';
 import InvitationPage from './pages/invitation/InvitationPage';
 import WhatsAppInvitationPage from './components/shared/WhatsAppInvitationPage';
@@ -105,18 +104,18 @@ const router = createBrowserRouter([
       </Protected>
     ),
   },
-  {
-    path: '/client-user',
-    element: (
-      <Protected authentication>
-        <MainLayout>
-          <AdminLayout>
-            <ClientUserPage />
-          </AdminLayout>
-        </MainLayout>
-      </Protected>
-    ),
-  },
+  // {
+  //   path: '/client-user',
+  //   element: (
+  //     <Protected authentication>
+  //       <MainLayout>
+  //         <AdminLayout>
+  //           <ClientUserPage />
+  //         </AdminLayout>
+  //       </MainLayout>
+  //     </Protected>
+  //   ),
+  // },
   {
     path: '/activity-log',
     element: (

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button';
 import AddWorker from '@/components/shared/AddWorker';
 import { tabTriggerStyle } from '@/style/CustomStyles';
-import { FaFileExcel } from 'react-icons/fa6';
+// import { FaFileExcel } from 'react-icons/fa6';
 import ListWorker from '@/components/shared/ListWorker';
 import { FileUploadDialog } from '@/components/shared/FileUploadDialog';
 
@@ -21,13 +21,13 @@ const WorkersPage: React.FC = () => {
             List Worker
           </TabsTrigger>
         </TabsList>
-        <Button
+        {/* <Button
           className="text-[17px] shadow-neutral-400 flex items-center gap-[5px] bg-[#1d6f42] hover:bg-[#268f55]"
           onClick={() => setDialogOpen(true)}
           // onClick={() => setExcelModel(true)}
         >
           <FaFileExcel className="h-[20px] w-[20px]" /> Bulk Upload
-        </Button>
+        </Button> */}
       </div>
       {isDialogOpen && (
         <FileUploadDialog onClose={() => setDialogOpen(false)} />
