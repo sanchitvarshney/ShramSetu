@@ -59,6 +59,7 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
     { headerName: 'Email', field: 'email' },
     { headerName: 'Mobile', field: 'mobile' },
     { headerName: 'Website', field: 'website' },
+ 
     {
       headerName: 'Active Status',
       field: 'activeStatus',

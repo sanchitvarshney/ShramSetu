@@ -46,6 +46,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import UpdateBranchModal from '../admin/companies/UpdateBranchModal';
 
+/** Parse API hsn/ssc (string like "[\"2456\",\"3566\"]" or array) and return display string. */
+function formatHsnSsc(val: unknown): string {
+  if (val == null) return '';
+  if (Array.isArray(val)) return val.map(String).filter(Boolean).join(', ');
+  if (typeof val === 'string') {
+    const t = val.trim();
+    if (!t) return '';
+    try {
+      const parsed = JSON.parse(t);
+      return Array.isArray(parsed) ? parsed.map(String).filter(Boolean).join(', ') : t;
+    } catch {
+      return t;
+    }
+  }
+  return String(val);
+}
+
 export interface CompanyInfoContentProps {
   companyId: string;
   /** When true, used inside drawer (slightly more compact). */
@@ -205,6 +222,20 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
           onChange={() => {}}
           icon={Tag}
           label="Brand Name"
+          stacked
+        />
+        <LabelInput
+          value={formatHsnSsc((details[0] as any)?.hsn)}
+          onChange={() => {}}
+          icon={CreditCard}
+          label="HSN"
+          stacked
+        />
+        <LabelInput
+          value={formatHsnSsc((details[0] as any)?.ssc)}
+          onChange={() => {}}
+          icon={CreditCard}
+          label="SSC"
           stacked
         />
         <LabelInput

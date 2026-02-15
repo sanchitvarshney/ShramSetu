@@ -43,8 +43,8 @@ const AddCompany: React.FC = () => {
   const [panNo, setPanNo] = useState<string>('');
   const [website, setWebsite] = useState<string>('');
   const [brandName, setBrandName] = useState<string>('');
-  const [hsn, setHsn] = useState<string>('');
-  const [ssc, setSsc] = useState<string>('');
+  const [hsnList, setHsnList] = useState<string[]>(['']);
+  const [sscList, setSscList] = useState<string[]>(['']);
 
   const { searchCompanies } = useSelector((state: RootState) => state.homePage);
   const { addcompanyLoading } = useSelector((state: RootState) => state.adminPage);
@@ -54,6 +54,10 @@ const AddCompany: React.FC = () => {
   }, [dispatch]);
 
   const handleAddCompany = () => {
+    const hsnArray = hsnList
+      .map((s) => s.trim().replace(/\s/g, ''))
+      .filter(Boolean);
+    const sscArray = sscList.map((s) => s.trim()).filter(Boolean);
     const validation = validateForm(addCompanySchema, {
       name: company ?? '',
       brandName: brandName.trim() || undefined,
@@ -61,8 +65,8 @@ const AddCompany: React.FC = () => {
       mobile,
       panNo,
       website,
-      hsn: hsn.trim() || undefined,
-      ssc: ssc.trim() || undefined,
+      hsn: hsnArray.length ? hsnArray : undefined,
+      ssc: sscArray.length ? sscArray : undefined,
     });
     if (!validation.success) {
       toast({
@@ -79,9 +83,9 @@ const AddCompany: React.FC = () => {
       name: company ?? '',
       panNo,
       website,
-      ...(brandName.trim() && { brandName: brandName.trim() }),
-      ...(hsn.trim() && { hsn: hsn.trim().replace(/\s/g, '') }),
-      ...(ssc.trim() && { ssc: ssc.trim() }),
+      ...(brandName.trim() && { brand: brandName.trim() }),
+      ...(hsnArray.length > 0 && { hsn: hsnArray }),
+      ...(sscArray.length > 0 && { ssc: sscArray }),
     };
     dispatch(addCompany(companyData)).then((response: any) => {
    
@@ -92,8 +96,8 @@ const AddCompany: React.FC = () => {
         setPanNo('');
         setWebsite('');
         setBrandName('');
-        setHsn('');
-        setSsc('');
+        setHsnList(['']);
+        setSscList(['']);
         toast({ title: 'Success!!', description: response.payload.message });
       } else {
         toast({
@@ -306,39 +310,98 @@ const AddCompany: React.FC = () => {
                   </span>
                 </Label>
               </div>
-              <div className="floating-label-group">
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={8}
-                  className={inputStyle}
-                  value={hsn}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, '');
-                    if (v.length <= 8) setHsn(v);
-                  }}
-                  placeholder="2, 4, 6 or 8 digits"
-                />
-                <Label className="floating-label gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <FaCreditCard className="h-[18px] w-[18px]" /> HSN
-                  </span>
+              <div className="col-span-2 space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <FaCreditCard className="h-[18px] w-[18px]" /> HSN (multiple)
                 </Label>
+                {hsnList.map((val, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={8}
+                      className={inputStyle}
+                      value={val}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, '');
+                        if (v.length <= 8) {
+                          const next = [...hsnList];
+                          next[idx] = v;
+                          setHsnList(next);
+                        }
+                      }}
+                      placeholder="2, 4, 6 or 8 digits"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => {
+                        if (hsnList.length > 1) {
+                          setHsnList(hsnList.filter((_, i) => i !== idx));
+                        }
+                      }}
+                      aria-label="Remove HSN"
+                    >
+                      −
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setHsnList([...hsnList, ''])}
+                >
+                  + Add HSN
+                </Button>
               </div>
-              <div className="floating-label-group">
-                <Input
-                  type="text"
-                  maxLength={20}
-                  className={inputStyle}
-                  value={ssc}
-                  onChange={(e) => setSsc(e.target.value)}
-                  placeholder="e.g. SSC/Q2210"
-                />
-                <Label className="floating-label gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <FaCreditCard className="h-[18px] w-[18px]" /> SSC
-                  </span>
+              <div className="col-span-2 space-y-2">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <FaCreditCard className="h-[18px] w-[18px]" /> SSC (multiple)
                 </Label>
+                {sscList.map((val, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input
+                      type="text"
+                      maxLength={20}
+                      className={inputStyle}
+                      value={val}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^A-Za-z0-9/\-]/g, '');
+                        if (v.length <= 20) {
+                          const next = [...sscList];
+                          next[idx] = v;
+                          setSscList(next);
+                        }
+                      }}
+                      placeholder="e.g. SSC/Q2210"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => {
+                        if (sscList.length > 1) {
+                          setSscList(sscList.filter((_, i) => i !== idx));
+                        }
+                      }}
+                      aria-label="Remove SSC"
+                    >
+                      −
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSscList([...sscList, ''])}
+                >
+                  + Add SSC
+                </Button>
               </div>
             </div>
           </CardContent>
@@ -354,7 +417,7 @@ const AddCompany: React.FC = () => {
                 ) :  <FaSave className="h-[20px] w-[20px]" />
               }
              
-              add
+              Create 
             </Button>
           </CardFooter>
         </Card>

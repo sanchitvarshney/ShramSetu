@@ -8,11 +8,11 @@ interface AddCompanyPayload {
   brandName?: string;
   branchName?: string;
   email: string;
-  hsn?: string;
+  hsn?: string[];
   mobile: string;
   name: string;
   panNo: string;
-  ssc?: string;
+  ssc?: string[];
   website: string;
 }
 

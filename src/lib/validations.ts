@@ -74,28 +74,30 @@ const aadhaarOptionalSchema = z
 
 // ─── Form schemas ───────────────────────────────────────────────────────
 
-/** HSN: optional. When provided, must be 2, 4, 6 or 8 digits (GST HSN code). */
-const hsnOptionalSchema = z
-  .string()
+/** HSN: optional array. When provided, each item must be 2, 4, 6 or 8 digits. */
+const hsnArrayOptionalSchema = z
+  .array(z.string())
   .optional()
   .refine(
-    (v) => {
-      const d = (v ?? '').trim().replace(/\s/g, '');
-      return d === '' || (/^\d+$/.test(d) && [2, 4, 6, 8].includes(d.length));
+    (arr) => {
+      if (!arr || arr.length === 0) return true;
+      const nonEmpty = arr.map((s) => s.trim().replace(/\s/g, '')).filter(Boolean);
+      return nonEmpty.every((d) => /^\d+$/.test(d) && [2, 4, 6, 8].includes(d.length));
     },
-    { message: 'HSN must be 2, 4, 6 or 8 digits' },
+    { message: 'Each HSN must be 2, 4, 6 or 8 digits' },
   );
 
-/** SSC: optional. When provided, alphanumeric, / and -, max 20 chars. */
-const sscOptionalSchema = z
-  .string()
+/** SSC: optional array. When provided, each item max 20 chars, alphanumeric, / and -. */
+const sscArrayOptionalSchema = z
+  .array(z.string())
   .optional()
   .refine(
-    (v) => {
-      const s = (v ?? '').trim();
-      return s === '' || (s.length <= 20 && /^[A-Za-z0-9\/\-]+$/.test(s));
+    (arr) => {
+      if (!arr || arr.length === 0) return true;
+      const nonEmpty = arr.map((s) => s.trim()).filter(Boolean);
+      return nonEmpty.every((s) => s.length <= 20 && /^[A-Za-z0-9\/\-]+$/.test(s));
     },
-    { message: 'SSC must be at most 20 characters and can only contain letters, numbers, / and -' },
+    { message: 'Each SSC must be at most 20 characters (letters, numbers, / and -)' },
   );
 
 /** Add Company form */
@@ -107,8 +109,8 @@ export const addCompanySchema = z.object({
   mobile: mobileSchema,
   panNo: panSchema,
   website: websiteSchema,
-  hsn: hsnOptionalSchema,
-  ssc: sscOptionalSchema,
+  hsn: hsnArrayOptionalSchema,
+  ssc: sscArrayOptionalSchema,
 });
 export type AddCompanyFormData = z.infer<typeof addCompanySchema>;
 
@@ -121,6 +123,8 @@ export const updateCompanySchema = z.object({
   mobile: mobileSchema,
   panNo: panSchema,
   website: websiteSchema,
+  hsn: hsnArrayOptionalSchema,
+  ssc: sscArrayOptionalSchema,
 });
 export type UpdateCompanyFormData = z.infer<typeof updateCompanySchema>;
 
