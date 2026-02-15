@@ -47,7 +47,7 @@ export interface SubIndustry {
 }
 
 interface DepartmentResponse {
-  data: Department[] | null;
+  data: any[] | null;
   message: string;
   success: boolean;
 }
@@ -218,7 +218,9 @@ interface AdminPageState {
   isFetchingJobsLoading: boolean;
   adduserloading: boolean;
   addcompanyLoading: boolean;
-  iseditcompany: boolean
+  iseditcompany: boolean;
+  addDepartmentLoading: boolean;
+  addDesignationLoading: boolean;
 }
 
 const initialState: AdminPageState = {
@@ -246,7 +248,9 @@ const initialState: AdminPageState = {
   isFetchingJobsLoading: false,
   adduserloading: false,
   addcompanyLoading: false,
-  iseditcompany: false
+  iseditcompany: false,
+  addDepartmentLoading: false,
+  addDesignationLoading: false,
 };
 
 
@@ -325,6 +329,38 @@ export const fetchDesignations = createAsyncThunk<DesignationResponse, void>(
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch designations');
+    }
+  },
+);
+
+export const addDepartment = createAsyncThunk<
+  { success: boolean; message: string; data?: Department | null },
+  { departmentName: any },
+  { rejectValue: string }
+>(
+  'adminPage/addDepartment',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post('/fetch/addDepartment', payload);
+      return response?.data ?? { success: false, message: 'No response' };
+    } catch (error) {
+      return rejectWithValue('Failed to add department');
+    }
+  },
+);
+
+export const addDesignation = createAsyncThunk<
+  { success: boolean; message: string; data?: Designation | null },
+  { designationName: string },
+  { rejectValue: string }
+>(
+  'adminPage/addDesignation',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post('/fetch/addDesignation', payload);
+      return response?.data ?? { success: false, message: 'No response' };
+    } catch (error) {
+      return rejectWithValue('Failed to add designation');
     }
   },
 );
@@ -872,6 +908,30 @@ const adminPageSlice = createSlice({
       })
       .addCase(fetchDesignations.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(addDepartment.pending, (state) => {
+        state.addDepartmentLoading = true;
+        state.error = null;
+      })
+      .addCase(addDepartment.fulfilled, (state) => {
+        state.addDepartmentLoading = false;
+        state.error = null;
+      })
+      .addCase(addDepartment.rejected, (state, action) => {
+        state.addDepartmentLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(addDesignation.pending, (state) => {
+        state.addDesignationLoading = true;
+        state.error = null;
+      })
+      .addCase(addDesignation.fulfilled, (state) => {
+        state.addDesignationLoading = false;
+        state.error = null;
+      })
+      .addCase(addDesignation.rejected, (state, action) => {
+        state.addDesignationLoading = false;
         state.error = action.payload as string;
       })
       .addCase(fetchMarriedStatus.pending, (state) => {

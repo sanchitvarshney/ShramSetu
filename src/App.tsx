@@ -33,6 +33,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import FallBackUI from './components/error/FallBackUI';
 import RootLayout from './Layout/RootLayout';
 import ClientUserPage from './pages/adminPages/ClientUserPage';
+import MasterPage from './pages/adminPages/MasterPage';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -124,6 +125,18 @@ const router = createBrowserRouter([
         <MainLayout>
           <AdminLayout>
             <ActivityLogPage />
+          </AdminLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
+    path: '/master',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <AdminLayout>
+            <MasterPage />
           </AdminLayout>
         </MainLayout>
       </Protected>

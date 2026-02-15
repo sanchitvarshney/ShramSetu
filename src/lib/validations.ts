@@ -227,6 +227,14 @@ export const jobFormSchema = z
   });
 export type JobFormData = z.infer<typeof jobFormSchema>;
 
+/** Master: Department / Designation name */
+export const addDepartmentSchema = z.object({
+  name: z.string().min(1, 'Department name is required').max(200, 'Department name is too long').transform((s) => s.trim()),
+});
+export const addDesignationSchema = z.object({
+  name: z.string().min(1, 'Designation name is required').max(200, 'Designation name is too long').transform((s) => s.trim()),
+});
+
 /** Helper: run a schema and return first error message or null */
 export function validateForm<T>(schema: z.ZodSchema<T>, data: unknown): { success: true; data: T } | { success: false; message: string } {
   const result = schema.safeParse(data);

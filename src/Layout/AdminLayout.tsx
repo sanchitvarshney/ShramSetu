@@ -4,6 +4,7 @@ import { BsBuildingUp } from 'react-icons/bs';
 import { GrUserWorker } from 'react-icons/gr';
 import { FaUserGroup } from "react-icons/fa6";
 import { TbLayoutGridFilled } from 'react-icons/tb';
+import { IoLibrary } from 'react-icons/io5';
 
 interface Props {
   children: React.ReactNode;
@@ -65,6 +66,19 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
               <TbLayoutGridFilled className="h-[20px] w-[20px]" />
             </div>
             Activity Log
+          </NavLink>
+          <NavLink
+            to="/master"
+            className={({ isActive }) =>
+              `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
+                isActive && 'bg-teal-500 text-white'
+              }`
+            }
+          >
+            <div className="h-[20px] w-[20px]">
+              <IoLibrary className="h-[20px] w-[20px]" />
+            </div>
+            Master
           </NavLink>
         </nav>
       </div>
