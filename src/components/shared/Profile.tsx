@@ -105,8 +105,9 @@ function Profile() {
                     editable
                     notVerified={userProfile[0]?.phoneVerify}
                     onUpdate={(newValue) => {
-                      setMobile(newValue);
-                      updateUserData('mobile', newValue, 'mobile');
+                      const digitsOnly = String(newValue ?? '').replace(/\D/g, '');
+                      setMobile(digitsOnly);
+                      updateUserData('mobile', digitsOnly, 'mobile');
                     }}
                     onVerify={() =>
                       handleVerifyClick('mobile', mobile, 'mobile')

@@ -43,6 +43,8 @@ const AddCompany: React.FC = () => {
   const [panNo, setPanNo] = useState<string>('');
   const [website, setWebsite] = useState<string>('');
   const [brandName, setBrandName] = useState<string>('');
+  const [hsn, setHsn] = useState<string>('');
+  const [ssc, setSsc] = useState<string>('');
 
   const { searchCompanies } = useSelector((state: RootState) => state.homePage);
   const { addcompanyLoading } = useSelector((state: RootState) => state.adminPage);
@@ -59,11 +61,13 @@ const AddCompany: React.FC = () => {
       mobile,
       panNo,
       website,
+      hsn: hsn.trim() || undefined,
+      ssc: ssc.trim() || undefined,
     });
     if (!validation.success) {
       toast({
         variant: 'destructive',
-        title: 'Validation Error',
+        title: 'Error',
         description: validation.message,
       });
       return;
@@ -76,6 +80,8 @@ const AddCompany: React.FC = () => {
       panNo,
       website,
       ...(brandName.trim() && { brandName: brandName.trim() }),
+      ...(hsn.trim() && { hsn: hsn.trim().replace(/\s/g, '') }),
+      ...(ssc.trim() && { ssc: ssc.trim() }),
     };
     dispatch(addCompany(companyData)).then((response: any) => {
    
@@ -86,6 +92,8 @@ const AddCompany: React.FC = () => {
         setPanNo('');
         setWebsite('');
         setBrandName('');
+        setHsn('');
+        setSsc('');
         toast({ title: 'Success!!', description: response.payload.message });
       } else {
         toast({
@@ -227,7 +235,7 @@ const AddCompany: React.FC = () => {
                 )}
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-[50px] mt-[50px]">
+            <div className="grid grid-cols-2 gap-[20px] mt-[50px]">
          
               <div className="floating-label-group">
                 <Input
@@ -257,9 +265,12 @@ const AddCompany: React.FC = () => {
               </div>
               <div className="floating-label-group">
                 <Input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={15}
                   required
                   className={inputStyle}
-                  onChange={(e) => setMobile(e.target.value)}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                   value={mobile}
                 />
                 <Label className="floating-label gap-[10px]">
@@ -292,6 +303,40 @@ const AddCompany: React.FC = () => {
                 <Label className="floating-label gap-[10px]">
                   <span className="flex items-center gap-[10px]">
                     <CgWebsite className="h-[18px] w-[18px]" /> Company Website
+                  </span>
+                </Label>
+              </div>
+              <div className="floating-label-group">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={8}
+                  className={inputStyle}
+                  value={hsn}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    if (v.length <= 8) setHsn(v);
+                  }}
+                  placeholder="2, 4, 6 or 8 digits"
+                />
+                <Label className="floating-label gap-[10px]">
+                  <span className="flex items-center gap-[10px]">
+                    <FaCreditCard className="h-[18px] w-[18px]" /> HSN
+                  </span>
+                </Label>
+              </div>
+              <div className="floating-label-group">
+                <Input
+                  type="text"
+                  maxLength={20}
+                  className={inputStyle}
+                  value={ssc}
+                  onChange={(e) => setSsc(e.target.value)}
+                  placeholder="e.g. SSC/Q2210"
+                />
+                <Label className="floating-label gap-[10px]">
+                  <span className="flex items-center gap-[10px]">
+                    <FaCreditCard className="h-[18px] w-[18px]" /> SSC
                   </span>
                 </Label>
               </div>

@@ -31,6 +31,7 @@ const AddClient = (props: any) => {
   const handleCreateClient = async () => {
     const validation = validateForm(addClientSchema, {
       branch: selectedBranch ?? '',
+
       firstName: fName.trim(),
       middleName: mName.trim() || undefined,
       lastName: lName.trim(),
@@ -41,13 +42,14 @@ const AddClient = (props: any) => {
     if (!validation.success) {
       toast({
         variant: 'destructive',
-        title: 'Validation Error',
+        title: 'Error',
         description: validation.message,
       });
       return;
     }
     const payload = {
-      company: selectedBranch,
+      company: props?.companyId,
+      branch: selectedBranch,
       email: email.trim(),
       firstName: fName.trim(),
       lastName: lName.trim(),
@@ -156,7 +158,7 @@ const AddClient = (props: any) => {
                 />
                 <LabelInput
                   value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                   icon={User}
                   label="Mobile Number"
                   required

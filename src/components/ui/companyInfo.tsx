@@ -138,6 +138,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
       <AddClient
         branches={branches}
         show={showAddClientDialog}
+        companyId={details[0]?.companyID ?? ''}
         hide={() => setShowAddClientDialog(false)}
       />
       <UpdateCompany

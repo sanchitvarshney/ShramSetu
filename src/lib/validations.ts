@@ -38,16 +38,77 @@ const optionalGstSchema = z
   .optional()
   .refine((v) => !v || /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d][A-Z]\d{4}$/i.test(v), 'Invalid GST format');
 
+/**
+ * Validates Aadhaar number: exactly 12 digits, only digits, and not the disallowed test number.
+ * Use everywhere Aadhaar is accepted or validated.
+ */
+export function isValidAadhaar(aadhaarNumber: string | undefined | null): boolean {
+  if (aadhaarNumber == null) return false;
+  const reg = /^\d+$/;
+  const disallowedAadhaar = '123412341234';
+  const uid = aadhaarNumber.trim().replace(/\s+/g, '');
+
+  // Check if Aadhaar number is 12 digits and contains only digits
+  if (uid.length === 12 && reg.test(uid)) {
+    if (disallowedAadhaar === uid) {
+      return false;
+    } else {
+      return true;
+    }
+  } else {
+    return false;
+  }
+}
+
+/** Aadhaar: optional. When provided, must pass isValidAadhaar (12 digits only, not disallowed). */
+const aadhaarOptionalSchema = z
+  .string()
+  .optional()
+  .refine(
+    (v) => {
+      const trimmed = (v ?? '').trim().replace(/\s/g, '');
+      return trimmed === '' || isValidAadhaar(v ?? '');
+    },
+    { message: 'Aadhaar must be exactly 12 digits and cannot be the disallowed test number' },
+  );
+
 // ─── Form schemas ───────────────────────────────────────────────────────
+
+/** HSN: optional. When provided, must be 2, 4, 6 or 8 digits (GST HSN code). */
+const hsnOptionalSchema = z
+  .string()
+  .optional()
+  .refine(
+    (v) => {
+      const d = (v ?? '').trim().replace(/\s/g, '');
+      return d === '' || (/^\d+$/.test(d) && [2, 4, 6, 8].includes(d.length));
+    },
+    { message: 'HSN must be 2, 4, 6 or 8 digits' },
+  );
+
+/** SSC: optional. When provided, alphanumeric, / and -, max 20 chars. */
+const sscOptionalSchema = z
+  .string()
+  .optional()
+  .refine(
+    (v) => {
+      const s = (v ?? '').trim();
+      return s === '' || (s.length <= 20 && /^[A-Za-z0-9\/\-]+$/.test(s));
+    },
+    { message: 'SSC must be at most 20 characters and can only contain letters, numbers, / and -' },
+  );
 
 /** Add Company form */
 export const addCompanySchema = z.object({
   name: z.string().min(1, 'Company name is required').max(200, 'Company name is too long'),
   brandName: z.string().max(200, 'Brand name is too long').optional(),
+  branchName: z.string().max(200, 'Branch name is too long').optional(),
   email: emailSchema,
   mobile: mobileSchema,
   panNo: panSchema,
   website: websiteSchema,
+  hsn: hsnOptionalSchema,
+  ssc: sscOptionalSchema,
 });
 export type AddCompanyFormData = z.infer<typeof addCompanySchema>;
 
@@ -75,6 +136,7 @@ export const addWorkerSchema = z
     designation: z.string().min(1, 'Designation is required'),
     mobile: mobileSchema,
     gender: z.enum(['M', 'F'], { required_error: 'Gender is required' }),
+    aadhaarNo: aadhaarOptionalSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, 'Confirm password is required'),
   })

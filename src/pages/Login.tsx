@@ -37,7 +37,7 @@ const Login: React.FC = () => {
     if (!validation.success) {
       toast({
         variant: 'destructive',
-        title: 'Validation Error',
+        title: 'Error',
         description: validation.message,
       });
       return;

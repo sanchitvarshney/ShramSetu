@@ -60,6 +60,8 @@ import {
   EmploymentDetail,
 } from '@/features/admin/adminPageTypes';
 import { marriedStatus } from '@/types/general';
+import { isValidAadhaar } from '@/lib/validations';
+import { toast } from '@/components/ui/use-toast';
 
 export default function EmpUpdate() {
   const params = useParams();
@@ -388,6 +390,19 @@ export default function EmpUpdate() {
     uan: uan,
   };
 
+  const handleSubmitEmployee = () => {
+    const aadhaarVal = (empAdhaar ?? '').trim().replace(/\s/g, '');
+    if (aadhaarVal.length > 0 && !isValidAadhaar(empAdhaar ?? '')) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Aadhaar must be exactly 12 digits and cannot be the disallowed test number.',
+      });
+      return;
+    }
+    dispatch(updateEmployeeDetails(payload));
+  };
+
   return (
     <div className="overflow-y-auto">
       {!Object?.keys(workerInfo)?.length && <Loading />}
@@ -407,9 +422,7 @@ export default function EmpUpdate() {
             </Button> */}
             <Button
               type="button"
-              onClick={() => {
-                dispatch(updateEmployeeDetails(payload));
-              }}
+              onClick={handleSubmitEmployee}
             >
               Submit
             </Button>
@@ -452,13 +465,13 @@ export default function EmpUpdate() {
                 label="Email"
                 required
               />
-              <LabelInput
-                value={empMobile}
-                onChange={(e) => setEmpMobile(e.target.value)}
-                icon={BsTelephone}
-                label="Phone"
-                required
-              />
+                <LabelInput
+                  value={empMobile}
+                  onChange={(e) => setEmpMobile(e.target.value.replace(/\D/g, ''))}
+                  icon={BsTelephone}
+                  label="Phone"
+                  required
+                />
 
               <div>
                 <Label className="floating-label gap-[10px]">
@@ -523,13 +536,27 @@ export default function EmpUpdate() {
                 icon={LiaClipboardListSolid}
               />
 
-              <LabelInput
-                value={empAdhaar}
-                onChange={(e) => setEmpAdhaar(e.target.value)}
-                icon={PiCreditCard}
-                label="Aadhar Card Number"
-                required
-              />
+              <div className="space-y-1">
+                <LabelInput
+                  value={empAdhaar}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    if (v.length <= 12) setEmpAdhaar(v);
+                  }}
+                  icon={PiCreditCard}
+                  label="Aadhar Card Number"
+                  required
+                />
+                {(empAdhaar ?? '').length > 0 && (
+                  <p
+                    className={`text-xs mt-0.5 ${
+                      isValidAadhaar(empAdhaar ?? '') ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {isValidAadhaar(empAdhaar ?? '') ? 'Aadhaar valid' : 'Aadhaar not valid'}
+                  </p>
+                )}
+              </div>
 
               <LabelInput
                 value={empPan}
@@ -1070,9 +1097,7 @@ export default function EmpUpdate() {
         <div className="p-4">
           <Button
             type="submit"
-            onClick={() => {
-              dispatch(updateEmployeeDetails(payload));
-            }}
+            onClick={handleSubmitEmployee}
           >
             Submit
           </Button>

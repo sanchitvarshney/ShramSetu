@@ -5,12 +5,14 @@ import { SelectOptionType } from '@/types/general';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 interface AddCompanyPayload {
-
   brandName?: string;
+  branchName?: string;
   email: string;
+  hsn?: string;
   mobile: string;
   name: string;
   panNo: string;
+  ssc?: string;
   website: string;
 }
 

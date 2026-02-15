@@ -52,7 +52,7 @@ const UpdateCompany = (props: any) => {
     if (!validation.success) {
       toast({
         variant: 'destructive',
-        title: 'Validation Error',
+        title: 'Error',
         description: validation.message,
       });
       return;
@@ -143,7 +143,7 @@ const UpdateCompany = (props: any) => {
             />
             <LabelInput
               value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
+              onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
               icon={User}
               label="Mobile Number"
               required

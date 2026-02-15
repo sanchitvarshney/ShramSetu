@@ -24,6 +24,7 @@ import { BsTelephone } from 'react-icons/bs';
 import { CiMail } from 'react-icons/ci';
 import { IoIosLock } from 'react-icons/io';
 import { LiaClipboardListSolid } from 'react-icons/lia';
+import { PiCreditCard } from 'react-icons/pi';
 import { format } from 'date-fns';
 import { toast } from '@/components/ui/use-toast';
 import { Popover } from '@/components/ui/popover';
@@ -38,7 +39,7 @@ import {
 import { AppDispatch, RootState } from '@/store';
 import { DatePicker, DatePickerProps } from 'antd';
 import { CircularProgress } from '@mui/material';
-import { validateForm, addWorkerSchema } from '@/lib/validations';
+import { validateForm, addWorkerSchema, isValidAadhaar } from '@/lib/validations';
 
 const AddWorker = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -58,6 +59,7 @@ const AddWorker = () => {
   const [empPassword, setEmpPassword] = useState('');
   const [empConfirmPassword, setEmpConfirmPassword] = useState('');
   const [empGender, setEmpGender] = useState('');
+  const [empAadhaarNo, setEmpAadhaarNo] = useState('');
   const [empPhoto, setEmpPhoto] = useState<any>(null);
   const [empPhotoUrl, setEmpPhotoUrl] = useState<any>(null);
 
@@ -80,13 +82,14 @@ const AddWorker = () => {
       designation: empDesignation,
       mobile: empMobile.trim(),
       gender: empGender as 'M' | 'F',
+      aadhaarNo: empAadhaarNo.trim() || undefined,
       password: empPassword,
       confirmPassword: empConfirmPassword,
     });
     if (!validation.success) {
       toast({
         variant: 'destructive',
-        title: 'Validation Error',
+        title: 'Error',
         description: validation.message,
       });
       return;
@@ -104,6 +107,8 @@ const AddWorker = () => {
   formData.append('mobile', empMobile);
   formData.append('password', empPassword);
   formData.append('gender', empGender);
+  const aadhaarDigits = empAadhaarNo.replace(/\s/g, '');
+  if (aadhaarDigits) formData.append('aadhaarNo', aadhaarDigits);
 
   if (empPhoto instanceof File) {
     formData.append('image', empPhoto); // ✅ fixed name
@@ -122,7 +127,7 @@ const AddWorker = () => {
       setEmpPassword('');
       setEmpConfirmPassword('');
       setEmpGender('');
-      
+      setEmpAadhaarNo('');
       toast({ title: 'Success!!', description: response.payload.message });
     } else {
       toast({
@@ -275,11 +280,13 @@ const AddWorker = () => {
               </div>
               <div className="floating-label-group">
                 <Input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={15}
                   required
                   className={inputStyle}
                   value={empMobile}
-                  onChange={(e) => setEmpMobile(e.target.value)}
+                  onChange={(e) => setEmpMobile(e.target.value.replace(/\D/g, ''))}
                 />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
@@ -302,6 +309,37 @@ const AddWorker = () => {
                     Email
                   </span>
                 </Label>
+              </div>
+              <div className="space-y-1">
+                <div className="floating-label-group">
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={14}
+                    className={inputStyle}
+                    value={empAadhaarNo}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, '');
+                      if (v.length <= 12) setEmpAadhaarNo(v);
+                    }}
+                    placeholder="12 digits (e.g. 234512345678)"
+                  />
+                  <Label className="floating-label  gap-[10px]">
+                    <span className="flex items-center gap-[10px]">
+                      <PiCreditCard className="h-[18px] w-[18px]" />
+                      Aadhaar Number
+                    </span>
+                  </Label>
+                </div>
+                {empAadhaarNo.length > 0 && (
+                  <p
+                    className={`text-xs mt-0.5 ${
+                      isValidAadhaar(empAadhaarNo) ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {isValidAadhaar(empAadhaarNo) ? 'Aadhaar valid' : 'Aadhaar not valid'}
+                  </p>
+                )}
               </div>
               <div>
                 <Label className="floating-label  gap-[10px]">
