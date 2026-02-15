@@ -20,6 +20,7 @@ import { login } from '@/features/auth/authSlice';
 import { AppDispatch } from '@/store';
 import { useToast } from '@/components/ui/use-toast';
 import { CircularProgress } from '@mui/material';
+import { validateForm, loginSchema } from '@/lib/validations';
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -32,7 +33,16 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(login({ userName: email, password })).then((response: any) => {
+    const validation = validateForm(loginSchema, { userName: email.trim(), password });
+    if (!validation.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Validation Error',
+        description: validation.message,
+      });
+      return;
+    }
+    dispatch(login({ userName: email.trim(), password })).then((response: any) => {
       if (response.payload.success) {
         localStorage.setItem(
           'loggedInUser',

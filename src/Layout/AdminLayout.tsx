@@ -24,7 +24,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             </div>
             Company
           </NavLink>
-          {/* <NavLink
+          <NavLink
             to="/client-user"
             className={({ isActive }) =>
               `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
@@ -33,10 +33,10 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             }
           >
             <div className="h-[20px] w-[20px]">
-              <FaUserGroup className="h-[20px] w-[20px]" />
+              {/* <FaUserGroup className="h-[20px] w-[20px]" /> */}
             </div>
             Client & Users
-          </NavLink> */}
+          </NavLink>
           <NavLink
             to="/workers"
             className={({ isActive }) =>
@@ -51,7 +51,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             Workers
           </NavLink>
 
-          {/* <NavLink
+          <NavLink
             to="/activity-log"
             className={({ isActive }) =>
               `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
@@ -60,10 +60,10 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             }
           >
             <div className="h-[20px] w-[20px]">
-              <TbLayoutGridFilled className="h-[20px] w-[20px]" />
+              {/* <TbLayoutGridFilled className="h-[20px] w-[20px]" /> */}
             </div>
             Activity Log
-          </NavLink> */}
+          </NavLink>
         </nav>
       </div>
       <div>{children}</div>

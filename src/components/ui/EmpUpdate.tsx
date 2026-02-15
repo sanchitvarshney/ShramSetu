@@ -533,7 +533,7 @@ export default function EmpUpdate() {
 
               <LabelInput
                 value={empPan}
-                onChange={(e) => setEmpPan(e.target.value)}
+                onChange={(e) => setEmpPan(e.target.value.toUpperCase())}
                 icon={PiCreditCard}
                 label="PAN Number"
                 required

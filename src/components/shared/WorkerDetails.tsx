@@ -2,14 +2,14 @@ import React from 'react';
 // import { useDispatch } from 'react-redux';
 // import { AppDispatch } from '@/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, X } from 'lucide-react';
+
 // import IconButton from '@/components/ui/IconButton';
 import { SelectOptionType } from '@/types/general';
 import { cn } from '@/lib/utils';
 import { differenceInDays, parse } from 'date-fns';
 // import { Link } from 'react-router-dom';
 // import { getCV } from '@/features/homePage/homePageSlice';
-import { Button } from '../ui/button';
+
 import {
   Sheet,
   SheetContent,
@@ -38,7 +38,6 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   // showEdit,
   open,
   onOpenChange,
-  handleStatus,
 }) => {
   // const dispatch = useDispatch<AppDispatch>();
   // const employeeId = getEmployeeId(worker);
@@ -125,7 +124,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
           </div>
         ) : null}
 
-        {/* Fixed bottom */}
+        {/* Fixed bottom
         <div className="flex-shrink-0 flex justify-end gap-3 px-6 py-4 border-t bg-white">
           <Button
             variant="outline"
@@ -140,7 +139,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
           >
             <Check className="h-4 w-4 mr-1.5" /> Approve
           </Button>
-        </div>
+        </div> */}
       </SheetContent>
     </Sheet>
   );
@@ -210,7 +209,14 @@ const BasicDetailsFlat = ({ details }: { details: any }) => {
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Aadhaar Number" value={details?.empAadhaarNo} />
-          <SingleDetail label="PAN Number" value={details?.empPanNo} />
+          <SingleDetail
+            label="PAN Number"
+            value={
+              details?.empPanNo
+                ? String(details.empPanNo).toUpperCase()
+                : details?.empPanNo
+            }
+          />
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Blood Group" value={details?.empBloodGroup} />

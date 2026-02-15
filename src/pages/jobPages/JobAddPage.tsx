@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '@/components/ui/form';
 import {
   FormControl,
@@ -37,24 +38,7 @@ import {
 } from '@/features/admin/adminPageSlice';
 import { inputStyle } from '@/style/CustomStyles';
 import { toast } from '@/components/ui/use-toast';
-
-interface Inputs {
-  company: string;
-  branch: string;
-  address: string;
-  jobType: string;
-  designation: string;
-  department: string;
-  minSalary: number;
-  maxSalary: number;
-  skills: string;
-  jobTitle: string;
-  qualification: string;
-  experience: string;
-  jobStatus: string;
-  jobDescription: string;
-  facilities: string;
-}
+import { jobFormSchema, type JobFormData } from '@/lib/validations';
 
 const JobAddPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -63,9 +47,11 @@ const JobAddPage = () => {
     (state: RootState) => state.adminPage,
   );
 
-  const form = useForm<Inputs>({
+  const form = useForm<JobFormData>({
+    resolver: zodResolver(jobFormSchema),
     defaultValues: {
       company: '',
+      branch: '',
       address: '',
       jobType: '',
       designation: '',
@@ -77,6 +63,7 @@ const JobAddPage = () => {
       qualification: '',
       experience: '',
       jobStatus: '',
+      jobDescription: '',
       facilities: '',
     },
   });
@@ -97,7 +84,7 @@ const JobAddPage = () => {
   //   }
   // }, [selectedCompany, dispatch, form]);
 
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+  const onSubmit: SubmitHandler<JobFormData> = async (data) => {
     const payload: any = {
       company: data.company,
       // branch: data.branch,
@@ -149,7 +136,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="company"
-                  rules={{ required: 'Company is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Company *</FormLabel>
@@ -216,7 +202,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="jobType"
-                  rules={{ required: 'Job Type is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Job Type *</FormLabel>
@@ -245,7 +230,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="jobTitle"
-                  rules={{ required: 'Job Title is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Job Title *</FormLabel>
@@ -265,7 +249,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="department"
-                  rules={{ required: 'Department is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Department *</FormLabel>
@@ -295,7 +278,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="designation"
-                  rules={{ required: 'Designation is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Designation *</FormLabel>
@@ -325,7 +307,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="minSalary"
-                  rules={{ required: 'Minimum Salary is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Minimum Salary *</FormLabel>
@@ -349,7 +330,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="maxSalary"
-                  rules={{ required: 'Maximum Salary is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Maximum Salary *</FormLabel>
@@ -373,7 +353,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="experience"
-                  rules={{ required: 'Experience is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Experience *</FormLabel>
@@ -393,7 +372,6 @@ const JobAddPage = () => {
                 <FormField
                   control={form.control}
                   name="jobStatus"
-                  rules={{ required: 'Job Status is required' }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Job Status *</FormLabel>
@@ -422,7 +400,6 @@ const JobAddPage = () => {
               <FormField
                 control={form.control}
                 name="address"
-                rules={{ required: 'Address are required' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Address *</FormLabel>
@@ -443,7 +420,6 @@ const JobAddPage = () => {
               <FormField
                 control={form.control}
                 name="skills"
-                rules={{ required: 'Skills are required' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Skills *</FormLabel>
@@ -464,7 +440,6 @@ const JobAddPage = () => {
               <FormField
                 control={form.control}
                 name="qualification"
-                rules={{ required: 'Qualification is required' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Qualification *</FormLabel>
@@ -504,7 +479,6 @@ const JobAddPage = () => {
                   <FormField
                 control={form.control}
                 name="facilities"
-                rules={{ required: 'Facilities is required' }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Facilities *</FormLabel>

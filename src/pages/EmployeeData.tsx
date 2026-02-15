@@ -18,14 +18,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import WorkerDetails from '@/components/shared/WorkerDetails';
 import Loading from '@/components/reusable/Loading';
 import { advancedFilter, fetchCompanies } from '@/features/homePage/homePageSlice';
-import { Sidebar, SidebarContent } from '@/components/ui/sidebar';
 
 const EmployeeData: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { advancedFilter: filterData, loading, companies } =
     useSelector((state: RootState) => state.homePage);
 
-  const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
+  const [selectedEmpId, setSelectedEmpId] = useState<any | null>(null);
   // const [excludePreviousCompany, setExcludePreviousCompany] =
   //   useState<boolean>(false);
   // const [excludePreviousIndustry, setExcludePreviousIndustry] =
@@ -51,8 +50,8 @@ const EmployeeData: React.FC = () => {
     [],
   );
 
-  const toggleShowDetails = (empId?: string) => {
-    setSelectedEmpId(empId ?? null);
+  const toggleShowDetails = (empIdOrRow?: string | any) => {
+    setSelectedEmpId(empIdOrRow ?? null);
   };
 
   // Extract options from filterData
@@ -79,15 +78,24 @@ const EmployeeData: React.FC = () => {
 
   return (
     <>
-      <Sidebar open={open} onOpenChange={setOpen}>
-        <SidebarContent className='min-w-[50%] p-0'>
-          <WorkerDetails
-            worker={selectedEmpId!}
-            toggleDetails={toggleShowDetails}
-            setOpen={setOpen}
-          />
-        </SidebarContent>
-      </Sidebar>
+      {/* <Sidebar open={open} onOpenChange={setOpen}>
+        <SidebarContent className='min-w-[50%] p-0'> */}
+          {selectedEmpId && (
+            <WorkerDetails
+              worker={selectedEmpId}
+              toggleDetails={toggleShowDetails}
+              setOpen={setOpen}
+              open={open && !!selectedEmpId}
+              onOpenChange={(isOpen) => {
+                if (!isOpen) {
+                  setSelectedEmpId(null);
+                  setOpen(false);
+                }
+              }}
+            />
+          )}
+        {/* </SidebarContent>
+      </Sidebar> */}
 
       {/* {selectedEmpId && (
           <div className="absolute top-0 right-0 w-1/2 h-[calc(100vh-70px)] bg-white border-l border-gray-200">

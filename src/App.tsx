@@ -32,6 +32,7 @@ import PrivacyPolicy from './pages/termAndPolicy/PrivacyPolicy';
 import { ErrorBoundary } from "react-error-boundary";
 import FallBackUI from './components/error/FallBackUI';
 import RootLayout from './Layout/RootLayout';
+import ClientUserPage from './pages/adminPages/ClientUserPage';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -104,18 +105,18 @@ const router = createBrowserRouter([
       </Protected>
     ),
   },
-  // {
-  //   path: '/client-user',
-  //   element: (
-  //     <Protected authentication>
-  //       <MainLayout>
-  //         <AdminLayout>
-  //           <ClientUserPage />
-  //         </AdminLayout>
-  //       </MainLayout>
-  //     </Protected>
-  //   ),
-  // },
+  {
+    path: '/client-user',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <AdminLayout>
+            <ClientUserPage />
+          </AdminLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
   {
     path: '/activity-log',
     element: (

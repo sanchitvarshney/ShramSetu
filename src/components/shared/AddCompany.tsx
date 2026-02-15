@@ -11,7 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '../ui/label';
 import { inputStyle } from '@/style/CustomStyles';
-import { Building2, Mail, Phone } from 'lucide-react';
+import { Building2, Mail, Phone, Tag } from 'lucide-react';
 import { CgWebsite } from 'react-icons/cg';
 import { FaCreditCard, FaSave } from 'react-icons/fa';
 import {
@@ -30,6 +30,8 @@ import { AiFillLike } from 'react-icons/ai';
 import { Separator } from '../ui/separator';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import { toast } from '@/components/ui/use-toast';
+import { CircularProgress } from '@mui/material';
+import { validateForm, addCompanySchema } from '@/lib/validations';
 
 const AddCompany: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -40,26 +42,50 @@ const AddCompany: React.FC = () => {
   const [mobile, setMobile] = useState<string>('');
   const [panNo, setPanNo] = useState<string>('');
   const [website, setWebsite] = useState<string>('');
+  const [brandName, setBrandName] = useState<string>('');
 
   const { searchCompanies } = useSelector((state: RootState) => state.homePage);
+  const { addcompanyLoading } = useSelector((state: RootState) => state.adminPage);
 
   useEffect(() => {
     dispatch(fetchSearchCompanies());
   }, [dispatch]);
 
   const handleAddCompany = () => {
-    if (!company || !email || !mobile || !panNo || !website) {
+    const validation = validateForm(addCompanySchema, {
+      name: company ?? '',
+      brandName: brandName.trim() || undefined,
+      email,
+      mobile,
+      panNo,
+      website,
+    });
+    if (!validation.success) {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'All fields are required.',
+        title: 'Validation Error',
+        description: validation.message,
       });
       return;
     }
 
-    const companyData = { email, mobile, name: company, panNo, website };
+    const companyData = {
+      email,
+      mobile,
+      name: company ?? '',
+      panNo,
+      website,
+      ...(brandName.trim() && { brandName: brandName.trim() }),
+    };
     dispatch(addCompany(companyData)).then((response: any) => {
+   
       if (response.payload.success) {
+        setCompany('');
+        setEmail('');
+        setMobile('');
+        setPanNo('');
+        setWebsite('');
+        setBrandName('');
         toast({ title: 'Success!!', description: response.payload.message });
       } else {
         toast({
@@ -202,6 +228,20 @@ const AddCompany: React.FC = () => {
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-[50px] mt-[50px]">
+         
+              <div className="floating-label-group">
+                <Input
+                  className={inputStyle}
+                  onChange={(e) => setBrandName(e.target.value)}
+                  value={brandName}
+                  placeholder="e.g. Company Brand"
+                />
+                <Label className="floating-label gap-[10px]">
+                  <span className="flex items-center gap-[10px]">
+                    <Tag className="h-[18px] w-[18px]" /> Brand Name
+                  </span>
+                </Label>
+              </div>
               <div className="floating-label-group">
                 <Input
                   required
@@ -231,9 +271,10 @@ const AddCompany: React.FC = () => {
               <div className="floating-label-group">
                 <Input
                   required
-                  className={inputStyle}
-                  onChange={(e) => setPanNo(e.target.value)}
+                  className={`${inputStyle} uppercase`}
+                  onChange={(e) => setPanNo(e.target.value.toUpperCase())}
                   value={panNo}
+                  maxLength={10}
                 />
                 <Label className="floating-label gap-[10px]">
                   <span className="flex items-center gap-[10px]">
@@ -260,9 +301,15 @@ const AddCompany: React.FC = () => {
             <Button
               onClick={handleAddCompany}
               className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px]"
+              disabled={addcompanyLoading}
             >
-              <FaSave className="h-[20px] w-[20px]" />
-              Add
+              {
+                addcompanyLoading ? (
+                  <CircularProgress size={20}  />
+                ) :  <FaSave className="h-[20px] w-[20px]" />
+              }
+             
+              add
             </Button>
           </CardFooter>
         </Card>

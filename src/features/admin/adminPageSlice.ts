@@ -5,6 +5,8 @@ import { SelectOptionType } from '@/types/general';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 interface AddCompanyPayload {
+
+  brandName?: string;
   email: string;
   mobile: string;
   name: string;
@@ -212,6 +214,9 @@ interface AdminPageState {
   loading: boolean;
   error: string | null;
   isFetchingJobsLoading: boolean;
+  adduserloading: boolean;
+  addcompanyLoading: boolean;
+  iseditcompany: boolean
 }
 
 const initialState: AdminPageState = {
@@ -237,6 +242,9 @@ const initialState: AdminPageState = {
   loading: false,
   error: null,
   isFetchingJobsLoading: false,
+  adduserloading: false,
+  addcompanyLoading: false,
+  iseditcompany: false
 };
 
 
@@ -247,7 +255,7 @@ export const addCompany = createAsyncThunk(
   async (companyData: AddCompanyPayload, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post('/company/add', companyData);
-      return response.data.add;
+      return response?.data;
     } catch (error) {
       return rejectWithValue('Failed to add company');
     }
@@ -409,19 +417,8 @@ export const companyUpdate = createAsyncThunk<
 >('adminPage/companyUpdate', async (companyData: any, { rejectWithValue }) => {
   try {
     const response = await orshAxios.put('/company/edit', companyData);
-    if (!response.data.success) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: response.data.message,
-      });
-    } else {
-      toast({
-        title: 'Success',
-        description: response.data.message,
-      });
-    }
-    return response.data.add;
+   
+    return response.data;
   } catch (error) {
     return rejectWithValue('Failed to fetch employee');
   }
@@ -481,17 +478,18 @@ export const handleEmpStatus = createAsyncThunk(
 // );
 
 export const addWorker = createAsyncThunk(
-  'adminPage/addworker',
+  'adminPage/user-add',
   async (workerData: FormData, { rejectWithValue }) => {
     try {
       // Make sure to pass formData as the request body
-      const response = await orshAxios.post('/worker/add', workerData, {
+      const response = await orshAxios.post('/worker/add-user', workerData, {
         headers: {
-          'Content-Type': 'multipart/form-data', // Set the content type to multipart/form-data
+          'Content-Type': 'multipart/form-data', 
         },
       });
       return response.data;
     } catch (error) {
+      console.log(error,"error")
       return rejectWithValue('Failed to add worker');
     }
   },
@@ -811,15 +809,15 @@ const adminPageSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(addCompany.pending, (state) => {
-        state.loading = true;
+        state.addcompanyLoading = true;
         state.error = null;
       })
       .addCase(addCompany.fulfilled, (state) => {
-        state.loading = false;
+        state.addcompanyLoading = false;
         state.error = null;
       })
       .addCase(addCompany.rejected, (state, action) => {
-        state.loading = false;
+        state.addcompanyLoading = false;
         state.error = action.payload as string;
       })
       .addCase(searchCompanies.pending, (state) => {
@@ -927,15 +925,15 @@ const adminPageSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(addWorker.pending, (state) => {
-        state.loading = true;
+        state.adduserloading = true;
         state.error = null;
       })
       .addCase(addWorker.fulfilled, (state) => {
-        state.loading = false;
+        state.adduserloading = false;
         state.error = null;
       })
       .addCase(addWorker.rejected, (state, action) => {
-        state.loading = false;
+        state.adduserloading = false;
         state.error = action.payload as string;
       })
       .addCase(fetchActivityLogs.pending, (state) => {
@@ -1074,7 +1072,22 @@ const adminPageSlice = createSlice({
       .addCase(getLocationsFromPinCode.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(companyUpdate.pending, (state) => {
+        state.iseditcompany = true;
+        state.error = null;
+      })
+      .addCase(companyUpdate.fulfilled, (state) => {
+        state.iseditcompany = false;
+     
+   
+        state.error = null;
+      })
+      .addCase(companyUpdate.rejected, (state, action) => {
+        state.iseditcompany = false;
+        state.error = action.payload as string;
       });
+
   },
 });
 

@@ -15,6 +15,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addClient } from '@/features/admin/adminPageSlice';
 import { toast } from '@/components/ui/use-toast';
+import { validateForm, addClientSchema } from '@/lib/validations';
 
 const AddClient = (props: any) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,8 +29,33 @@ const AddClient = (props: any) => {
   const [password, setPassword] = useState('');
 
   const handleCreateClient = async () => {
+    const validation = validateForm(addClientSchema, {
+      branch: selectedBranch ?? '',
+      firstName: fName.trim(),
+      middleName: mName.trim() || undefined,
+      lastName: lName.trim(),
+      email: email.trim(),
+      mobile: mobile.trim(),
+      password,
+    });
+    if (!validation.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Validation Error',
+        description: validation.message,
+      });
+      return;
+    }
+    const payload = {
+      company: selectedBranch,
+      email: email.trim(),
+      firstName: fName.trim(),
+      lastName: lName.trim(),
+      middleName: mName.trim() || undefined,
+      mobile: mobile.trim(),
+      password,
+    };
     dispatch(addClient(payload)).then((response: any) => {
-      console.log(response);
       if (response.payload.success) {
         toast({ title: 'Success!!', description: response.payload.message });
         props.hide();
@@ -44,24 +70,13 @@ const AddClient = (props: any) => {
   };
 
   useEffect(() => {
-    console.log('this is the selected branch', selectedBranch);
     if (selectedBranch) {
       setStage('details');
     } else {
       setStage('branch');
     }
   }, [selectedBranch]);
-  console.log(props.branches, stage, 'll');
 
-  const payload: {} = {
-    company: selectedBranch,
-    email: email,
-    firstName: fName,
-    lastName: lName,
-    middleName: mName,
-    mobile: mobile,
-    password: password,
-  };
   return (
     <Dialog open={props.show} onOpenChange={props.hide}>
       <DialogContent

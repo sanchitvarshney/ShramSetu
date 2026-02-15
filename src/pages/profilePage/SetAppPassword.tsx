@@ -5,9 +5,10 @@ import { inputStyle } from '@/style/CustomStyles';
 import { Label } from '@radix-ui/react-label';
 import { useState } from 'react';
 import { IoIosLock } from 'react-icons/io';
+import { validateForm, changePasswordSchema } from '@/lib/validations';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
 import { useDispatch } from 'react-redux';
-import { CheckCircle } from 'lucide-react'; // Import CheckCircle from lucide-react
+import { CheckCircle } from 'lucide-react';
 
 const SetPassword = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -32,15 +33,16 @@ const SetPassword = () => {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      setError('All fields are required.');
+    const validation = validateForm(changePasswordSchema, {
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    });
+    if (!validation.success) {
+      setError(validation.message);
       return;
     }
-    if (newPassword !== confirmPassword) {
-      setError('New password and confirm password do not match.');
-      return;
-    }
+    setError('');
     dispatch(changePassword({ body: payload, type: 'changePassword=true' }));
   };
 

@@ -51,7 +51,11 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
       field: 'name',
       cellRenderer: actionCellRenderer,
     },
-    { headerName: 'PAN No', field: 'panNo' },
+    {
+      headerName: 'Brand',
+      field: 'brand',
+      valueFormatter: (params) => params.value ?? '—',
+    },
     { headerName: 'Email', field: 'email' },
     { headerName: 'Mobile', field: 'mobile' },
     { headerName: 'Website', field: 'website' },
@@ -59,7 +63,7 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
       headerName: 'Active Status',
       field: 'activeStatus',
       valueGetter: (params) =>
-        params.data.activeStatus === 'true' ? 'Active' : 'Not Active',
+        params.data?.activeStatus === 'A' ? 'Active' : 'Not Active',
     },
   ];
 

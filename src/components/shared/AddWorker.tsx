@@ -37,12 +37,14 @@ import {
 } from '@/features/admin/adminPageSlice';
 import { AppDispatch, RootState } from '@/store';
 import { DatePicker, DatePickerProps } from 'antd';
+import { CircularProgress } from '@mui/material';
+import { validateForm, addWorkerSchema } from '@/lib/validations';
 
 const AddWorker = () => {
   const dispatch = useDispatch<AppDispatch>();
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { department, designation } = useSelector(
+  const { department, designation , adduserloading} = useSelector(
     (state: RootState) => state.adminPage,
   );
   const [empFirstName, setEmpFirstName] = useState('');
@@ -54,6 +56,7 @@ const AddWorker = () => {
   const [empDesignation, setEmpDesignation] = useState('');
   const [empMobile, setEmpMobile] = useState('');
   const [empPassword, setEmpPassword] = useState('');
+  const [empConfirmPassword, setEmpConfirmPassword] = useState('');
   const [empGender, setEmpGender] = useState('');
   const [empPhoto, setEmpPhoto] = useState<any>(null);
   const [empPhotoUrl, setEmpPhotoUrl] = useState<any>(null);
@@ -67,69 +70,70 @@ const AddWorker = () => {
   };
 
   const handleSubmit = () => {
-    if (
-      empFirstName &&
-      empLastName &&
-      empEmail &&
-      empMobile &&
-      empPassword &&
-      empDOB &&
-      empDepartment &&
-      empDesignation
-    ) {
-      const formData = new FormData();
-    formData.append('empFirstName', empFirstName);
-    formData.append('empMiddleName', empMiddleName);
-    formData.append('empLastName', empLastName);
-    formData.append('empEmail', empEmail);
-    formData.append('empDOB', format(empDOB, 'dd-MM-yyyy'));
-    formData.append('empDepartment', empDepartment);
-    formData.append('empDesignation', empDesignation);
-    formData.append('empMobile', empMobile);
-    formData.append('empPassword', empPassword);
-    formData.append('empGender', empGender);
-
-    // Only append the photo if it is not null
-    console.log(empPhoto)
-    if (empPhoto instanceof File) {
-      formData.append('empPhoto', empPhoto);  // Append the file object, not the URL
-    }
-      dispatch(
-        addWorker(
-        //   {
-        //   empFirstName,
-        //   empMiddleName,
-        //   empLastName,
-        //   empEmail,
-        //   empDOB: format(empDOB, 'dd-MM-yyyy'),
-        //   empDepartment,
-        //   empDesignation,
-        //   empMobile,
-        //   empPassword,
-        //   empGender,
-        //   empPhoto,
-        // }
-        formData
-      ),
-      ).then((response: any) => {
-        if (response.payload.success) {
-          toast({ title: 'Success!!', description: response.payload.message });
-        } else {
-          toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: response.payload.message,
-          });
-        }
+    const validation = validateForm(addWorkerSchema, {
+      firstName: empFirstName.trim(),
+      middleName: empMiddleName.trim() || undefined,
+      lastName: empLastName.trim(),
+      email: empEmail.trim(),
+      dob: empDOB,
+      department: empDepartment,
+      designation: empDesignation,
+      mobile: empMobile.trim(),
+      gender: empGender as 'M' | 'F',
+      password: empPassword,
+      confirmPassword: empConfirmPassword,
+    });
+    if (!validation.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Validation Error',
+        description: validation.message,
       });
+      return;
+    }
+
+  const formData = new FormData();
+
+  formData.append('firstName', empFirstName);
+  formData.append('middleName', empMiddleName);
+  formData.append('lastName', empLastName);
+  formData.append('email', empEmail);
+  formData.append('dob', format(empDOB, 'dd/MM/yyyy')); // ✅ fixed
+  formData.append('department', empDepartment);
+  formData.append('designation', empDesignation);
+  formData.append('mobile', empMobile);
+  formData.append('password', empPassword);
+  formData.append('gender', empGender);
+
+  if (empPhoto instanceof File) {
+    formData.append('image', empPhoto); // ✅ fixed name
+  }
+
+  dispatch(addWorker(formData)).then((response: any) => {
+    if (response.payload.success) {
+      setEmpFirstName(''); // Reset form fields
+      setEmpMiddleName('');
+      setEmpLastName('');
+      setEmpEmail('');
+      setEmpDOB(undefined);
+      setEmpDepartment('');
+      setEmpDesignation('');
+      setEmpMobile('');
+      setEmpPassword('');
+      setEmpConfirmPassword('');
+      setEmpGender('');
+      
+      toast({ title: 'Success!!', description: response.payload.message });
     } else {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Please fill all the mandatory fields.',
+        description: response.payload.message,
       });
     }
-  };
+  });
+};
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
@@ -352,7 +356,13 @@ const AddWorker = () => {
                 </Select>
               </div>
               <div className="floating-label-group">
-                <Input required className={inputStyle} />
+                <Input
+                  type="password"
+                  required
+                  className={inputStyle}
+                  value={empPassword}
+                  onChange={(e) => setEmpPassword(e.target.value)}
+                />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
                     <IoIosLock className="h-[18px] w-[18px]" />
@@ -362,10 +372,11 @@ const AddWorker = () => {
               </div>
               <div className="floating-label-group">
                 <Input
+                  type="password"
                   required
                   className={inputStyle}
-                  value={empPassword}
-                  onChange={(e) => setEmpPassword(e.target.value)}
+                  value={empConfirmPassword}
+                  onChange={(e) => setEmpConfirmPassword(e.target.value)}
                 />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
@@ -380,8 +391,10 @@ const AddWorker = () => {
             <Button
               className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px]"
               onClick={handleSubmit}
+              disabled={adduserloading}
             >
-              <BiSolidLogInCircle className="h-[25px] w-[25px]" />
+              {adduserloading ? <CircularProgress size={20} /> : <BiSolidLogInCircle className="h-[25px] w-[25px]" />}
+              
               Register
             </Button>
           </CardFooter>

@@ -20,6 +20,7 @@ import {
   getLocationsFromPinCode,
 } from '@/features/admin/adminPageSlice';
 import { toast } from '@/components/ui/use-toast';
+import { validateForm, updateBranchSchema } from '@/lib/validations';
 
 const UpdateBranchModal = (props: any) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -65,6 +66,25 @@ const UpdateBranchModal = (props: any) => {
     setCity('');
   };
   const handleUpdateCompany = async () => {
+    const validation = validateForm(updateBranchSchema, {
+      branchName: branchName.trim(),
+      email: email.trim(),
+      mobile: mobile.trim(),
+      gstNo: gstNo.trim() || undefined,
+      industry,
+      subIndustry: subIndustry || undefined,
+      pinCode: pinCode.trim(),
+      state,
+      city: city.trim(),
+    });
+    if (!validation.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Validation Error',
+        description: validation.message,
+      });
+      return;
+    }
     if (props?.updatingBranch !== null) {
       dispatch(branchUpdate(payload)).then((response: any) => {
         if (response.payload.success) {
