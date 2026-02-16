@@ -7,7 +7,6 @@ import {
 import { NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { IoMdDownload } from "react-icons/io";
 import { IoSearchOutline } from "react-icons/io5";
 
 interface Props {
@@ -32,12 +31,11 @@ interface Props {
               <span>SMS</span>
             </NavLink>
           </div>
-        <div className='flex items-center gap-[20px]'>
-          <Button className='flex items-center gap-[5px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400'><IoMdDownload className='h-[20px] w-[20px]'/> Download</Button>
+       
           <div className='flex items-center gap-[10px]'>
             <Input className={"bg-#fff min-w-[300px] focus-visible:ring-0"} placeholder='Search...'/>
             <Button className='flex items-center gap-[5px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400 shadow'><IoSearchOutline className='h-[20px] w-[20px]'/> Search</Button>
-          </div>
+     
         </div>
         </CardHeader>
         <CardContent className='h-[calc(100vh-190px)] p-0 overflow-y-auto '>

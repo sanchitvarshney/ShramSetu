@@ -28,7 +28,7 @@ export  const columnDefs: ColDef[] = [
   ];
   
  export  const dummyData: RowData[] = [
-    { name: 'John Doe', message: 'Hello', sendTime: '2024-08-01 10:00', status: "yes" },
-    { name: 'Jane Smith', message: 'Hi', sendTime: '2024-08-01 11:00', status: "no" }
+    // { name: 'John Doe', message: 'Hello', sendTime: '2024-08-01 10:00', status: "yes" },
+    // { name: 'Jane Smith', message: 'Hi', sendTime: '2024-08-01 11:00', status: "no" }
   ];
   

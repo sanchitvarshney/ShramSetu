@@ -33,10 +33,11 @@ const pinCodeSchema = z
   .string()
   .regex(/^\d{6}$/, 'Pin code must be 6 digits');
 
+/** Indian GSTIN: 2 digits (state) + 5 letters + 4 digits + 1 letter (PAN) + 3 alphanumeric (entity + Z/digit + check digit) = 15 chars */
 const optionalGstSchema = z
   .string()
   .optional()
-  .refine((v) => !v || /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z\d][A-Z]\d{4}$/i.test(v), 'Invalid GST format');
+  .refine((v) => v == null || v === '' || /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z0-9][A-Z0-9][A-Z0-9]$/i.test(String(v).trim()), 'Invalid GST format');
 
 /**
  * Validates Aadhaar number: exactly 12 digits, only digits, and not the disallowed test number.
@@ -169,7 +170,6 @@ export const updateBranchSchema = z.object({
   mobile: mobileSchema,
   gstNo: optionalGstSchema,
   industry: z.string().min(1, 'Industry is required'),
-  subIndustry: z.string().optional(),
   pinCode: pinCodeSchema,
   state: z.string().min(1, 'State is required'),
   city: z.string().min(1, 'City/Area is required'),

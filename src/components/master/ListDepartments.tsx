@@ -23,7 +23,9 @@ const ListDepartments: React.FC = () => {
   }, [dispatch]);
 
   const columnDefs: ColDef[] = [
+     { headerName: '#', field: 'text', flex: 1, valueGetter: 'node.rowIndex + 1' },
     { headerName: 'Department Name', field: 'text', flex: 1 },
+
   ];
 
   return (

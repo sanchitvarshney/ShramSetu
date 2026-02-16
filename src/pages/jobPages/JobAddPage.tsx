@@ -63,7 +63,6 @@ const JobAddPage = () => {
       qualification: '',
       experience: '',
       jobStatus: '',
-      jobDescription: '',
       facilities: '',
     },
   });
@@ -99,7 +98,7 @@ const JobAddPage = () => {
       qualification: data.qualification,
       experience: data.experience,
       jobStatus: data.jobStatus,
-      jobDescription: data.jobDescription,
+     
       facilities: data.facilities,
     };
     try {
@@ -459,7 +458,7 @@ const JobAddPage = () => {
               {/* Job Description */}
               {/* <FormField
                 control={form.control}
-                name="jobDescription"
+                name=""
                 rules={{ required: 'Job Description is required' }}
                 render={({ field }) => (
                   <FormItem>

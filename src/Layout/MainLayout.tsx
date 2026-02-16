@@ -98,7 +98,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
             className=" bg-transparent border-none shadow-none p-[20px]"
           >
             <div className=" relative  rounded-xl bg-teal-800 border-0 min-w-[300px] shadow shadow-stone-400 p-[20px] h-[calc(100vh-40px)]  ">
-              <SidebarHeader className="bg-blue-100 rounded-lg p-[20px] ">
+              <SidebarHeader className="bg-white rounded-lg p-[20px] ">
                 <img src="/main-logo.svg" alt="" className="w-[100%]" />
               </SidebarHeader>
               <aside className="flex-col mt-[20px] rounded-lg">
@@ -111,14 +111,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <Home className="w-5 h-5" />
                     Dashboard
                   </NavLink>
-                  <NavLink
-                    to="/invitation/mail"
-                    className={NavlinkStyle}
-                    onClick={() => setOpen(false)}
-                  >
-                    <Mail className="w-5 h-5" />
-                    Invitation
-                  </NavLink>
+             
                   <NavLink
                     to="/company/list"
                     className={NavlinkStyle}
@@ -144,6 +137,14 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <IoSettingsOutline className="w-6 h-6" />
                     Setting
                   </NavLink>
+                       <NavLink
+                    to="/invitation/mail"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <Mail className="w-5 h-5" />
+                    Invitation
+                  </NavLink>
                  
                 </nav>
               </aside>
@@ -153,8 +154,11 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <div className="flex items-center justify-between w-full cursor-pointer">
                       <div className="flex items-center gap-[5px]">
                         <Avatar>
-                          <AvatarImage src="https://github.com/shadcn.png" />
-                          <AvatarFallback>CN</AvatarFallback>
+                          <AvatarImage
+                           src="https://github.com/shadcn.png" 
+                        
+                           />
+                         
                         </Avatar>
                         <Separator orientation="vertical" className="" />
                         <div className="flex flex-col font-[500] gap-0 text-white">
@@ -206,6 +210,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
           <div className="bg-[#04b0a8] w-[300px] h-[50px] flex justify-end">
             <img
               src="/lightlogov2.svg"
+              
               alt="Brand logo"
               className="w-[170px]"
             />

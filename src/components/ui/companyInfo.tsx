@@ -63,6 +63,15 @@ function formatHsnSsc(val: unknown): string {
   return String(val);
 }
 
+/** Get display text from branch field that may be { text, value } or string. */
+function branchFieldText(val: unknown): string {
+  if (val == null) return '';
+  if (typeof val === 'object' && 'text' in (val as object) && typeof (val as { text?: string }).text === 'string') {
+    return (val as { text: string }).text.trim() || '';
+  }
+  return String(val).trim();
+}
+
 export interface CompanyInfoContentProps {
   companyId: string;
   /** When true, used inside drawer (slightly more compact). */
@@ -78,10 +87,24 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
 
 
   const [showAddBranchDialog, setShowAddBranchDialog] = useState(false);
-  const [updatingBranch, _setUpdatingBranch] = useState<null>(null);
+  const [updatingBranch, setUpdatingBranch] = useState<any>(null);
   const [showAddClientDialog, setShowAddClientDialog] = useState<boolean>(false);
   const [showUpdateComDialog, setShowUpdateComDialog] = useState<boolean>(false);
   const [updatingBranchStatusId, setUpdatingBranchStatusId] = useState<string | null>(null);
+
+  const openAddBranch = () => {
+    setUpdatingBranch(null);
+    setShowAddBranchDialog(true);
+  };
+  const openEditBranch = (branch: any) => {
+    setUpdatingBranch(branch);
+    setShowAddBranchDialog(true);
+  };
+  const hideBranchModal = () => {
+    setShowAddBranchDialog(false);
+    setUpdatingBranch(null);
+    dispatch(getCompanyBranchOptions(companyId));
+  };
 
   useEffect(() => {
     if (!companyId) return;
@@ -130,7 +153,6 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
       pinCode: (branch as any).pinCode ?? '',
       state: (branch as any).state ?? '',
       industry: (branch as any).industry ?? '',
-      subIndustry: (branch as any).subIndustry ?? '',
       activeStatus,
     };
     dispatch(branchUpdate(payload)).then((res: any) => {
@@ -166,8 +188,9 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
       <UpdateBranchModal
         branches={branches}
         show={showAddBranchDialog}
-        hide={() => setShowAddBranchDialog(false)}
+        hide={hideBranchModal}
         updatingBranch={updatingBranch}
+        companyName={details?.[0]?.name}
       />
       <div className="flex justify-between items-center border-b-2 border-b-muted ">
         <div className="flex gap-2 items-center ml-[-10px]">
@@ -178,7 +201,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
         </div>
         <div className="flex gap-2 items-center">
           <DropDown
-            setShowAddBranchDialog={setShowAddBranchDialog}
+            onAddBranch={openAddBranch}
             setShowAddClientDialog={setShowAddClientDialog}
             setShowUpdateComDialog={setShowUpdateComDialog}
           />
@@ -277,46 +300,107 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
         </div>
       </div>
 
-      {/* Branches section with names and Active/Inactive */}
+      {/* Branches section – same layout as Update Company with Edit per branch */}
       {branches && branches.length > 0 && (
-        <div className="px-4 space-y-3">
+        <div className="px-4 space-y-4">
           <div className="h-[2px] bg-muted" />
           <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
             <Building2 className="h-4 w-4" />
             Branches
           </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-6">
             {branches.map((branch: any) => (
               <div
                 key={branch.branchID}
-                className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-lg border border-slate-200 bg-slate-50/50"
+                className="rounded-lg border border-slate-200 bg-white p-6"
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800 truncate">
-                    {branch.branchName}
-                  </p>
-                  {branch.city && (
-                    <p className="text-xs text-slate-500">{branch.city}</p>
-                  )}
+                <div className="flex justify-between items-center border-b-2 border-b-muted mb-4">
+                  <div className="flex gap-2 items-center">
+                    <Building2 className="h-5 w-5 text-slate-600" />
+                    <p className="font-semibold text-xl text-slate-800">
+                      {branch.branchName ?? branch.companyName ?? '—'}
+                    </p>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <Select
+                      value={branch.activeStatus === 'A' ? 'A' : 'INA'}
+                      onValueChange={(value) =>
+                        handleBranchActiveStatusChange(branch, value)
+                      }
+                      disabled={updatingBranchStatusId === branch.branchID}
+                    >
+                      <SelectTrigger className={inputStyle + ' w-[140px]'}>
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A">Active</SelectItem>
+                        <SelectItem value="INA">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <IconButton
+                      icon={<Edit size={18} />}
+                      onClick={() => openEditBranch(branch)}
+                      aria-label="Edit branch"
+                    />
+                  </div>
                 </div>
-                <div className="flex-shrink-0 w-full sm:w-[140px]">
-                  <Select
-                    value={
-                      branch.activeStatus === 'A' ? 'A' : 'INA'
-                    }
-                    onValueChange={(value) =>
-                      handleBranchActiveStatusChange(branch, value)
-                    }
-                    disabled={updatingBranchStatusId === branch.branchID}
-                  >
-                    <SelectTrigger className={inputStyle}>
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="A">Active</SelectItem>
-                      <SelectItem value="INA">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <LabelInput
+                    value={branch.branchName ?? branch.companyName ?? ''}
+                    onChange={() => {}}
+                    icon={Building2}
+                    label="Branch Name"
+                    stacked
+                  />
+                  <LabelInput
+                    value={branch.email ?? ''}
+                    onChange={() => {}}
+                    icon={Mail}
+                    label="Email"
+                    stacked
+                  />
+                  <LabelInput
+                    value={branch.mobile ?? ''}
+                    onChange={() => {}}
+                    icon={Phone}
+                    label="Contact No."
+                    stacked
+                  />
+                  <LabelInput
+                    value={branch.gst ?? ''}
+                    onChange={() => {}}
+                    icon={CreditCard}
+                    label="GST Number"
+                    stacked
+                  />
+                  <LabelInput
+                    value={branch.pinCode ?? ''}
+                    onChange={() => {}}
+                    icon={CreditCard}
+                    label="Pin Code"
+                    stacked
+                  />
+                  <LabelInput
+                    value={branchFieldText(branch.state)}
+                    onChange={() => {}}
+                    icon={Globe}
+                    label="State"
+                    stacked
+                  />
+                  <LabelInput
+                    value={branch.city ?? ''}
+                    onChange={() => {}}
+                    icon={Globe}
+                    label="City"
+                    stacked
+                  />
+                  <LabelInput
+                    value={branchFieldText(branch.industry)}
+                    onChange={() => {}}
+                    icon={Tag}
+                    label="Industry"
+                    stacked
+                  />
                 </div>
               </div>
             ))}
@@ -340,8 +424,8 @@ export default function CompanyInfo() {
 
 interface PropTypes {
   setShowAddClientDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  setShowAddBranchDialog?: React.Dispatch<React.SetStateAction<boolean>>;
   setShowUpdateComDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onAddBranch: () => void;
 }
 
 const DropDown = (props: PropTypes) => {
@@ -373,8 +457,7 @@ const DropDown = (props: PropTypes) => {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="group"
-          //@ts-ignore
-          onClick={() => props?.setShowAddBranchDialog(true)}
+          onClick={props.onAddBranch}
         >
           <div className="flex items-center gap-1 ">
             <PlusIcon size={18} className="text-muted-foreground" />

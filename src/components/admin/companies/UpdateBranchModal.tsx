@@ -16,7 +16,6 @@ import {
   branchUpdate,
   fetchIndustry,
   fetchStates,
-  fetchSubIndustry,
   getLocationsFromPinCode,
 } from '@/features/admin/adminPageSlice';
 import { toast } from '@/components/ui/use-toast';
@@ -26,7 +25,6 @@ const UpdateBranchModal = (props: any) => {
   const dispatch = useDispatch<AppDispatch>();
   const [branchName, setBranchName] = useState('');
   const [industry, setIndustry] = useState('');
-  const [subIndustry, setSubIndustry] = useState('');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
   const [pinCode, setPinCode] = useState('');
@@ -38,20 +36,30 @@ const UpdateBranchModal = (props: any) => {
     companyInfo,
     states,
     industry: industryList,
-    subIndustry: subIndustryList,
     perPincode,
   } = useSelector((state: RootState) => state.adminPage);
 
   useEffect(() => {
-    setBranchName(props?.updatingBranch?.branchName);
-    setEmail(props?.updatingBranch?.email);
-    setMobile(props?.updatingBranch?.mobile);
-    setGstNo(props?.updatingBranch?.gst);
-    setIndustry(props?.updatingBranch?.industry?.value);
-    setSubIndustry(props?.updatingBranch?.subIndustry?.value);
-    setPinCode(props?.updatingBranch?.pinCode);
-    setState(props?.updatingBranch?.state?.value);
-    setCity(props?.updatingBranch?.city);
+    const b = props?.updatingBranch;
+    if (!b) {
+      setBranchName('');
+      setEmail('');
+      setMobile('');
+      setGstNo('');
+      setIndustry('');
+      setPinCode('');
+      setState('');
+      setCity('');
+      return;
+    }
+    setBranchName(b?.branchName ?? '');
+    setEmail(b?.email ?? '');
+    setMobile(b?.mobile ?? '');
+    setGstNo(b?.gst ?? '');
+    setIndustry(typeof b?.industry === 'object' && b?.industry?.value != null ? b.industry.value : b?.industry ?? '');
+    setPinCode(b?.pinCode ?? '');
+    setState(typeof b?.state === 'object' && b?.state?.value != null ? b.state.value : b?.state ?? '');
+    setCity(b?.city ?? '');
   }, [props?.updatingBranch]);
 
   const handleEmpty = () => {
@@ -60,7 +68,6 @@ const UpdateBranchModal = (props: any) => {
     setMobile('');
     setGstNo('');
     setIndustry('');
-    setSubIndustry('');
     setPinCode('');
     setState('');
     setCity('');
@@ -72,7 +79,6 @@ const UpdateBranchModal = (props: any) => {
       mobile: mobile.trim(),
       gstNo: gstNo.trim() || undefined,
       industry,
-      subIndustry: subIndustry || undefined,
       pinCode: pinCode.trim(),
       state,
       city: city.trim(),
@@ -130,12 +136,6 @@ const UpdateBranchModal = (props: any) => {
   };
 
   useEffect(() => {
-    if (industry) {
-      dispatch(fetchSubIndustry(industry));
-    }
-  }, [industry, dispatch]);
-
-  useEffect(() => {
     if (pinCode?.length === 6) {
       dispatch(
         getLocationsFromPinCode({
@@ -159,7 +159,9 @@ const UpdateBranchModal = (props: any) => {
       >
         <DialogHeader>
           <DialogTitle>
-            Edit Branch in {props?.updatingBranch?.companyName}
+            {props?.updatingBranch
+              ? `Edit Branch${props?.companyName ? ` – ${props.companyName}` : ''}`
+              : 'Add Branch'}
           </DialogTitle>
         </DialogHeader>
 
@@ -200,15 +202,6 @@ const UpdateBranchModal = (props: any) => {
               options={industryList}
               textKey="name"
               optionKey="industryID"
-              icon={Building}
-            />
-            <SelectWithLabel
-              label="Sub Industry"
-              value={subIndustry}
-              onValueChange={(value) => setSubIndustry(value)}
-              options={subIndustryList}
-              textKey="name"
-              optionKey="subIndustryID"
               icon={Building}
             />
             <LabelInput
@@ -253,7 +246,7 @@ const UpdateBranchModal = (props: any) => {
                 className="bg-teal-500 hover:bg-teal-600"
                 disabled={!branchName || !email}
               >
-                Add
+                {props?.updatingBranch ? 'Update' : 'Add'}
               </Button>
             </div>
           </div>
