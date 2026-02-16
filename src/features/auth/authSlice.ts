@@ -12,6 +12,7 @@ interface AuthState {
 interface LoginCredentials {
   userName: string;
   password: string;
+  type: string;
 }
 
 const initialState: AuthState = {
@@ -42,7 +43,7 @@ export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
   'auth/login',
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.post('login/admin', credentials);
+      const response = await orshAxios.post('login/signin', credentials);
       if (!response.data.success) {
         toast({
           variant: 'destructive',

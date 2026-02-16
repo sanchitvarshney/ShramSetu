@@ -17,12 +17,15 @@ import { AppDispatch, RootState } from '@/store';
 import { useDispatch, useSelector } from 'react-redux';
 import WorkerDetails from '@/components/shared/WorkerDetails';
 import Loading from '@/components/reusable/Loading';
-import { advancedFilter, fetchCompanies } from '@/features/homePage/homePageSlice';
+import { advancedFilter } from '@/features/homePage/homePageSlice';
+import { searchCompanies } from '@/features/admin/adminPageSlice';
+import { getLoggedInUserType } from '@/lib/routeAccess';
 
 const EmployeeData: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { advancedFilter: filterData, loading, companies } =
+  const { advancedFilter: filterData, loading } =
     useSelector((state: RootState) => state.homePage);
+  const { companies } = useSelector((state: RootState) => state.adminPage);
 
   const [selectedEmpId, setSelectedEmpId] = useState<any | null>(null);
   // const [excludePreviousCompany, setExcludePreviousCompany] =
@@ -39,7 +42,8 @@ const EmployeeData: React.FC = () => {
 
 
   useEffect(() => {
-    dispatch(fetchCompanies());
+    const userType = getLoggedInUserType() ?? 'admin';
+    dispatch(searchCompanies(userType));
   }, [dispatch]);
 
   const defaultColDef = useMemo(

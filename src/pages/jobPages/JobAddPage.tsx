@@ -27,11 +27,20 @@ import {
   CardDescription,
   CardFooter,
 } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
-import { fetchCompanies } from '@/features/homePage/homePageSlice';
+import { searchCompanies } from '@/features/admin/adminPageSlice';
+import { getLoggedInUserType } from '@/lib/routeAccess';
 import {
-  // getCompanyBranchOptions,
+  getCompanyBranchOptions,
   createJob,
   fetchDepartments,
   fetchDesignations,
@@ -39,10 +48,11 @@ import {
 import { inputStyle } from '@/style/CustomStyles';
 import { toast } from '@/components/ui/use-toast';
 import { jobFormSchema, type JobFormData } from '@/lib/validations';
+import Loading from '@/components/reusable/Loading';
 
 const JobAddPage = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { companies } = useSelector((state: RootState) => state.homePage);
+  const { companies, branches } = useSelector((state: RootState) => state.adminPage);
   const { department, designation, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
@@ -63,30 +73,53 @@ const JobAddPage = () => {
       qualification: '',
       experience: '',
       jobStatus: '',
-      facilities: '',
+      facilities: [
+        { facility: 'Bus', paid: 'no' as const },
+        { facility: 'Canteen', paid: 'no' as const },
+      ],
     },
   });
 
-  // const selectedCompany = form.watch('company');
+  const selectedCompany = form.watch('company');
+  const selectedBranchId = form.watch('branch');
 
   useEffect(() => {
-    dispatch(fetchCompanies());
+    const userType = getLoggedInUserType() ?? 'admin';
+    dispatch(searchCompanies(userType));
     dispatch(fetchDepartments());
     dispatch(fetchDesignations());
   }, [dispatch]);
 
-  // useEffect(() => {
-  //   if (selectedCompany) {
-  //     dispatch(getCompanyBranchOptions(selectedCompany));
+  useEffect(() => {
+    if (selectedCompany) {
+      dispatch(getCompanyBranchOptions(selectedCompany));
+      form.setValue('branch', '');
+    }
+  }, [selectedCompany, dispatch, form]);
 
-  //     form.setValue('branch', '');
-  //   }
-  // }, [selectedCompany, dispatch, form]);
+  // Auto-fill address from selected branch (address, city, state)
+  useEffect(() => {
+    if (!selectedBranchId || !branches?.length) return;
+    const branch = branches.find(
+      (b: any) => b.branchID === selectedBranchId || b.branchID?.toString() === selectedBranchId,
+    );
+    if (!branch) return;
+    const stateText =
+      typeof branch.state === 'object' && branch.state?.text != null
+        ? branch.state.text
+        : branch.state ?? '';
+    const fullAddress = branch.address?.trim()
+      ? branch.address.trim()
+      : [branch.city, stateText].filter(Boolean).join(', ');
+    if (fullAddress) {
+      form.setValue('address', fullAddress, { shouldValidate: true });
+    }
+  }, [selectedBranchId, branches, form]);
 
   const onSubmit: SubmitHandler<JobFormData> = async (data) => {
     const payload: any = {
       company: data.company,
-      // branch: data.branch,
+      branch: data.branch,
       address: data.address,
       jobType: data.jobType,
       designation: data.designation,
@@ -117,8 +150,10 @@ const JobAddPage = () => {
   };
 
   return (
-    <div className="p-4 max-h-[calc(100vh-75px)] overflow-y-auto">
-      <Card className="rounded-lg">
+    <>
+      {loading && <Loading />}
+      <div className="p-4 max-h-[calc(100vh-75px)] overflow-y-auto">
+        <Card className="rounded-lg">
         <CardHeader>
           <CardTitle className="text-[20px] font-[650] text-slate-600">
             Add Job
@@ -163,14 +198,13 @@ const JobAddPage = () => {
                   )}
                 />
 
-                {/* Branch Select */}
-                {/* <FormField
+                {/* Branch Select - populated when company is selected */}
+                <FormField
                   control={form.control}
                   name="branch"
-                  rules={{ required: 'Branch is required' }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Branch *</FormLabel>
+                      <FormLabel>Branch</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -178,7 +212,13 @@ const JobAddPage = () => {
                       >
                         <FormControl>
                           <SelectTrigger className={inputStyle}>
-                            <SelectValue placeholder="Select Branch" />
+                            <SelectValue
+                              placeholder={
+                                selectedCompany
+                                  ? 'Select Branch'
+                                  : 'Select Company first'
+                              }
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -195,7 +235,7 @@ const JobAddPage = () => {
                       <FormMessage />
                     </FormItem>
                   )}
-                /> */}
+                />
 
                 {/* Job Type */}
                 <FormField
@@ -355,13 +395,23 @@ const JobAddPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Experience *</FormLabel>
-                      <FormControl>
-                        <Input
-                          className={inputStyle}
-                          placeholder="e.g., 2-5 years"
-                          {...field}
-                        />
-                      </FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputStyle}>
+                            <SelectValue placeholder="Select Experience" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="0-2 Year">0-2 Year</SelectItem>
+                          <SelectItem value="2-4 Year">2-4 Year</SelectItem>
+                          <SelectItem value="4-6 Year">4-6 Year</SelectItem>
+                          <SelectItem value="6-8 Year">6-8 Year</SelectItem>
+                          <SelectItem value="8+ Year">8+ Year</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -395,7 +445,7 @@ const JobAddPage = () => {
                 />
               </div>
 
-              {/* {Address} */}
+              {/* Address */}
               <FormField
                 control={form.control}
                 name="address"
@@ -407,7 +457,10 @@ const JobAddPage = () => {
                         className={inputStyle}
                         placeholder="Enter Address (B-88, Sector 2, Noida, Uttar Pradesh, 201301)"
                         rows={3}
-                        {...field}
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -478,20 +531,67 @@ const JobAddPage = () => {
                   <FormField
                 control={form.control}
                 name="facilities"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Facilities *</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className={inputStyle}
-                        placeholder="Enter job Facilities"
-                        rows={4}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const list = field.value ?? [];
+                  const bus = list.find((f) => f.facility === 'Bus') ?? { facility: 'Bus' as const, paid: 'no' as const };
+                  const canteen = list.find((f) => f.facility === 'Canteen') ?? { facility: 'Canteen' as const, paid: 'no' as const };
+                  const setPaid = (facility: 'Bus' | 'Canteen', paid: 'yes' | 'no') => {
+                    const next = facility === 'Bus'
+                      ? [{ ...bus, paid }, canteen]
+                      : [bus, { ...canteen, paid }];
+                    field.onChange(next);
+                  };
+                  return (
+                    <FormItem>
+                      <FormLabel>Facilities *</FormLabel>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Facility</TableHead>
+                            <TableHead>Paid (Yes / No)</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-medium">Bus</TableCell>
+                            <TableCell>
+                              <Select
+                                value={bus.paid}
+                                onValueChange={(paid: 'yes' | 'no') => setPaid('Bus', paid)}
+                              >
+                                <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="yes">Yes</SelectItem>
+                                  <SelectItem value="no">No</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">Canteen</TableCell>
+                            <TableCell>
+                              <Select
+                                value={canteen.paid}
+                                onValueChange={(paid: 'yes' | 'no') => setPaid('Canteen', paid)}
+                              >
+                                <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="yes">Yes</SelectItem>
+                                  <SelectItem value="no">No</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <CardFooter className="flex justify-end px-0 pt-4">
@@ -507,7 +607,8 @@ const JobAddPage = () => {
           </Form>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 };
 

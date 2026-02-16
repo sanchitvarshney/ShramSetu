@@ -7,6 +7,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { LabelInput, SelectWithLabel } from '@/components/ui/EmpUpdate';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
@@ -31,6 +33,7 @@ const UpdateBranchModal = (props: any) => {
   const [gstNo, setGstNo] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
+  const [address, setAddress] = useState('');
 
   const {
     companyInfo,
@@ -50,6 +53,7 @@ const UpdateBranchModal = (props: any) => {
       setPinCode('');
       setState('');
       setCity('');
+      setAddress('');
       return;
     }
     setBranchName(b?.branchName ?? '');
@@ -60,6 +64,7 @@ const UpdateBranchModal = (props: any) => {
     setPinCode(b?.pinCode ?? '');
     setState(typeof b?.state === 'object' && b?.state?.value != null ? b.state.value : b?.state ?? '');
     setCity(b?.city ?? '');
+    setAddress(b?.address ?? '');
   }, [props?.updatingBranch]);
 
   const handleEmpty = () => {
@@ -71,6 +76,7 @@ const UpdateBranchModal = (props: any) => {
     setPinCode('');
     setState('');
     setCity('');
+    setAddress('');
   };
   const handleUpdateCompany = async () => {
     const validation = validateForm(updateBranchSchema, {
@@ -82,6 +88,7 @@ const UpdateBranchModal = (props: any) => {
       pinCode: pinCode.trim(),
       state,
       city: city.trim(),
+      address: address.trim() || undefined,
     });
     if (!validation.success) {
       toast({
@@ -125,6 +132,7 @@ const UpdateBranchModal = (props: any) => {
   const payload: any = {
     addressID: props?.updatingBranch?.branchID,
     companyID: companyInfo[0]?.companyID,
+    address: address.trim() || undefined,
     city: city,
     email: email,
     gst: gstNo,
@@ -229,6 +237,19 @@ const UpdateBranchModal = (props: any) => {
               optionKey="name"
               icon={Map}
             />
+            <div className="col-span-3 flex flex-col gap-1.5">
+              <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Map className="h-[18px] w-[18px] shrink-0" />
+                Address
+              </Label>
+              <Textarea
+                placeholder="Street, building, landmark..."
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                rows={2}
+                className="resize-none"
+              />
+            </div>
           </div>
           <div className="flex justify-between mt-2 float-right gap-5">
             <Button

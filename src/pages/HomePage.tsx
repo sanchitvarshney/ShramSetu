@@ -184,11 +184,12 @@ const HomePage: React.FC = () => {
       excludePreviousIndustry: false,
       limit: 100,
     };
+     navigate('/employee-list' );
 
     try {
       const response = await dispatch(advancedFilter(payload)).unwrap();
       if (response.success) {
-        navigate('/employee-list' );
+       
       }
     } catch (err) {
       console.error('Failed to fetch data:', err);

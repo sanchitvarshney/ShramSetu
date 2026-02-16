@@ -14,7 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader } from 'lucide-react';
+import Loading from '@/components/reusable/Loading';
 
 function buildResumeHtml(d: ApplicantDetail): string {
   const name = d.empName ?? d.applicantName ?? 'Applicant';
@@ -116,11 +116,9 @@ export default function ApplicantDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-xl shadow-lg">
+      <DialogContent className="relative max-w-3xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-xl shadow-lg">
         {applicationDetailsLoading && (
-          <div className="flex items-center justify-center w-full h-full">
-            <Loader />
-          </div>
+          <Loading message="Loading applicant..." variant="minimal" />
         )}
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-slate-800 mb-4">

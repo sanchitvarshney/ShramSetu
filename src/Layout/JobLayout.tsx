@@ -53,7 +53,7 @@ const JobLayout: React.FC<Props> = ({ children }) => {
           </NavLink>
         </nav>
       </div>
-      <div>{children}</div>
+      <div className=" overflow-hidden flex flex-col">{children}</div>
     </div>
   );
 };

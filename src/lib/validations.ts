@@ -173,6 +173,7 @@ export const updateBranchSchema = z.object({
   pinCode: pinCodeSchema,
   state: z.string().min(1, 'State is required'),
   city: z.string().min(1, 'City/Area is required'),
+  address: z.string().max(500, 'Address is too long').optional(),
 });
 export type UpdateBranchFormData = z.infer<typeof updateBranchSchema>;
 
@@ -219,7 +220,14 @@ export const jobFormSchema = z
     skills: z.string().min(1, 'Skills are required'),
     qualification: z.string().min(1, 'Qualification is required'),
     jobDescription: z.string().optional(),
-    facilities: z.string().min(1, 'Facilities are required'),
+    facilities: z
+      .array(
+        z.object({
+          facility: z.enum(['Bus', 'Canteen']),
+          paid: z.enum(['yes', 'no']),
+        }),
+      )
+      .min(1, 'At least one facility is required'),
   })
   .refine((data) => data.maxSalary >= data.minSalary, {
     message: 'Maximum salary must be greater than or equal to minimum salary',

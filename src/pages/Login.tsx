@@ -10,6 +10,13 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Separator } from '@/components/ui/separator';
@@ -26,6 +33,7 @@ const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState<'admin' | 'client'>('client');
   const { loading  } = useSelector((state: any) => state.auth);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -42,7 +50,7 @@ const Login: React.FC = () => {
       });
       return;
     }
-    dispatch(login({ userName: email.trim(), password })).then((response: any) => {
+    dispatch(login({ userName: email.trim(), password, type: userType })).then((response: any) => {
       if (response.payload.success) {
         localStorage.setItem(
           'loggedInUser',
@@ -66,6 +74,20 @@ const Login: React.FC = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="grid gap-[10px]">
+              <div className="grid gap-1">
+                <Label htmlFor="userType" className="text-sm font-medium text-slate-600">
+                  Login as
+                </Label>
+                <Select value={userType} onValueChange={(v: 'admin' | 'client') => setUserType(v)}>
+                  <SelectTrigger id="userType" className={inputStyle}>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="client">Client</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid gap-1 floating-label-group">
                 <Input
                   id="email"

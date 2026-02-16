@@ -280,12 +280,19 @@ export const addClient = createAsyncThunk(
   },
 );
 
-// Define the async thunk for fetching companies
-export const searchCompanies = createAsyncThunk<CompanyResponse, void>(
+// Define the async thunk for fetching companies (type = logged-in user type: admin | client)
+export const searchCompanies = createAsyncThunk<
+  CompanyResponse,
+  string | undefined
+>(
   'adminPage/searchCompanies',
-  async (_, { rejectWithValue }) => {
+  async (type, { rejectWithValue }) => {
+    console.log(type,"quary")
     try {
-      const response = await orshAxios.get<CompanyResponse>(`/company/list`);
+      const queryType = type ?? 'admin';
+      const response = await orshAxios.get<CompanyResponse>(
+        `/company/list?type=${queryType}`,
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch companies');

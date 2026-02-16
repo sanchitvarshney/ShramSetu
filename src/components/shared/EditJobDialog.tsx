@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 import { inputStyle } from '@/style/CustomStyles';
 import { JobRowData } from '@/table/JobTableColumns';
 import { useSelector } from 'react-redux';
-import { CircularProgress } from '@mui/material';
+import Loading from '@/components/reusable/Loading';
 
 interface EditJobDialogProps {
   open: boolean;
@@ -53,7 +53,10 @@ const EditJobDialog = ({
  const { isUpdateLoading } = useSelector((state: any) => state.jobslice);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto relative">
+        {isUpdateLoading && (
+          <Loading message="Updating job..." variant="minimal" />
+        )}
         <DialogHeader>
           <DialogTitle>Edit Job</DialogTitle>
         </DialogHeader>
@@ -268,13 +271,23 @@ const EditJobDialog = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Experience</FormLabel>
-                    <FormControl>
-                      <Input
-                        className={inputStyle}
-                        placeholder="e.g., 2-5 years"
-                        {...field}
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className={inputStyle}>
+                          <SelectValue placeholder="Select Experience" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="0-2 Year">0-2 Year</SelectItem>
+                        <SelectItem value="2-4 Year">2-4 Year</SelectItem>
+                        <SelectItem value="4-6 Year">4-6 Year</SelectItem>
+                        <SelectItem value="6-8 Year">6-8 Year</SelectItem>
+                        <SelectItem value="8+ Year">8+ Year</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -413,11 +426,6 @@ const EditJobDialog = ({
                 Cancel
               </Button>
               <Button disabled={isUpdateLoading} type="submit" className="bg-teal-500 hover:bg-teal-600">
-                {
-                  isUpdateLoading && (
-                    <CircularProgress size={20} color="inherit" sx={{ marginRight: "5px"}} />
-                  ) 
-                }
                 Save Changes
               </Button>
             </DialogFooter>

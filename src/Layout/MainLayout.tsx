@@ -31,6 +31,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { MdOutlineAdminPanelSettings } from 'react-icons/md';
+import { FaUserCircle } from 'react-icons/fa';
+import { CLIENT_FIRST_PATH } from '@/config/appRoutes';
 import { NavlinkStyle } from '@/style/CustomStyles';
 import NotificationSheet from '@/components/shared/NotificationSheet';
 import { logout } from '@/features/auth/authSlice';
@@ -38,7 +40,8 @@ import { useDispatch, useSelector,  } from 'react-redux';
 import { AppDispatch, RootState,  } from '@/store';
 import { IoAddOutline, IoSettingsOutline } from 'react-icons/io5';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
-import { fetchCompanies } from '@/features/homePage/homePageSlice';
+import { searchCompanies } from '@/features/admin/adminPageSlice';
+import { getLoggedInUserType } from '@/lib/routeAccess';
 
 interface Props {
   children: React.ReactNode;
@@ -51,15 +54,16 @@ const MainLayout: React.FC<Props> = ({ children }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [notification, setNotification] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const { companies } = useSelector((state: RootState) => state.homePage);
+  const { companies } = useSelector((state: RootState) => state.adminPage);
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   let user = localStorage.getItem('loggedInUser') ?? 'null';
   const data = JSON.parse(user);
+  const userType = getLoggedInUserType() ?? 'admin';
 
   useEffect(() => {
-    dispatch(fetchCompanies());
-  }, [dispatch]);
+    dispatch(searchCompanies(userType));
+  }, [dispatch, userType]);
 
   useEffect(() => {
     if (companies?.length > 0) {
@@ -111,16 +115,27 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <Home className="w-5 h-5" />
                     Dashboard
                   </NavLink>
-             
+                  {getLoggedInUserType() === 'admin' && (
+                    <NavLink
+                      to="/company/list"
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <MdOutlineAdminPanelSettings className="w-6 h-6" />
+                      Admin
+                    </NavLink>
+                  )}
+                  {getLoggedInUserType() === 'client' && (
+                    <NavLink
+                      to={CLIENT_FIRST_PATH}
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <FaUserCircle className="w-6 h-6" />
+                      Client
+                    </NavLink>
+                  )}
                   <NavLink
-                    to="/company/list"
-                    className={NavlinkStyle}
-                    onClick={() => setOpen(false)}
-                  >
-                    <MdOutlineAdminPanelSettings className="w-6 h-6" />
-                    Admin
-                  </NavLink>
-                   <NavLink
                     to="/job/job-create"
                     className={NavlinkStyle}
                     onClick={() => setOpen(false)}
@@ -128,16 +143,17 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <IoAddOutline className="w-6 h-6" />
                     Add Job
                   </NavLink>
-             
+                  {getLoggedInUserType() === 'admin' && (
+                    <NavLink
+                      to="/company/list"
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <IoSettingsOutline className="w-6 h-6" />
+                      Setting
+                    </NavLink>
+                  )}
                   <NavLink
-                    to="/company/list"
-                    className={NavlinkStyle}
-                    onClick={() => setOpen(false)}
-                  >
-                    <IoSettingsOutline className="w-6 h-6" />
-                    Setting
-                  </NavLink>
-                       <NavLink
                     to="/invitation/mail"
                     className={NavlinkStyle}
                     onClick={() => setOpen(false)}
@@ -164,7 +180,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                         <div className="flex flex-col font-[500] gap-0 text-white">
                           {data?.firstName} {data?.lastName}
                           <span className="text-[13px] font-[400]">
-                            Software Developer
+                           {data?.type === 'admin' ? 'Admin' : 'Client'}
                           </span>
                         </div>
                       </div>
@@ -298,7 +314,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
        {
         !open  && (
            <div
-          className="sidebar z-[20] fixed h-[100vh] bg-white w-[20px] left-0 top-0 bottom-0 flex justify-center items-center shadow shadow-neutral-300 cursor-pointer"
+          className="sidebar z-[20] fixed h-[100vh] bg-white w-[20px] left-0 top-0 bottom-0 flex justify-center items-center shadow shadow-neutral-300 cursor-pointer "
           onClick={() => setOpen(true)}
         >
           <CustomTooltip message="Menubar" side="right">

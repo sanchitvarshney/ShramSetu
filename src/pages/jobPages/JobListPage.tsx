@@ -12,7 +12,8 @@ import {
   fetchDesignations,
   fetchJobs,
 } from '@/features/admin/adminPageSlice';
-import { fetchCompanies } from '@/features/homePage/homePageSlice';
+import { searchCompanies } from '@/features/admin/adminPageSlice';
+import { getLoggedInUserType } from '@/lib/routeAccess';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 import EditJobDialog from '@/components/shared/EditJobDialog';
 import { useForm } from 'react-hook-form';
@@ -23,7 +24,7 @@ const JobListPage = () => {
   const { department, designation, isFetchingJobsLoading } = useSelector(
     (state: RootState) => state.adminPage,
   );
-  const { companies } = useSelector((state: RootState) => state.homePage);
+  const { companies } = useSelector((state: RootState) => state.adminPage);
   const [jobs, setJobs] = useState<JobRowData[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<JobRowData[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -60,7 +61,8 @@ const JobListPage = () => {
     if (department.length === 0 || designation.length === 0) {
       dispatch(fetchDepartments());
       dispatch(fetchDesignations());
-      dispatch(fetchCompanies());
+      const userType = getLoggedInUserType() ?? 'admin';
+      dispatch(searchCompanies(userType));
     }
   }, [isEditDialogOpen]);
   const handleFetchJobs = () => {
@@ -69,6 +71,11 @@ const JobListPage = () => {
       setFilteredJobs(response.payload.data || []);
     });
   };
+
+  useEffect(() => {
+    const userType = getLoggedInUserType() ?? 'admin';
+    dispatch(searchCompanies(userType));
+  }, [dispatch]);
 
   useEffect(() => {
     handleFetchJobs();

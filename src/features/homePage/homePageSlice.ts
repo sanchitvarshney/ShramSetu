@@ -81,20 +81,6 @@ const initialState: HomePageState = {
   locationData: [],
 };
 
-export const fetchCompanies = createAsyncThunk<CompanyResponse, void>(
-  'homePage/fetchCompanies',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.get<CompanyResponse>(
-        'company/list',
-      );
-      return response.data;
-    } catch (error) {
-      return rejectWithValue('Failed to fetch companies');
-    }
-  },
-);
-
 export const presentState = createAsyncThunk<CompanyResponse, void>(
   'fetch/empPresentState',
   async (_, { rejectWithValue }) => {
@@ -264,19 +250,6 @@ const homePageSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCompanies.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCompanies.fulfilled, (state, action) => {
-        state.loading = false;
-        state.companies = action.payload.data;
-        state.error = null;
-      })
-      .addCase(fetchCompanies.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       .addCase(presentState.pending, (state) => {
         state.loading = true;
         state.error = null;

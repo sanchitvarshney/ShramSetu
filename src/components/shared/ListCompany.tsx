@@ -3,6 +3,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
+import { getLoggedInUserType } from '@/lib/routeAccess';
 import { ColDef } from 'ag-grid-community';
 import Loading from '@/components/reusable/Loading';
 
@@ -15,6 +16,8 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
   const { companies, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
+  const type = getLoggedInUserType() ?? 'admin';
+
 
   const defaultColDef = useMemo(
     () => ({
@@ -25,8 +28,9 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
   );
 
   useEffect(() => {
-    dispatch(searchCompanies());
-  }, [dispatch]);
+    console.log("type", type)
+    dispatch(searchCompanies(type));
+  }, [dispatch, type]);
 
   const actionCellRenderer = (params: any) => {
     const companyId = params.data?.companyID;
