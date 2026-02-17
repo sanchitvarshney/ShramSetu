@@ -15,6 +15,7 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addClient } from '@/features/admin/adminPageSlice';
 import { toast } from '@/components/ui/use-toast';
+import { capitalizeName } from '@/lib/utils';
 import { validateForm, addClientSchema } from '@/lib/validations';
 
 const AddClient = (props: any) => {
@@ -130,21 +131,21 @@ const AddClient = (props: any) => {
               <div className="grid grid-cols-2 gap-2">
                 <LabelInput
                   value={fName}
-                  onChange={(e) => setFName(e.target.value)}
+                  onChange={(e) => setFName(capitalizeName(e.target.value))}
                   icon={User}
                   label="First Name"
                   required
                 />
                 <LabelInput
                   value={mName}
-                  onChange={(e) => setMName(e.target.value)}
+                  onChange={(e) => setMName(capitalizeName(e.target.value))}
                   icon={User}
                   label="Middle Name"
                   required
                 />
                 <LabelInput
                   value={lName}
-                  onChange={(e) => setLName(e.target.value)}
+                  onChange={(e) => setLName(capitalizeName(e.target.value))}
                   icon={User}
                   label="Last Name"
                   required

@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { capitalizeName } from '@/lib/utils';
 import { inputStyle } from '@/style/CustomStyles';
 import {
   CalendarIcon,
@@ -438,7 +439,7 @@ export default function EmpUpdate() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
               <LabelInput
                 value={empFirstName}
-                onChange={(e) => setEmpFirstName(e.target.value)}
+                onChange={(e) => setEmpFirstName(capitalizeName(e.target.value))}
                 icon={AiOutlineUser}
                 label="First Name"
                 required
@@ -446,14 +447,14 @@ export default function EmpUpdate() {
 
               <LabelInput
                 value={empMiddleName}
-                onChange={(e) => setEmpMiddleName(e.target.value)}
+                onChange={(e) => setEmpMiddleName(capitalizeName(e.target.value))}
                 icon={AiOutlineUser}
                 label="Middle Name"
                 required
               />
               <LabelInput
                 value={empLastName}
-                onChange={(e) => setEmpLastName(e.target.value)}
+                onChange={(e) => setEmpLastName(capitalizeName(e.target.value))}
                 icon={AiOutlineUser}
                 label="Last Name"
                 required
