@@ -42,7 +42,7 @@ function workerToExcelRow(worker: any): Record<string, string | number | undefin
 
 const ListWorker: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { workers, loading } = useSelector(
+  const { workers, loading, loadingworkerlist } = useSelector(
     (state: RootState) => state.adminPage,
   );
 
@@ -153,7 +153,7 @@ const ListWorker: React.FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)]">
-      {loading && <Loading />}
+      { (loading || loadingworkerlist) && <Loading />}
       <div className="mb-4 pl-5 pt-5">
         <Space direction="vertical" size={12} className="flex-row">
           <RangePicker

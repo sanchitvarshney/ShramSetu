@@ -223,6 +223,7 @@ interface AdminPageState {
   addDesignationLoading: boolean;
   isaddbranch: boolean;
   isbranchUpdate: boolean;
+  loadingworkerlist: boolean
 }
 
 const initialState: AdminPageState = {
@@ -255,6 +256,7 @@ const initialState: AdminPageState = {
   addDesignationLoading: false,
   isaddbranch: false,
   isbranchUpdate: false,
+  loadingworkerlist: false
 };
 
 
@@ -1035,16 +1037,16 @@ const adminPageSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(fetchWorkers.pending, (state) => {
-        state.loading = true;
+        state.loadingworkerlist = true;
         state.error = null;
       })
       .addCase(fetchWorkers.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingworkerlist = false;
         state.error = null;
         state.workers = action.payload.data;
       })
       .addCase(fetchWorkers.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingworkerlist = false;
         state.error = action.payload as string;
       })
       .addCase(fetchCountStatus.pending, (state) => {
