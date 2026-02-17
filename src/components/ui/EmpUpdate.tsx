@@ -61,6 +61,8 @@ import {
   EmploymentDetail,
 } from '@/features/admin/adminPageTypes';
 import { marriedStatus } from '@/types/general';
+import { isValidAadhaar } from '@/lib/validations';
+import { toast } from '@/components/ui/use-toast';
 
 export default function EmpUpdate() {
   const params = useParams();
@@ -393,37 +395,17 @@ export default function EmpUpdate() {
     uan: uan,
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    if (file) {
-      setEmpPhoto(file);
-      const imageUrl = URL.createObjectURL(file); // Generate URL for the selected image file
-      setEmpPhotoUrl(imageUrl); // Store the URL in state for immediate display
-      console.log(empPhoto);
-      dispatch(
-        uploadFamilyPhoto({
-          file: file,
-          id: workerInfo?.basicInfo?.uid,
-          type: 'emp',
-        }),
-      );
+  const handleSubmitEmployee = () => {
+    const aadhaarVal = (empAdhaar ?? '').trim().replace(/\s/g, '');
+    if (aadhaarVal.length > 0 && !isValidAadhaar(empAdhaar ?? '')) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Aadhaar must be exactly 12 digits and cannot be the disallowed test number.',
+      });
+      return;
     }
-  };
-  const handleFamilyPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    if (file) {
-      setEmpFamilyPhoto(file);
-      const imageUrl = URL.createObjectURL(file); // Generate URL for the selected image file
-      setEmpFamilyPhotoUrl(imageUrl); // Store the URL in state for immediate display
-      console.log(empFamilyPhoto);
-      dispatch(
-        uploadFamilyPhoto({
-          file: file,
-          id: workerInfo?.basicInfo?.uid,
-          type: 'family',
-        }),
-      );
-    }
+    dispatch(updateEmployeeDetails(payload));
   };
 
   return (
@@ -445,9 +427,7 @@ export default function EmpUpdate() {
             </Button> */}
             <Button
               type="button"
-              onClick={() => {
-                dispatch(updateEmployeeDetails(payload));
-              }}
+              onClick={handleSubmitEmployee}
             >
               Submit
             </Button>
@@ -490,13 +470,13 @@ export default function EmpUpdate() {
                 label="Email"
                 required
               />
-              <LabelInput
-                value={empMobile}
-                onChange={(e) => setEmpMobile(e.target.value)}
-                icon={BsTelephone}
-                label="Phone"
-                required
-              />
+                <LabelInput
+                  value={empMobile}
+                  onChange={(e) => setEmpMobile(e.target.value.replace(/\D/g, ''))}
+                  icon={BsTelephone}
+                  label="Phone"
+                  required
+                />
 
               <div>
                 <Label className="floating-label gap-[10px]">
@@ -561,17 +541,31 @@ export default function EmpUpdate() {
                 icon={LiaClipboardListSolid}
               />
 
-              <LabelInput
-                value={empAdhaar}
-                onChange={(e) => setEmpAdhaar(e.target.value)}
-                icon={PiCreditCard}
-                label="Aadhar Card Number"
-                required
-              />
+              <div className="space-y-1">
+                <LabelInput
+                  value={empAdhaar}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    if (v.length <= 12) setEmpAdhaar(v);
+                  }}
+                  icon={PiCreditCard}
+                  label="Aadhar Card Number"
+                  required
+                />
+                {(empAdhaar ?? '').length > 0 && (
+                  <p
+                    className={`text-xs mt-0.5 ${
+                      isValidAadhaar(empAdhaar ?? '') ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {isValidAadhaar(empAdhaar ?? '') ? 'Aadhaar valid' : 'Aadhaar not valid'}
+                  </p>
+                )}
+              </div>
 
               <LabelInput
                 value={empPan}
-                onChange={(e) => setEmpPan(e.target.value)}
+                onChange={(e) => setEmpPan(e.target.value.toUpperCase())}
                 icon={PiCreditCard}
                 label="PAN Number"
                 required
@@ -1177,9 +1171,7 @@ export default function EmpUpdate() {
         <div className="p-4">
           <Button
             type="submit"
-            onClick={() => {
-              dispatch(updateEmployeeDetails(payload));
-            }}
+            onClick={handleSubmitEmployee}
           >
             Submit
           </Button>
@@ -1197,6 +1189,8 @@ interface LabelInputProps {
   icon?: React.ElementType; // Use ElementType for component type
   blank?: boolean;
   readOnly?: boolean;
+  /** Stack label above input to avoid overlap with long labels (e.g. in detail views) */
+  stacked?: boolean;
 }
 
 export const LabelInput: React.FC<LabelInputProps> = ({
@@ -1207,7 +1201,29 @@ export const LabelInput: React.FC<LabelInputProps> = ({
   icon: Icon,
   blank = false,
   readOnly = false,
+  stacked = false,
 }) => {
+  if (stacked) {
+    return (
+      <div className="flex flex-col gap-1.5 min-h-[60px]">
+        <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          {Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}
+          <span className="break-words">{label}</span>
+        </label>
+        <Input
+          required={required}
+          className={inputStyle}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+        />
+        {blank && (
+          <p className="text-zinc-400 text-sm">Leave blank if not married</p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="floating-label-group">
       <Input

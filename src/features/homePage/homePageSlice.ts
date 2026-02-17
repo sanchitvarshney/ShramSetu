@@ -62,6 +62,7 @@ interface HomePageState {
   advancedFilter: AdvancedFilterPayload[] | null;
   notifications: Notification[] | null;
   loading: boolean;
+  locationData: any[];
 }
 
 const initialState: HomePageState = {
@@ -77,21 +78,8 @@ const initialState: HomePageState = {
   advancedFilter: [],
   notifications: null,
   loading: false,
+  locationData: [],
 };
-
-export const fetchCompanies = createAsyncThunk<CompanyResponse, void>(
-  'homePage/fetchCompanies',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.get<CompanyResponse>(
-        '/fetch/companyList',
-      );
-      return response.data;
-    } catch (error) {
-      return rejectWithValue('Failed to fetch companies');
-    }
-  },
-);
 
 export const presentState = createAsyncThunk<CompanyResponse, void>(
   'fetch/empPresentState',
@@ -213,7 +201,7 @@ export const advancedFilter = createAsyncThunk(
   async (companyData: AdvancedFilterPayload, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post(
-        '/fetch/advancedFilter',
+        '/job/advance-search',
         companyData,
       );
       if (!response.data.success) {
@@ -229,6 +217,16 @@ export const advancedFilter = createAsyncThunk(
     }
   },
 );
+
+
+export const getLocations = createAsyncThunk<
+  any,
+  { search?: string }
+>('homePage/getLocations', async (payload) => {
+  const search = payload?.search ?? '';
+  const response = await orshAxios.get(`/job/filterJobLocation?search=${encodeURIComponent(search)}`);
+  return response?.data;
+});
 
 const homePageSlice = createSlice({
   name: 'homePage',
@@ -252,19 +250,6 @@ const homePageSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchCompanies.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCompanies.fulfilled, (state, action) => {
-        state.loading = false;
-        state.companies = action.payload.data;
-        state.error = null;
-      })
-      .addCase(fetchCompanies.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
       .addCase(presentState.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -379,6 +364,19 @@ const homePageSlice = createSlice({
       })
       .addCase(advancedFilter.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      })
+       .addCase(getLocations.pending, (state) => {
+       
+        state.error = null;
+      })
+      .addCase(getLocations.fulfilled, (state, action) => {
+      
+        state.locationData = action.payload.data;
+        state.error = null;
+      })
+      .addCase(getLocations.rejected, (state, action) => {
+        
         state.error = action.payload as string;
       });
   },

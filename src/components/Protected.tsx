@@ -1,8 +1,10 @@
 import useToken from '@/hooks/useToken';
+import { isAdminOnlyPathFromConfig } from '@/config/appRoutes';
+import { getLoggedInUserType } from '@/lib/routeAccess';
 import { RootState } from '@/store';
 import React, { useEffect, ReactNode } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface ProtectedProps {
   children: ReactNode;
@@ -14,8 +16,9 @@ const Protected: React.FC<ProtectedProps> = ({
   authentication = true,
 }) => {
   const { token, setToken } = useToken();
-  const authStatus = !!token; // Boolean check for token existence
+  const authStatus = !!token;
   const navigate = useNavigate();
+  const location = useLocation();
   const state = useSelector((state: RootState) => state);
 
   useEffect(() => {
@@ -31,6 +34,17 @@ const Protected: React.FC<ProtectedProps> = ({
       navigate('/');
     }
   }, [authStatus, authentication, navigate]);
+
+  // Redirect client users from admin-only routes (central config)
+  useEffect(() => {
+    if (
+      authStatus &&
+      isAdminOnlyPathFromConfig(location.pathname) &&
+      getLoggedInUserType() !== 'admin'
+    ) {
+      navigate('/', { replace: true });
+    }
+  }, [authStatus, location.pathname, navigate]);
 
   return <>{children}</>;
 };

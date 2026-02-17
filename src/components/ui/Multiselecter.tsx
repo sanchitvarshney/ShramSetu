@@ -85,7 +85,7 @@ export const MultipleSelect = React.forwardRef<
       ...props
     }
   ) => {
-    const [selectedValues, setSelectedValues] = React.useState<string[]>(value);
+    const [selectedValues, setSelectedValues] = React.useState<any[]>([]);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
 
@@ -108,7 +108,7 @@ export const MultipleSelect = React.forwardRef<
     };
 
     const toggleOption = (optionValue: string) => {
-      const newSelectedValues = selectedValues.includes(optionValue)
+      const newSelectedValues = selectedValues?.includes(optionValue)
         ? selectedValues.filter((value) => value !== optionValue)
         : [...selectedValues, optionValue];
       setSelectedValues(newSelectedValues);

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { columnDefs } from '@/table/ListWorkerTable';
-import { DatePicker, Space, Select } from 'antd';
+import { DatePicker, Space } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import {
@@ -10,22 +10,43 @@ import {
   handleEmpStatus,
 } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
+import * as XLSX from 'xlsx';
 import WorkerDetails from '@/components/shared/WorkerDetails';
 import Loading from '@/components/reusable/Loading';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { SearchOutlined } from '@mui/icons-material';
+import { Download } from 'lucide-react';
 
 const { RangePicker } = DatePicker;
-const { Option } = Select;
+
+
+
+function workerToExcelRow(worker: any): Record<string, string | number | undefined> {
+  return {
+    'Employee ID': worker.employeeID ?? worker.empId ?? '',
+    'First Name': worker.empFirstName ?? worker.firstName ?? '',
+    'Last Name': worker.empLastName ?? worker.lastName ?? '',
+    Phone: worker.empMobile ?? worker.mobile ?? '',
+    'E-mail': worker.empEmail ?? worker.email ?? '',
+    DOB: worker.empDOB ?? worker.DOB ?? '',
+    'Inserted At': worker.empInsertedAt ?? worker.insertedAt ?? '',
+    Gender: worker.gender ?? worker.empGender ?? '',
+    'Blood Group': worker.bloodGroup ?? worker.empBloodGroup ?? '',
+    'Aadhaar No': worker.aadhaarNo ?? worker.empAadhaarNo ?? '',
+    Company: worker.companyName ?? worker.company ?? '',
+    Branch: worker.branchName ?? worker.branch ?? '',
+  };
+}
+
 
 const ListWorker: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { workers, loading, workersStatusCount } = useSelector(
+  const { workers, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
 
-  const [selectedEmpId, setSelectedEmpId] = useState<string | null>(null);
+  const [selectedEmpId, setSelectedEmpId] = useState<any | null>(null);
   const [status, setStatus] = useState('PEN'); // Default status
   const [startDateRange, setStartDate] = useState<string>('');
   const [endDateRange, setEndDate] = useState<string>('');
@@ -38,14 +59,11 @@ const ListWorker: React.FC = () => {
       setStartDate(formattedStartDate);
       setEndDate(formattedEndDate);
 
-      console.log(formattedStartDate, formattedEndDate);
-
       // Dispatch the fetchWorkers with the formatted dates
       dispatch(
         fetchWorkers({
           startDate: formattedStartDate,
           endDate: formattedEndDate,
-          empStatus: status,
         }),
       );
     } else {
@@ -53,13 +71,20 @@ const ListWorker: React.FC = () => {
     }
   };
 
+
+  useEffect(() => {
+     dispatch(
+      //@ts-ignore
+        fetchWorkers({}),
+      );
+  }, [])
+  
   const handleStatusChange = (value: any) => {
     setStatus(value);
     dispatch(
       fetchWorkers({
         startDate: startDateRange,
         endDate: endDateRange,
-        empStatus: value,
       }),
     );
   };
@@ -80,10 +105,36 @@ const ListWorker: React.FC = () => {
     dispatch(fetchCountStatus());
   }, [dispatch]);
 
+  const handleDownloadExcel = () => {
+    if (!workers?.length) {
+      toast({
+        variant: 'destructive',
+        title: 'No data',
+        description: 'No employee details to download',
+      });
+      return;
+    }
+    const rows = workers.map(workerToExcelRow);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+    const fileName = `employee-details-${format(new Date(), 'yyyy-MM-dd-HHmm')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    toast({
+      title: 'Downloaded',
+      description: `Exported ${workers.length} employee(s) to ${fileName}`,
+    });
+  };
+
   const handleStatus = (status: string) => {
+    const empUid =
+      typeof selectedEmpId === 'object' && selectedEmpId?.employeeID
+        ? selectedEmpId.employeeID
+        : selectedEmpId;
+    if (!empUid) return;
     dispatch(
       handleEmpStatus({
-        empUid: selectedEmpId,
+        empUid,
         empStatus: status,
       }),
     ).then((response: any) => {
@@ -110,7 +161,7 @@ const ListWorker: React.FC = () => {
             format="DD-MM-YYYY"
             className="w-full"
           />
-          <Select
+          {/* <Select
             defaultValue={status}
             onChange={(value) => {
               handleStatusChange(value);
@@ -121,16 +172,26 @@ const ListWorker: React.FC = () => {
             <Option value="APR">Approved</Option>
             <Option value="REJ">Reject</Option>
             <Option value="PEN">Pending</Option>
-          </Select>
+          </Select> */}
           <Button
             type="submit"
             className="shadow bg-teal-500 hover:bg-teal-600 shadow-slate-500 w-[120px] gap-2 h-8"
             onClick={() => handleStatusChange(status)}
           >
-            <Search className="h-[18px] w-[18px]" />
-            Fetch
+           <SearchOutlined />
+            Search
           </Button>
-          <div className="flex gap-4 pl-4 rounded-lg ">
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-2 h-8"
+            onClick={handleDownloadExcel}
+            disabled={!workers?.length}
+          >
+            <Download className="h-4 w-4" />
+            Download Excel
+          </Button>
+          {/* <div className="flex gap-4 pl-4 rounded-lg ">
             <p className="text-green-600 font-semibold text-[24px]">
               Approved:{' '}
               <span className="text-black">{workersStatusCount[0]?.apr}</span>
@@ -143,7 +204,7 @@ const ListWorker: React.FC = () => {
               Pending:{' '}
               <span className="text-black">{workersStatusCount[0]?.pen}</span>
             </p>
-          </div>
+          </div> */}
         </Space>
       </div>
       <div className="flex flex-1">
@@ -160,20 +221,16 @@ const ListWorker: React.FC = () => {
           </div>
         </div>
         {selectedEmpId && (
-          // <div className="flex-1 h-full">
           <WorkerDetails
             showEdit
-            setOpen={() => toggleShowDetails()}
-            empId={selectedEmpId} // Pass the selected employee ID
-            toggleDetails={toggleShowDetails} // Pass the function to close details
-            open={Boolean(selectedEmpId)} // or your condition for opening
+            worker={selectedEmpId}
+            toggleDetails={toggleShowDetails}
+            open={Boolean(selectedEmpId)}
             onOpenChange={(open) =>
               setSelectedEmpId(open ? selectedEmpId : null)
             }
-            loading={loading}
             handleStatus={handleStatus}
           />
-          // </div>
         )}
       </div>
     </div>

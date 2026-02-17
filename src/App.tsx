@@ -11,7 +11,6 @@ import EmployeeData from './pages/EmployeeData';
 import AdminLayout from './Layout/AdminLayout';
 import CompanyPage from './pages/adminPages/CompanyPage';
 import WorkersPage from './pages/adminPages/WorkersPage';
-import ClientUserPage from './pages/adminPages/ClientUserPage';
 import ActivityLogPage from './pages/adminPages/ActivityLogPage';
 import InvitationPage from './pages/invitation/InvitationPage';
 import WhatsAppInvitationPage from './components/shared/WhatsAppInvitationPage';
@@ -22,8 +21,26 @@ import { Toaster } from '@/components/ui/toaster';
 import EmpUpdate from '@/components/ui/EmpUpdate';
 import CompanyInfo from '@/components/ui/companyInfo';
 import ProfilePage from '@/pages/profilePage/ProfilePage';
+import PageNotFound from './pages/PageNotFound';
+import JobLayout from './Layout/JobLayout';
+import JobAddPage from './pages/jobPages/JobAddPage';
+import JobListPage from './pages/jobPages/JobListPage';
+import JobApplicationsPage from './pages/jobPages/JobApplicationsPage';
+import TermAndCondition from './pages/termAndPolicy/TermAndCondition';
+import MainLayoutTermAndPolicy from './pages/termAndPolicy/MainLayoutTermAndPolicy';
+import PrivacyPolicy from './pages/termAndPolicy/PrivacyPolicy';
+import { ErrorBoundary } from "react-error-boundary";
+import FallBackUI from './components/error/FallBackUI';
+import RootLayout from './Layout/RootLayout';
+import ClientUserPage from './pages/adminPages/ClientUserPage';
+import MasterPage from './pages/adminPages/MasterPage';
 const router = createBrowserRouter([
   {
+    path:"/",
+    element: <RootLayout />,
+    errorElement: <FallBackUI />,
+    children: [
+      {
     path: '/',
     element: (
       <Protected authentication>
@@ -114,6 +131,18 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: '/master',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <AdminLayout>
+            <MasterPage />
+          </AdminLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
     path: '/invitation/whatsapp',
     element: (
       <Protected authentication>
@@ -159,6 +188,60 @@ const router = createBrowserRouter([
       </Protected>
     ),
   },
+    {
+    path: '/job/job-create',
+    element: (
+      <Protected authentication>
+         <MainLayout>
+        <JobLayout>
+          <JobAddPage />
+        </JobLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+   {
+    path: '/job/job-list',
+    element: (
+      <Protected authentication>
+         <MainLayout>
+        <JobLayout>
+          <JobListPage />
+        </JobLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
+    path: '/job/job-applications',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <JobLayout>
+            <JobApplicationsPage />
+          </JobLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+    {
+    path: '/terms-of-service',
+    element: (
+      <MainLayoutTermAndPolicy>
+
+        <TermAndCondition />
+      </MainLayoutTermAndPolicy>
+    ),
+  },
+   {
+    path: '/privacy-policy',
+    element: (
+     <MainLayoutTermAndPolicy>
+
+        <PrivacyPolicy />
+      </MainLayoutTermAndPolicy>
+    ),
+  },
   {
     path: '/login',
     element: <Login />,
@@ -167,12 +250,25 @@ const router = createBrowserRouter([
     path: '/loading',
     element: <Loading />,
   },
+   {
+    path: '*',
+    element: <PageNotFound />,
+  },
+    ]
+  }
 ]);
 function App() {
   return (
     <>
+      <ErrorBoundary
+      fallbackRender={FallBackUI}
+      onError={(error, info) => {
+        console.error(error, info);
+      }}
+    >
       <RouterProvider router={router} />
       <Toaster />
+      </ErrorBoundary>
     </>
   );
 }

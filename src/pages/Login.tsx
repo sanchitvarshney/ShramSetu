@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,27 +10,47 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Separator } from '@/components/ui/separator';
-import { FaRegPlayCircle } from 'react-icons/fa';
-import { FaRegQuestionCircle } from 'react-icons/fa';
+import { FaRegQuestionCircle, FaRegPlayCircle } from 'react-icons/fa';
 import { PasswordInput } from '@/components/ui/passwordInput';
 import { inputStyle } from '@/style/CustomStyles';
 import { login } from '@/features/auth/authSlice';
 import { AppDispatch } from '@/store';
 import { useToast } from '@/components/ui/use-toast';
+import { CircularProgress } from '@mui/material';
+import { validateForm, loginSchema } from '@/lib/validations';
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState<'admin' | 'client'>('client');
+  const { loading  } = useSelector((state: any) => state.auth);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(login({ userName: email, password })).then((response: any) => {
+    const validation = validateForm(loginSchema, { userName: email.trim(), password });
+    if (!validation.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: validation.message,
+      });
+      return;
+    }
+    dispatch(login({ userName: email.trim(), password, type: userType })).then((response: any) => {
       if (response.payload.success) {
         localStorage.setItem(
           'loggedInUser',
@@ -47,14 +67,28 @@ const Login: React.FC = () => {
       <div className="overflow-hidden max-h-[100vh] flex justify-center items-center left">
         <Card className="max-w-sm mx-auto w-[500px]">
           <CardHeader>
-            <CardTitle className="text-2xl text-slate-600">Login</CardTitle>
+            <CardTitle className="text-2xl text-slate-600">Login your account</CardTitle>
             <CardDescription>
               Enter your email below to login to your account
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="grid gap-[20px]">
-              <div className="grid gap-2 floating-label-group">
+            <form onSubmit={handleSubmit} className="grid gap-[10px]">
+              <div className="grid gap-1">
+                <Label htmlFor="userType" className="text-sm font-medium text-slate-600">
+                  Login as
+                </Label>
+                <Select value={userType} onValueChange={(v: 'admin' | 'client') => setUserType(v)}>
+                  <SelectTrigger id="userType" className={inputStyle}>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="client">Client</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-1 floating-label-group">
                 <Input
                   id="email"
                   onChange={(e) => setEmail(e.target.value)}
@@ -65,7 +99,7 @@ const Login: React.FC = () => {
                   E-Mail / Phone Number
                 </Label>
               </div>
-              <div className="grid gap-2 floating-label-group">
+              <div className="grid gap-1 floating-label-group">
                 <PasswordInput
                   id="password"
                   value={password}
@@ -78,25 +112,45 @@ const Login: React.FC = () => {
                   Password
                 </Label>
               </div>
-              <div className="flex items-center mt-[-20px]">
+              {/* <div className="flex items-center mt-[-20px]">
                 <Link
                   to="#"
-                  className="inline-block ml-auto text-sm underline text-slate-600 text-[12px]"
+                  className="inline-block ml-auto text-xs underline text-slate-600 text-[12px]"
                 >
                   Forgot password?
                 </Link>
-              </div>
+              </div> */}
               <Button
                 type="submit"
                 className="w-full bg-teal-700 hover:bg-teal-600"
+                disabled={loading}
               >
+                {loading && (
+                  <CircularProgress size={18} sx={{ color: 'white', mr: 1 }} />
+                )}
                 Login
               </Button>
             </form>
-            <div className="mt-4 text-sm text-center">
-              First time user?
+            {/* <div className="mt-4 text-sm text-center">
+              Don't have account?
               <Link to="#" className="font-[600] text-teal-600 ml-[5px]">
                 REGISTER HERE
+              </Link>
+            </div> */}
+            <div className="mt-4 text-sm text-center">
+              You agree to the
+              <Link
+                to="/terms-of-service"
+                className="font-[600] text-teal-600 mx-[5px] underline"
+              >
+                Term of service
+              </Link>
+              &
+              <Link
+                to="/privacy-policy"
+                className="font-[600] text-teal-600 ml-[5px] underline"
+              >
+                Privacy policy
               </Link>
             </div>
           </CardContent>
@@ -137,7 +191,8 @@ const Login: React.FC = () => {
   );
 };
 const Wrapper = styled.div`
-  background-image: linear-gradient(
+  background-image:
+    linear-gradient(
       to right,
       rgb(218, 218, 218),
       rgb(212, 212, 212),

@@ -6,9 +6,9 @@ import SetAppPassword from '@/pages/profilePage/SetAppPassword';
 
 const WorkersPage: React.FC = () => {
   return (
-    <Tabs defaultValue="profile">
-      <div className="h-[70px] flex items-center px-[10px] justify-center"  style={{ backgroundColor: '#f5f5f5' }}>
-        <TabsList className="h-[50px] gap-[20px] bg-white shadow-sm shadow-stone-300 px-[10px] rounded-full" >
+    <Tabs defaultValue="profile" className="flex flex-col h-[calc(100vh-75px)]">
+      <div className="shrink-0 flex items-center px-[10px] py-4">
+        <TabsList className="h-[50px] gap-[20px] bg-white shadow-sm shadow-stone-300 px-[10px] rounded-full">
           <TabsTrigger value="profile" className={tabTriggerStyle}>
             Profile
           </TabsTrigger>
@@ -17,10 +17,10 @@ const WorkersPage: React.FC = () => {
           </TabsTrigger>
         </TabsList>
       </div>
-      <TabsContent value="profile" className="h-[calc(100vh-140px)] m-0">
+      <TabsContent value="profile" className="flex-1 min-h-0 overflow-y-auto m-0 data-[state=inactive]:hidden">
         <Profile />
       </TabsContent>
-      <TabsContent value="set-password" className="h-[calc(100vh-140px)] m-0">
+      <TabsContent value="set-password" className="flex-1 min-h-0 overflow-y-auto m-0 data-[state=inactive]:hidden">
         <SetAppPassword />
       </TabsContent>
     </Tabs>

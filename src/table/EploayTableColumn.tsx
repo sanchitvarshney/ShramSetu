@@ -1,17 +1,19 @@
 import { ColDef } from 'ag-grid-community';
 
 const actionCellRenderer = (params: any) => {
-  const { toggleShowDetails,setOpen } = params.context;
+  const { toggleShowDetails, setOpen } = params.context;
 
   return (
     <div className="flex justify-center">
       <button
-        onClick={() => {toggleShowDetails(params?.data?.employeeCode);setOpen(true)}}
+        onClick={() => {
+          toggleShowDetails(params.data);
+          setOpen(true);
+        }}
         className="w-full text-teal-500 text-start hover:text-teal-600"
         aria-label="Show Name"
-      
       >
-        {params.data.firstName}
+        {params.data?.empFirstName}
       </button>
     </div>
   );
@@ -26,28 +28,33 @@ export const columnDefs: ColDef[] = [
   },
   {
     headerName: 'Name',
-    field: 'firstName',
+    field: 'empFirstName',
     sortable: true,
     filter: true,
     cellRenderer: actionCellRenderer,
   },
-  { headerName: 'Last Name', field: 'lastName', sortable: true, filter: true },
-  { headerName: 'Gender', field: 'gender', sortable: true, filter: true },
-  { headerName: 'DOB', field: 'dob', sortable: true, filter: true },
   {
-    headerName: 'Department',
-    field: 'department',
+    headerName: 'Last Name',
+    field: 'empLastName',
     sortable: true,
     filter: true,
   },
-  {
-    headerName: 'Designation',
-    field: 'designation',
-    sortable: true,
-    filter: true,
-  },
-  { headerName: 'Email', field: 'email', sortable: true, filter: true },
-  { headerName: 'Phone', field: 'mobile', sortable: true, filter: true },
+  { headerName: 'Gender', field: 'empGender', sortable: true, filter: true },
+  { headerName: 'DOB', field: 'empDOB', sortable: true, filter: true },
+  // {
+  //   headerName: 'Department',
+  //   field: 'department',
+  //   sortable: true,
+  //   filter: true,
+  // },
+  // {
+  //   headerName: 'Designation',
+  //   field: 'designation',
+  //   sortable: true,
+  //   filter: true,
+  // },
+  { headerName: 'Email', field: 'empEmail', sortable: true, filter: true },
+  { headerName: 'Phone', field: 'empMobile', sortable: true, filter: true },
   // {
   //   headerName: 'Action',
   //   cellRenderer: () => (
