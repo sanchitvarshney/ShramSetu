@@ -47,6 +47,24 @@ export const jobColumnDefs = (
     minWidth: 250,
     editable: false,
   },
+   {
+    headerName: 'Branch',
+    field: 'branch',
+    sortable: true,
+    filter: true,
+    flex: 1,
+    minWidth: 250,
+    editable: false,
+  },
+   {
+    headerName: 'Vacancy',
+    field: 'vacancy',
+    sortable: true,
+    filter: true,
+    flex: 1,
+    minWidth: 100,
+    editable: false,
+  },
   {
     headerName: 'Address',
     field: 'address',
@@ -162,15 +180,15 @@ export const jobColumnDefs = (
       values: ['Active', 'Cancel', 'Hold'],
     },
   },
-  {
-    headerName: 'Facilities',
-    field: 'facilities',
-    sortable: true,
-    filter: true,
-    flex: 1,
-    minWidth: 150,
-    editable: true,
-  },
+  // {
+  //   headerName: 'Facilities',
+  //   field: 'facilities',
+  //   sortable: true,
+  //   filter: true,
+  //   flex: 1,
+  //   minWidth: 150,
+  //   editable: true,
+  // },
   {
     headerName: 'Created Date',
     field: 'insertDt',
@@ -215,12 +233,19 @@ export const jobColumnDefs = (
   },
 ];
 
+export type FacilityOption = {
+  facility: 'Bus' | 'Canteen';
+  paid: 'yes' | 'no';
+  provided: 'yes' | 'no';
+};
+
 export interface JobRowData {
   jobID?: string;
   id?: string;
   jobTitle: string;
   companyName: string;
   company?: string; // company id for select (create/edit)
+  branch?: string; // branch id for select (create/edit)
   branchName?: string;
   address?: string;
   jobType: string;
@@ -228,11 +253,12 @@ export interface JobRowData {
   designation: string;
   minSalary: number;
   maxSalary: number;
+  vacancy?: number;
   experience: string;
   jobStatus: string;
   createdAt?: string;
   skills?: string;
   qualification?: string;
   jobDescription?: string;
-  facilities?: string;
+  facilities?: string | FacilityOption[];
 }

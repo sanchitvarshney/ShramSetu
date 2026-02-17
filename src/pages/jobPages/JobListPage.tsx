@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef } from 'ag-grid-community';
-import { jobColumnDefs, JobRowData } from '@/table/JobTableColumns';
+import { jobColumnDefs, JobRowData, type FacilityOption } from '@/table/JobTableColumns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Loading from '@/components/reusable/Loading';
 import { toast } from '@/components/ui/use-toast';
@@ -38,22 +38,29 @@ const JobListPage = () => {
     uniqueID: '',
   });
 
+  const defaultFacilities: FacilityOption[] = [
+    { facility: 'Bus', paid: 'no', provided: 'no' },
+    { facility: 'Canteen', paid: 'no', provided: 'no' },
+  ];
+
   const form = useForm<JobRowData>({
     defaultValues: {
       jobTitle: '',
       jobType: '',
       company: '',
+      branch: '',
       department: '',
       designation: '',
       minSalary: 0,
       maxSalary: 0,
+      vacancy: 0,
       experience: '',
       jobStatus: '',
       address: '',
       skills: '',
       qualification: '',
       jobDescription: '',
-      facilities: '',
+      facilities: defaultFacilities,
     },
   });
 
@@ -90,6 +97,55 @@ const JobListPage = () => {
     [],
   );
 
+  const buildUpdatePayload = (job: JobRowData & { uniqueID?: string }, overrides?: Partial<JobRowData>) => {
+    const data:any = { ...job, ...overrides };
+    console.log(data,"data")
+    const jobId = String(job.uniqueID ?? job.id ?? job.jobID ?? (job as any).jobId ?? '');
+    return {
+      uniqueID: jobId,
+      company: data.companyUID,
+      branch: data.branchId,
+      address: data.address,
+      jobTitle: data.jobTitle ?? '',
+      jobType: data.jobType ?? '',
+      department: data.department ?? '',
+      designation: data.designation ?? '',
+      minSalary: Number(data.minSalary) || 0,
+      maxSalary: Number(data.maxSalary) || 0,
+      vacancy: Number(data.vacancy) || 0,
+      experience: data.experience ?? '',
+      jobStatus: data.jobStatus ?? '',
+      skills: data.skills,
+      qualification: data.qualification,
+      facilities: Array.isArray(data.facilities) ? data.facilities : data.facilities,
+    };
+  };
+
+  const callUpdateJobApi = (
+    payload: any,
+    options?: { onSuccess?: () => void; onError?: () => void },
+  ) => {
+    dispatch(updatejobs(payload)).then((response: any) => {
+      const success = response.payload?.success ?? response.payload?.data?.success;
+      if (success) {
+        toast({
+          title: 'Success!!',
+          description: 'Job updated successfully',
+        });
+        options?.onSuccess?.();
+        handleFetchJobs();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.payload?.message ?? response.payload?.data?.message ?? 'Failed to update job',
+        });
+        options?.onError?.();
+        handleFetchJobs();
+      }
+    });
+  };
+
   const handleJobUpdate = (jobId: string, field: string, newValue: any) => {
     setJobs((prevJobs) =>
       prevJobs.map((job) =>
@@ -124,20 +180,47 @@ const JobListPage = () => {
       designation?.find((d: any) => d.value === job.designation)?.value ??
       job.designation ??
       '';
+    const facilitiesValue = job.facilities;
+    let facilitiesReset: FacilityOption[] = defaultFacilities;
+    if (Array.isArray(facilitiesValue) && facilitiesValue.length >= 2) {
+      const bus = facilitiesValue.find((f: any) => f.facility === 'Bus') ?? defaultFacilities[0];
+      const canteen = facilitiesValue.find((f: any) => f.facility === 'Canteen') ?? defaultFacilities[1];
+      facilitiesReset = [
+        { ...defaultFacilities[0], ...bus, facility: 'Bus' },
+        { ...defaultFacilities[1], ...canteen, facility: 'Canteen' },
+      ];
+    } else if (typeof facilitiesValue === 'string' && facilitiesValue.trim()) {
+      try {
+        const parsed = JSON.parse(facilitiesValue);
+        if (Array.isArray(parsed)) {
+          const bus = parsed.find((f: any) => f.facility === 'Bus') ?? defaultFacilities[0];
+          const canteen = parsed.find((f: any) => f.facility === 'Canteen') ?? defaultFacilities[1];
+          facilitiesReset = [
+            { ...defaultFacilities[0], ...bus, facility: 'Bus' },
+            { ...defaultFacilities[1], ...canteen, facility: 'Canteen' },
+          ];
+        }
+      } catch {
+        // keep default
+      }
+    }
+
     form.reset({
       jobTitle: job.jobTitle || '',
       jobType: job.jobType || '',
       company: companyId || '',
+      branch: (job as any).branch ?? '',
       department: departmentId,
       designation: designationId,
       minSalary: job.minSalary || 0,
       maxSalary: job.maxSalary || 0,
+      vacancy: (job as any).vacancy ?? 0,
       experience: job.experience || '',
       jobStatus: job.jobStatus || '',
       address: job.address ?? '',
       skills: job.skills || '',
       qualification: job.qualification || '',
-      facilities: job.facilities || '',
+      facilities: facilitiesReset,
     });
     setIsEditDialogOpen(true);
   };
@@ -188,7 +271,6 @@ const JobListPage = () => {
   };
 
   const handleSaveEdit = (data: JobRowData) => {
-    console.log(data, selectedJob, 'data');
     if (!selectedJob) {
       toast({
         variant: 'destructive',
@@ -207,40 +289,12 @@ const JobListPage = () => {
       ),
     );
 
-    const payload: any = {
-      uniqueID: jobId,
-      company: data.company,
-      address: data.address,
-      jobTitle: data.jobTitle ?? '',
-      jobType: data.jobType ?? '',
-      department: data.department ?? '',
-      designation: data.designation ?? '',
-      minSalary: Number(data.minSalary) || 0,
-      maxSalary: Number(data.maxSalary) || 0,
-      experience: data.experience ?? '',
-      jobStatus: data.jobStatus ?? '',
-      skills: data.skills,
-      qualification: data.qualification,
-      jobDescription: data.jobDescription,
-      facilities: data.facilities,
-    };
-
-    dispatch(updatejobs(payload)).then((response: any) => {
-      if (response.payload?.success) {
-        toast({
-          title: 'Success!!',
-          description: 'Job updated successfully',
-        });
+    const payload = buildUpdatePayload(selectedJob, data);
+    callUpdateJobApi(payload, {
+      onSuccess: () => {
         setIsEditDialogOpen(false);
         setSelectedJob(null);
-        handleFetchJobs();
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: response.payload?.message ?? 'Failed to update job',
-        });
-      }
+      },
     });
   };
 
@@ -316,13 +370,30 @@ const JobListPage = () => {
               singleClickEdit={true}
               stopEditingWhenCellsLoseFocus={true}
               onCellValueChanged={(params) => {
-                const jobId = params.data.jobID || params.data.id;
-                const field = params.colDef.field;
-                const newValue = params.newValue;
+                const field = params.colDef?.field;
+                const newValue = params.newValue ?? params.data?.jobStatus;
+                const row = params.data;
 
-                if (jobId && field) {
-                  handleJobUpdate(jobId, field, newValue);
+                if (!row || !field) return;
+
+                const jobId = row.uniqueID ?? row.id ?? row.jobID ?? (row as any).jobId;
+                if (!jobId) return;
+
+                if (field === 'jobStatus') {
+                  const statusValue = newValue ?? row.jobStatus;
+                  if (statusValue == null || statusValue === '' || statusValue === params.oldValue)
+                    return;
+                  const fullRow = filteredJobs.find(
+                    (j:any) => (j.uniqueID ?? j.id ?? j.jobID ?? (j as any).jobId) === jobId,
+                  ) ?? row;
+                  const payload = buildUpdatePayload(fullRow, { jobStatus: statusValue });
+                  callUpdateJobApi(payload, {
+                    onError: () => handleFetchJobs(),
+                  });
+                  return;
                 }
+
+                handleJobUpdate(String(jobId), field, newValue);
               }}
             />
           </div>

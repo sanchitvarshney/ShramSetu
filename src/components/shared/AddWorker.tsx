@@ -98,7 +98,6 @@ const AddWorker = () => {
   const formData = new FormData();
 
   formData.append('firstName', empFirstName);
-  formData.append('middleName', empMiddleName);
   formData.append('lastName', empLastName);
   formData.append('email', empEmail);
   formData.append('dob', format(empDOB, 'dd/MM/yyyy')); // ✅ fixed
@@ -108,7 +107,7 @@ const AddWorker = () => {
   formData.append('password', empPassword);
   formData.append('gender', empGender);
   const aadhaarDigits = empAadhaarNo.replace(/\s/g, '');
-  if (aadhaarDigits) formData.append('aadhaarNo', aadhaarDigits);
+  if (aadhaarDigits) formData.append('aadhaar', aadhaarDigits);
 
   if (empPhoto instanceof File) {
     formData.append('image', empPhoto); // ✅ fixed name

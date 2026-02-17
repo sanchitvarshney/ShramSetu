@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import {
   Dialog,
@@ -24,10 +25,47 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { inputStyle } from '@/style/CustomStyles';
-import { JobRowData } from '@/table/JobTableColumns';
-import { useSelector } from 'react-redux';
+import { JobRowData, type FacilityOption } from '@/table/JobTableColumns';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store';
+import { getCompanyBranchOptions } from '@/features/admin/adminPageSlice';
 import Loading from '@/components/reusable/Loading';
+
+const DEFAULT_FACILITIES: FacilityOption[] = [
+  { facility: 'Bus', paid: 'no', provided: 'no' },
+  { facility: 'Canteen', paid: 'no', provided: 'no' },
+];
+
+function normalizeFacilities(
+  value: JobRowData['facilities'],
+): FacilityOption[] {
+  if (Array.isArray(value) && value.length >= 2) {
+    const bus = value.find((f: any) => f.facility === 'Bus') ?? DEFAULT_FACILITIES[0];
+    const canteen = value.find((f: any) => f.facility === 'Canteen') ?? DEFAULT_FACILITIES[1];
+    return [
+      { ...DEFAULT_FACILITIES[0], ...bus, facility: 'Bus' },
+      { ...DEFAULT_FACILITIES[1], ...canteen, facility: 'Canteen' },
+    ];
+  }
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return normalizeFacilities(parsed);
+    } catch {
+      // ignore
+    }
+  }
+  return [...DEFAULT_FACILITIES];
+}
 
 interface EditJobDialogProps {
   open: boolean;
@@ -50,10 +88,37 @@ const EditJobDialog = ({
   designation,
   companies = [],
 }: EditJobDialogProps) => {
- const { isUpdateLoading } = useSelector((state: any) => state.jobslice);
+  const dispatch = useDispatch<AppDispatch>();
+  const { isUpdateLoading } = useSelector((state: any) => state.jobslice);
+  const { branches } = useSelector((state: RootState) => state.adminPage);
+  const selectedCompany = form.watch('company');
+  const selectedBranchId = form.watch('branch');
+
+  useEffect(() => {
+    if (open && selectedCompany) {
+      dispatch(getCompanyBranchOptions(selectedCompany));
+    }
+  }, [open, selectedCompany, dispatch]);
+
+  useEffect(() => {
+    if (!selectedBranchId || !branches?.length) return;
+    const branch = branches.find(
+      (b: any) => b.branchID === selectedBranchId || String(b.branchID) === String(selectedBranchId),
+    );
+    if (!branch) return;
+    const stateText =
+      typeof branch.state === 'object' && branch.state?.text != null
+        ? branch.state.text
+        : branch.state ?? '';
+    const fullAddress = branch.address?.trim()
+      ? branch.address.trim()
+      : [branch.city, stateText].filter(Boolean).join(', ');
+    if (fullAddress) form.setValue('address', fullAddress, { shouldValidate: true });
+  }, [selectedBranchId, branches, form]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto relative">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         {isUpdateLoading && (
           <Loading message="Updating job..." variant="minimal" />
         )}
@@ -99,6 +164,39 @@ const EditJobDialog = ({
                   )}
                 />
               )}
+
+              <FormField
+                control={form.control}
+                name="branch"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Branch</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={!selectedCompany}
+                    >
+                      <FormControl>
+                        <SelectTrigger className={inputStyle}>
+                          <SelectValue
+                            placeholder={
+                              selectedCompany ? 'Select Branch' : 'Select Company first'
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {(branches ?? []).map((branch: any) => (
+                          <SelectItem key={branch.branchID} value={branch.branchID}>
+                            {branch.branchName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -267,6 +365,31 @@ const EditJobDialog = ({
 
               <FormField
                 control={form.control}
+                name="vacancy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vacancy</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={0}
+                        className={inputStyle}
+                        placeholder="Number of positions"
+                        value={field.value ?? 0}
+                        onChange={(e) =>
+                          field.onChange(parseFloat(e.target.value) || 0)
+                        }
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="experience"
                 render={({ field }) => (
                   <FormItem>
@@ -332,7 +455,10 @@ const EditJobDialog = ({
                       className={inputStyle}
                       placeholder="Enter Address (e.g. B-88, Sector 2, Noida, Uttar Pradesh, 201301)"
                       rows={3}
-                      {...field}
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
                     />
                   </FormControl>
                   <FormMessage />
@@ -398,24 +524,119 @@ const EditJobDialog = ({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="facilities"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Facilities</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      className={inputStyle}
-                      placeholder="Enter job Facilities"
-                      rows={4}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+<FormField
+                control={form.control}
+                name="facilities"
+                render={({ field }) => {
+                  const list = normalizeFacilities(field.value);
+                  const bus:any = list.find((f) => f.facility === 'Bus') ?? DEFAULT_FACILITIES[0];
+                  const canteen:any = list.find((f) => f.facility === 'Canteen') ?? DEFAULT_FACILITIES[1];
+                  const busWithProvided = 'provided' in bus ? bus : { ...bus, provided: 'no' as const };
+                  const canteenWithProvided = 'provided' in canteen ? canteen : { ...canteen, provided: 'no' as const };
+                  const setPaid = (facility: 'Bus' | 'Canteen', paid: 'yes' | 'no') => {
+                    const next =
+                      facility === 'Bus'
+                        ? [{ ...busWithProvided, paid }, canteenWithProvided]
+                        : [busWithProvided, { ...canteenWithProvided, paid }];
+                    field.onChange(next);
+                  };
+                  const setProvided = (facility: 'Bus' | 'Canteen', provided: 'yes' | 'no') => {
+                    const paid = provided === 'no' ? ('no' as const) : undefined;
+                    if (facility === 'Bus') {
+                      field.onChange([{ ...busWithProvided, provided, ...(paid && { paid }) }, canteenWithProvided]);
+                    } else {
+                      field.onChange([busWithProvided, { ...canteenWithProvided, provided, ...(paid && { paid }) }]);
+                    }
+                  };
+                  return (
+                    <FormItem>
+                      <FormLabel>Facilities</FormLabel>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Facility</TableHead>
+                            <TableHead>Provided (Yes / No)</TableHead>
+                            <TableHead>Paid (Yes / No)</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-medium">Bus</TableCell>
+                            <TableCell>
+                              <Select
+                                value={busWithProvided.provided}
+                                onValueChange={(v: 'yes' | 'no') => setProvided('Bus', v)}
+                              >
+                                <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="yes">Yes</SelectItem>
+                                  <SelectItem value="no">No</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              {busWithProvided.provided === 'yes' ? (
+                                <Select
+                                  value={busWithProvided.paid}
+                                  onValueChange={(v: 'yes' | 'no') => setPaid('Bus', v)}
+                                >
+                                  <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="yes">Yes</SelectItem>
+                                    <SelectItem value="no">No</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">Canteen</TableCell>
+                            <TableCell>
+                              <Select
+                                value={canteenWithProvided.provided}
+                                onValueChange={(v: 'yes' | 'no') => setProvided('Canteen', v)}
+                              >
+                                <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="yes">Yes</SelectItem>
+                                  <SelectItem value="no">No</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              {canteenWithProvided.provided === 'yes' ? (
+                                <Select
+                                  value={canteenWithProvided.paid}
+                                  onValueChange={(v: 'yes' | 'no') => setPaid('Canteen', v)}
+                                >
+                                  <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="yes">Yes</SelectItem>
+                                    <SelectItem value="no">No</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
 
             <DialogFooter>
               <Button

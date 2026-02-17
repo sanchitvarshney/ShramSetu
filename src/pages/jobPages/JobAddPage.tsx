@@ -68,6 +68,7 @@ const JobAddPage = () => {
       department: '',
       minSalary: 0,
       maxSalary: 0,
+      vacancy: 0,
       skills: '',
       jobTitle: '',
       qualification: '10th, 12th, Other',
@@ -141,6 +142,7 @@ const JobAddPage = () => {
       department: data.department,
       minSalary: data.minSalary,
       maxSalary: data.maxSalary,
+      vacancy: data.vacancy ?? 0,
       skills: data.skills,
       jobTitle: data.jobTitle,
       qualification: data.qualification,
@@ -394,6 +396,30 @@ const JobAddPage = () => {
                           {...field}
                           onChange={(e) =>
                             field.onChange(parseFloat(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Vacancy */}
+                <FormField
+                  control={form.control}
+                  name="vacancy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vacancy *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          className={inputStyle}
+                          placeholder="Number of positions"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseFloat(e.target.value) || 0)
                           }
                         />
                       </FormControl>

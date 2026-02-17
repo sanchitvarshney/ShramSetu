@@ -10,13 +10,34 @@ import {
   handleEmpStatus,
 } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
+import * as XLSX from 'xlsx';
 import WorkerDetails from '@/components/shared/WorkerDetails';
 import Loading from '@/components/reusable/Loading';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { SearchOutlined } from '@mui/icons-material';
+import { Download } from 'lucide-react';
 
 const { RangePicker } = DatePicker;
+
+
+
+function workerToExcelRow(worker: any): Record<string, string | number | undefined> {
+  return {
+    'Employee ID': worker.employeeID ?? worker.empId ?? '',
+    'First Name': worker.empFirstName ?? worker.firstName ?? '',
+    'Last Name': worker.empLastName ?? worker.lastName ?? '',
+    Phone: worker.empMobile ?? worker.mobile ?? '',
+    'E-mail': worker.empEmail ?? worker.email ?? '',
+    DOB: worker.empDOB ?? worker.DOB ?? '',
+    'Inserted At': worker.empInsertedAt ?? worker.insertedAt ?? '',
+    Gender: worker.gender ?? worker.empGender ?? '',
+    'Blood Group': worker.bloodGroup ?? worker.empBloodGroup ?? '',
+    'Aadhaar No': worker.aadhaarNo ?? worker.empAadhaarNo ?? '',
+    Company: worker.companyName ?? worker.company ?? '',
+    Branch: worker.branchName ?? worker.branch ?? '',
+  };
+}
 
 
 const ListWorker: React.FC = () => {
@@ -84,6 +105,27 @@ const ListWorker: React.FC = () => {
     dispatch(fetchCountStatus());
   }, [dispatch]);
 
+  const handleDownloadExcel = () => {
+    if (!workers?.length) {
+      toast({
+        variant: 'destructive',
+        title: 'No data',
+        description: 'No employee details to download',
+      });
+      return;
+    }
+    const rows = workers.map(workerToExcelRow);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+    const fileName = `employee-details-${format(new Date(), 'yyyy-MM-dd-HHmm')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    toast({
+      title: 'Downloaded',
+      description: `Exported ${workers.length} employee(s) to ${fileName}`,
+    });
+  };
+
   const handleStatus = (status: string) => {
     const empUid =
       typeof selectedEmpId === 'object' && selectedEmpId?.employeeID
@@ -138,6 +180,16 @@ const ListWorker: React.FC = () => {
           >
            <SearchOutlined />
             Search
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="gap-2 h-8"
+            onClick={handleDownloadExcel}
+            disabled={!workers?.length}
+          >
+            <Download className="h-4 w-4" />
+            Download Excel
           </Button>
           {/* <div className="flex gap-4 pl-4 rounded-lg ">
             <p className="text-green-600 font-semibold text-[24px]">

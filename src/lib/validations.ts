@@ -214,6 +214,7 @@ export const jobFormSchema = z
     designation: z.string().min(1, 'Designation is required'),
     minSalary: z.number().min(0, 'Minimum salary must be 0 or more'),
     maxSalary: z.number().min(0, 'Maximum salary must be 0 or more'),
+    vacancy: z.number().min(0, 'Vacancy must be 0 or more'),
     experience: z.string().min(1, 'Experience is required'),
     jobStatus: z.string().min(1, 'Job status is required'),
     address: z.string().min(1, 'Address is required'),
