@@ -1,4 +1,4 @@
-import { BellRing, Home, Mail, User } from 'lucide-react';
+import { BellRing, Home, LogOut, Mail, User } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { NavLink, useNavigate } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
+import React, {  useEffect, useState } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import CustomTooltip from '@/components/reusable/CustomTooltip';
@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import DownloadIndecator from '@/components/shared/DownloadIndicater';
 import {
   Sidebar,
   SidebarContent,
@@ -32,15 +31,17 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { MdOutlineAdminPanelSettings } from 'react-icons/md';
+import { FaUserCircle } from 'react-icons/fa';
+import { CLIENT_FIRST_PATH } from '@/config/appRoutes';
 import { NavlinkStyle } from '@/style/CustomStyles';
 import NotificationSheet from '@/components/shared/NotificationSheet';
 import { logout } from '@/features/auth/authSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/store';
-import { Company, fetchCompanies } from '@/features/homePage/homePageSlice';
-import { IoSettingsOutline } from 'react-icons/io5';
-import { FiLogOut } from 'react-icons/fi';
+import { useDispatch, useSelector,  } from 'react-redux';
+import { AppDispatch, RootState,  } from '@/store';
+import { IoAddOutline, IoSettingsOutline } from 'react-icons/io5';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
+import { searchCompanies } from '@/features/admin/adminPageSlice';
+import { getLoggedInUserType } from '@/lib/routeAccess';
 
 interface Props {
   children: React.ReactNode;
@@ -53,21 +54,22 @@ const MainLayout: React.FC<Props> = ({ children }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [notification, setNotification] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const { companies } = useSelector((state: RootState) => state.homePage);
+  const { companies } = useSelector((state: RootState) => state.adminPage);
   const [selectedCompany, setSelectedCompany] = useState<string>('');
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   let user = localStorage.getItem('loggedInUser') ?? 'null';
   const data = JSON.parse(user);
+  const userType = getLoggedInUserType() ?? 'admin';
 
   useEffect(() => {
-    dispatch(fetchCompanies());
-  }, [dispatch]);
+    dispatch(searchCompanies(userType));
+  }, [dispatch, userType]);
 
   useEffect(() => {
     if (companies?.length > 0) {
-      // Set default company or fetch from local storage if needed
-      const defaultCompany =
-        localStorage.getItem('companySelect') || companies[0].value;
+      
+
+      const defaultCompany = companies[0]?.companyID;
       setSelectedCompany(defaultCompany);
     }
   }, [companies]);
@@ -82,7 +84,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
     navigate('/login');
     toast({ description: 'Logged Out Successfully' });
   };
-console.log(buttonRef.current?.offsetWidth! + 15)
+
   return (
     <>
       <AlertDialogPopup
@@ -100,7 +102,7 @@ console.log(buttonRef.current?.offsetWidth! + 15)
             className=" bg-transparent border-none shadow-none p-[20px]"
           >
             <div className=" relative  rounded-xl bg-teal-800 border-0 min-w-[300px] shadow shadow-stone-400 p-[20px] h-[calc(100vh-40px)]  ">
-              <SidebarHeader className="bg-blue-100 rounded-lg p-[20px] ">
+              <SidebarHeader className="bg-white rounded-lg p-[20px] ">
                 <img src="/main-logo.svg" alt="" className="w-[100%]" />
               </SidebarHeader>
               <aside className="flex-col mt-[20px] rounded-lg">
@@ -113,6 +115,44 @@ console.log(buttonRef.current?.offsetWidth! + 15)
                     <Home className="w-5 h-5" />
                     Dashboard
                   </NavLink>
+                  {getLoggedInUserType() === 'admin' && (
+                    <NavLink
+                      to="/company/list"
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <MdOutlineAdminPanelSettings className="w-6 h-6" />
+                      Admin
+                    </NavLink>
+                  )}
+                  {getLoggedInUserType() === 'client' && (
+                    <NavLink
+                      to={CLIENT_FIRST_PATH}
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <FaUserCircle className="w-6 h-6" />
+                      Client
+                    </NavLink>
+                  )}
+                  <NavLink
+                    to="/job/job-create"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <IoAddOutline className="w-6 h-6" />
+                    Add Job
+                  </NavLink>
+                  {getLoggedInUserType() === 'admin' && (
+                    <NavLink
+                      to="/company/list"
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <IoSettingsOutline className="w-6 h-6" />
+                      Setting
+                    </NavLink>
+                  )}
                   <NavLink
                     to="/invitation/mail"
                     className={NavlinkStyle}
@@ -121,46 +161,26 @@ console.log(buttonRef.current?.offsetWidth! + 15)
                     <Mail className="w-5 h-5" />
                     Invitation
                   </NavLink>
-                  <NavLink
-                    to="/company/list"
-                    className={NavlinkStyle}
-                    onClick={() => setOpen(false)}
-                  >
-                    <MdOutlineAdminPanelSettings className="w-6 h-6" />
-                    Admin
-                  </NavLink>
-                  <NavLink
-                    to="/profile"
-                    className={NavlinkStyle}
-                    onClick={() => setOpen(false)}
-                  >
-                    <User className="w-6 h-6" />
-                    Profile
-                  </NavLink>
-                  <NavLink
-                    to="/company/list"
-                    className={NavlinkStyle}
-                    onClick={() => setOpen(false)}
-                  >
-                    <IoSettingsOutline className="w-6 h-6" />
-                    Setting
-                  </NavLink>
+                 
                 </nav>
               </aside>
               <SidebarFooter className="absolute bottom-[20px] left-[20px] right-[20px] bg-white/20 rounded-lg p-[10px]">
-                <DropdownMenu >
-                  <DropdownMenuTrigger asChild ref={buttonRef} >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild ref={buttonRef}>
                     <div className="flex items-center justify-between w-full cursor-pointer">
                       <div className="flex items-center gap-[5px]">
                         <Avatar>
-                          <AvatarImage src="https://github.com/shadcn.png" />
-                          <AvatarFallback>CN</AvatarFallback>
+                          <AvatarImage
+                           src="https://github.com/shadcn.png" 
+                        
+                           />
+                         
                         </Avatar>
                         <Separator orientation="vertical" className="" />
                         <div className="flex flex-col font-[500] gap-0 text-white">
                           {data?.firstName} {data?.lastName}
                           <span className="text-[13px] font-[400]">
-                            Software Developer
+                           {data?.type === 'admin' ? 'Admin' : 'Client'}
                           </span>
                         </div>
                       </div>
@@ -173,18 +193,27 @@ console.log(buttonRef.current?.offsetWidth! + 15)
                     className={`shadow-sm  shadow-stone-500 mb-[10px] bg-white/20 text-white border-white/20 w-[274px]`}
                     side="top"
                     align="center"
-                   
                   >
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-white/20" />
 
-                    <DropdownMenuItem onClick={() => navigate('/profile')} className='cursor-pointer'>
+                    <DropdownMenuItem
+                      onClick={() => navigate('/profile')}
+                      className="cursor-pointer"
+                    >
                       Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem className='cursor-pointer'>Settings</DropdownMenuItem>
-                    <DropdownMenuItem className='cursor-pointer'>Support</DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer">
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer">
+                      Support
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-white/20" />
-                    <DropdownMenuItem onClick={handleLogout} className='cursor-pointer'>
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer"
+                    >
                       Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -197,6 +226,7 @@ console.log(buttonRef.current?.offsetWidth! + 15)
           <div className="bg-[#04b0a8] w-[300px] h-[50px] flex justify-end">
             <img
               src="/lightlogov2.svg"
+              
               alt="Brand logo"
               className="w-[170px]"
             />
@@ -204,7 +234,6 @@ console.log(buttonRef.current?.offsetWidth! + 15)
           <header className="z-30 flex justify-between bg-[#fff] min-h-[50px] w-full pr-[20px]">
             <div className="flex">
               <img src="/navcurve.jpg" alt="" className="h-[50px]" />
-              <img src="/subtext.svg" alt="Brand logo" className="w-[200px]" />
             </div>
             <div className="flex items-center gap-[20px]">
               <div>
@@ -216,18 +245,21 @@ console.log(buttonRef.current?.offsetWidth! + 15)
                     <SelectValue placeholder="Choose Company" />
                   </SelectTrigger>
                   <SelectContent className="shadow-sm shadow-stone-500">
-                    {companies?.map((company: Company) => (
-                      <SelectItem value={company?.value} key={company?.value}>
-                        {company?.text}
+                    {companies?.map((company: any) => (
+                      <SelectItem
+                        value={company?.companyID}
+                        key={company?.companyID}
+                      >
+                        {company?.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="download">
+              {/* <div className="download">
                 <DownloadIndecator />
-              </div>
+              </div> */}
 
               <CustomTooltip message="Notification" side="bottom">
                 <div
@@ -240,30 +272,61 @@ console.log(buttonRef.current?.offsetWidth! + 15)
                   </Badge> */}
                 </div>
               </CustomTooltip>
-              <CustomTooltip message="Notification" side="bottom">
-                <div
-                  className="relative flex items-center justify-center bg-indigo-50 cursor-pointer notification max-w-max p-[5px] rounded-md"
-                  onClick={() => setIsDialogOpen(true)}
-                >
-                  <FiLogOut className="h-[25px] w-[25px] text-slate-600" />
-                </div>
-              </CustomTooltip>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="relative flex items-center justify-center rounded-full cursor-pointer outline-none ring-offset-2 ring-offset-white focus:ring-2 focus:ring-slate-400"
+                    aria-label="User menu"
+                  >
+                    <Avatar className="h-9 w-9 rounded-full border-2 border-slate-200">
+                      <AvatarImage src={(data as any)?.profileImage ?? (data as any)?.imageUrl} alt="" />
+                      <AvatarFallback className="rounded-full bg-indigo-100 text-slate-600 text-sm font-medium">
+                        {data?.firstName?.[0] ?? data?.lastName?.[0] ?? '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">
+                        {data?.firstName ?? ''} {data?.lastName ?? ''}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{data?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsDialogOpen(true)} className="cursor-pointer text-red-600 focus:text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
         </div>
-        <div
-          className="sidebar z-[20] fixed h-[100vh] bg-white w-[20px] left-0 top-0 bottom-0 flex justify-center items-center shadow shadow-neutral-300 cursor-pointer"
+       {
+        !open  && (
+           <div
+          className="sidebar z-[20] fixed h-[100vh] bg-white w-[20px] left-0 top-0 bottom-0 flex justify-center items-center shadow shadow-neutral-300 cursor-pointer "
           onClick={() => setOpen(true)}
         >
           <CustomTooltip message="Menubar" side="right">
             <Button
               onClick={() => setOpen(true)}
-              className="p-0 min-h-[50px] min-w-[50px] rounded-full bg-white text-slate-600 shadow shadow-neutral-300 hover:bg-ehite flex justify-end"
+              className="p-0 min-h-[50px] min-w-[50px] rounded-full bg-[#04b0a8] text-white shadow shadow-neutral-300 hover:bg-ehite flex justify-end"
             >
-              <FaChevronRight className="mr-[5px]" />
+              <FaChevronRight className="mr-[5px] " />
             </Button>
           </CustomTooltip>
         </div>
+        )
+       }
 
         <div className="flex flex-col max-w-[calc(100vw-20px)] ml-[20px]">
           <main className="grid items-start flex-1 gap-4 sm:py-0 md:gap-8 bg-white min-h-[calc(100vh-70px)] mt-[70px]">

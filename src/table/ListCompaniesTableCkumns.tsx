@@ -2,7 +2,14 @@ import { ColDef } from 'ag-grid-community';
 
 export const columnDefs: ColDef[] = [
   { headerName: 'Company Name', field: 'companyName', sortable: true, filter: true },
-  { headerName: 'PAN', field: 'pan', sortable: true, filter: true },
+  {
+    headerName: 'PAN',
+    field: 'pan',
+    sortable: true,
+    filter: true,
+    valueFormatter: (params) =>
+      params.value ? String(params.value).toUpperCase() : '',
+  },
   { headerName: 'E-Mail', field: 'email', sortable: true, filter: true },
   { headerName: 'Phone', field: 'phone', sortable: true, filter: true },
   { headerName: 'Website', field: 'website', sortable: true, filter: true },

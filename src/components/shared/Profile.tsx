@@ -72,7 +72,7 @@ function Profile() {
   };
 
   return (
-    <div style={{ backgroundColor: '#f5f5f5' }} className="h-full">
+    <div  className="h-full">
       {loading && <Loading />}
       {userProfile && (
         <div className="flex flex-col items-center ">
@@ -105,8 +105,9 @@ function Profile() {
                     editable
                     notVerified={userProfile[0]?.phoneVerify}
                     onUpdate={(newValue) => {
-                      setMobile(newValue);
-                      updateUserData('mobile', newValue, 'mobile');
+                      const digitsOnly = String(newValue ?? '').replace(/\D/g, '');
+                      setMobile(digitsOnly);
+                      updateUserData('mobile', digitsOnly, 'mobile');
                     }}
                     onVerify={() =>
                       handleVerifyClick('mobile', mobile, 'mobile')

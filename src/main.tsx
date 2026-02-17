@@ -6,6 +6,7 @@ import { store } from './store';
 import { ConfigProvider } from 'antd';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
+  
   <Provider store={store}>
     <ConfigProvider
       theme={{

@@ -7,6 +7,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { LabelInput, SelectWithLabel } from '@/components/ui/EmpUpdate';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
@@ -16,41 +18,56 @@ import {
   branchUpdate,
   fetchIndustry,
   fetchStates,
-  fetchSubIndustry,
   getLocationsFromPinCode,
 } from '@/features/admin/adminPageSlice';
 import { toast } from '@/components/ui/use-toast';
+import { validateForm, updateBranchSchema } from '@/lib/validations';
+import { CircularProgress } from '@mui/material';
 
 const UpdateBranchModal = (props: any) => {
   const dispatch = useDispatch<AppDispatch>();
   const [branchName, setBranchName] = useState('');
   const [industry, setIndustry] = useState('');
-  const [subIndustry, setSubIndustry] = useState('');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
   const [pinCode, setPinCode] = useState('');
   const [gstNo, setGstNo] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
+  const [address, setAddress] = useState('');
 
   const {
     companyInfo,
     states,
     industry: industryList,
-    subIndustry: subIndustryList,
     perPincode,
+    isaddbranch,
+    isbranchUpdate
   } = useSelector((state: RootState) => state.adminPage);
 
   useEffect(() => {
-    setBranchName(props?.updatingBranch?.branchName);
-    setEmail(props?.updatingBranch?.email);
-    setMobile(props?.updatingBranch?.mobile);
-    setGstNo(props?.updatingBranch?.gst);
-    setIndustry(props?.updatingBranch?.industry?.value);
-    setSubIndustry(props?.updatingBranch?.subIndustry?.value);
-    setPinCode(props?.updatingBranch?.pinCode);
-    setState(props?.updatingBranch?.state?.value);
-    setCity(props?.updatingBranch?.city);
+    const b = props?.updatingBranch;
+    if (!b) {
+      setBranchName('');
+      setEmail('');
+      setMobile('');
+      setGstNo('');
+      setIndustry('');
+      setPinCode('');
+      setState('');
+      setCity('');
+      setAddress('');
+      return;
+    }
+    setBranchName(b?.branchName ?? '');
+    setEmail(b?.email ?? '');
+    setMobile(b?.mobile ?? '');
+    setGstNo(b?.gst ?? '');
+    setIndustry(typeof b?.industry === 'object' && b?.industry?.value != null ? b.industry.value : b?.industry ?? '');
+    setPinCode(b?.pinCode ?? '');
+    setState(typeof b?.state === 'object' && b?.state?.value != null ? b.state.value : b?.state ?? '');
+    setCity(b?.city ?? '');
+    setAddress(b?.address ?? '');
   }, [props?.updatingBranch]);
 
   const handleEmpty = () => {
@@ -59,12 +76,31 @@ const UpdateBranchModal = (props: any) => {
     setMobile('');
     setGstNo('');
     setIndustry('');
-    setSubIndustry('');
     setPinCode('');
     setState('');
     setCity('');
+    setAddress('');
   };
   const handleUpdateCompany = async () => {
+    const validation = validateForm(updateBranchSchema, {
+      branchName: branchName.trim(),
+      email: email.trim(),
+      mobile: mobile.trim(),
+      gstNo: gstNo.trim() || undefined,
+      industry,
+      pinCode: pinCode.trim(),
+      state,
+      city: city.trim(),
+      address: address.trim() || undefined,
+    });
+    if (!validation.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: validation.message,
+      });
+      return;
+    }
     if (props?.updatingBranch !== null) {
       dispatch(branchUpdate(payload)).then((response: any) => {
         if (response.payload.success) {
@@ -99,6 +135,7 @@ const UpdateBranchModal = (props: any) => {
   const payload: any = {
     addressID: props?.updatingBranch?.branchID,
     companyID: companyInfo[0]?.companyID,
+    address: address.trim() || undefined,
     city: city,
     email: email,
     gst: gstNo,
@@ -108,12 +145,6 @@ const UpdateBranchModal = (props: any) => {
     state: state,
     mobile: mobile,
   };
-
-  useEffect(() => {
-    if (industry) {
-      dispatch(fetchSubIndustry(industry));
-    }
-  }, [industry, dispatch]);
 
   useEffect(() => {
     if (pinCode?.length === 6) {
@@ -139,7 +170,9 @@ const UpdateBranchModal = (props: any) => {
       >
         <DialogHeader>
           <DialogTitle>
-            Edit Branch in {props?.updatingBranch?.companyName}
+            {props?.updatingBranch
+              ? `Edit Branch${props?.companyName ? ` – ${props.companyName}` : ''}`
+              : 'Add Branch'}
           </DialogTitle>
         </DialogHeader>
 
@@ -161,7 +194,7 @@ const UpdateBranchModal = (props: any) => {
             />
             <LabelInput
               value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
+              onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
               icon={Phone}
               label="Contact"
               required
@@ -180,15 +213,6 @@ const UpdateBranchModal = (props: any) => {
               options={industryList}
               textKey="name"
               optionKey="industryID"
-              icon={Building}
-            />
-            <SelectWithLabel
-              label="Sub Industry"
-              value={subIndustry}
-              onValueChange={(value) => setSubIndustry(value)}
-              options={subIndustryList}
-              textKey="name"
-              optionKey="subIndustryID"
               icon={Building}
             />
             <LabelInput
@@ -216,6 +240,19 @@ const UpdateBranchModal = (props: any) => {
               optionKey="name"
               icon={Map}
             />
+            <div className="col-span-3 flex flex-col gap-1.5">
+              <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Map className="h-[18px] w-[18px] shrink-0" />
+                Address
+              </Label>
+              <Textarea
+                placeholder="Street, building, landmark..."
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                rows={2}
+                className="resize-none"
+              />
+            </div>
           </div>
           <div className="flex justify-between mt-2 float-right gap-5">
             <Button
@@ -231,9 +268,10 @@ const UpdateBranchModal = (props: any) => {
                 onClick={handleUpdateCompany}
                 icon={<Check size={18} />}
                 className="bg-teal-500 hover:bg-teal-600"
-                disabled={!branchName || !email}
+                disabled={!branchName || !email || isaddbranch}
               >
-                Add
+                { (isaddbranch || isbranchUpdate) && <CircularProgress size={18} />}
+                {props?.updatingBranch ? 'Update' : 'Create Branch'}
               </Button>
             </div>
           </div>

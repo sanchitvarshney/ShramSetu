@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { capitalizeName } from '@/lib/utils';
 import { inputStyle } from '@/style/CustomStyles';
 import {
   CalendarIcon,
@@ -49,7 +50,6 @@ import {
   getStreams,
   universitiesSearch,
   updateEmployeeDetails,
-  uploadFamilyPhoto,
 } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
 import { fetchSearchCompanies } from '@/features/homePage/homePageSlice';
@@ -61,6 +61,8 @@ import {
   EmploymentDetail,
 } from '@/features/admin/adminPageTypes';
 import { marriedStatus } from '@/types/general';
+import { isValidAadhaar } from '@/lib/validations';
+import { toast } from '@/components/ui/use-toast';
 
 export default function EmpUpdate() {
   const params = useParams();
@@ -110,10 +112,6 @@ export default function EmpUpdate() {
   const [corArea, setCorArea] = useState<string>('');
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const [children, setChildren] = useState<Child[]>([]);
-  const [empPhotoUrl, setEmpPhotoUrl] = useState<string>('');
-  const [empPhoto, setEmpPhoto] = useState<File | null>(null);
-  const [empFamilyPhotoUrl, setEmpFamilyPhotoUrl] = useState<string>('');
-  const [empFamilyPhoto, setEmpFamilyPhoto] = useState<File | null>(null);
   const [educationDetails, setEducationDetails] = useState<EducationDetail[]>([
     {
       degree: '',
@@ -132,6 +130,7 @@ export default function EmpUpdate() {
   const formatDate = (date: Date | null): string => {
     return date ? format(date, 'dd-MM-yyyy') : 'Pick a date';
   };
+  
 
   useEffect(() => {
     if (workerInfo) {
@@ -159,8 +158,6 @@ export default function EmpUpdate() {
       setMotherName(workerInfo?.familyInfo?.motherName || '');
       setSpouseName(workerInfo?.familyInfo?.spouseName || '');
       setChildrenCount(workerInfo?.familyInfo?.childCount || '');
-      setEmpFamilyPhotoUrl(workerInfo?.familyInfo?.familyPhoto || '');
-      setEmpPhotoUrl(workerInfo?.basicInfo?.empPhoto || '');
       setPerPinCode(
         workerInfo?.basicInfo?.permanentAddress?.pincodePermanent || '',
       );
@@ -342,8 +339,9 @@ export default function EmpUpdate() {
   }, [isChecked, perPinCode, perHouseNo, perArea]);
   const isValidDate = (date: any): date is Date =>
     date instanceof Date && !isNaN(date.getTime());
-
+  
   const validDate = isValidDate(empDOB) ? empDOB : null;
+  
 
   const payload = {
     empId: workerInfo?.basicInfo?.uid,
@@ -393,29 +391,17 @@ export default function EmpUpdate() {
     uan: uan,
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    if (file) {
-      setEmpPhoto(file);
-      const imageUrl = URL.createObjectURL(file); // Generate URL for the selected image file
-      setEmpPhotoUrl(imageUrl); // Store the URL in state for immediate display
-      console.log(empPhoto);
-      dispatch(
-        uploadFamilyPhoto({ file: file, id: workerInfo?.basicInfo?.uid, type: 'emp' }),
-      );
+  const handleSubmitEmployee = () => {
+    const aadhaarVal = (empAdhaar ?? '').trim().replace(/\s/g, '');
+    if (aadhaarVal.length > 0 && !isValidAadhaar(empAdhaar ?? '')) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Aadhaar must be exactly 12 digits and cannot be the disallowed test number.',
+      });
+      return;
     }
-  };
-  const handleFamilyPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files ? e.target.files[0] : null;
-    if (file) {
-      setEmpFamilyPhoto(file);
-      const imageUrl = URL.createObjectURL(file); // Generate URL for the selected image file
-      setEmpFamilyPhotoUrl(imageUrl); // Store the URL in state for immediate display
-      console.log(empFamilyPhoto);
-      dispatch(
-        uploadFamilyPhoto({ file: file, id: workerInfo?.basicInfo?.uid, type: 'family' }),
-      );
-    }
+    dispatch(updateEmployeeDetails(payload));
   };
 
   return (
@@ -437,9 +423,7 @@ export default function EmpUpdate() {
             </Button> */}
             <Button
               type="button"
-              onClick={() => {
-                dispatch(updateEmployeeDetails(payload));
-              }}
+              onClick={handleSubmitEmployee}
             >
               Submit
             </Button>
@@ -455,7 +439,7 @@ export default function EmpUpdate() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2">
               <LabelInput
                 value={empFirstName}
-                onChange={(e) => setEmpFirstName(e.target.value)}
+                onChange={(e) => setEmpFirstName(capitalizeName(e.target.value))}
                 icon={AiOutlineUser}
                 label="First Name"
                 required
@@ -463,14 +447,14 @@ export default function EmpUpdate() {
 
               <LabelInput
                 value={empMiddleName}
-                onChange={(e) => setEmpMiddleName(e.target.value)}
+                onChange={(e) => setEmpMiddleName(capitalizeName(e.target.value))}
                 icon={AiOutlineUser}
                 label="Middle Name"
                 required
               />
               <LabelInput
                 value={empLastName}
-                onChange={(e) => setEmpLastName(e.target.value)}
+                onChange={(e) => setEmpLastName(capitalizeName(e.target.value))}
                 icon={AiOutlineUser}
                 label="Last Name"
                 required
@@ -482,13 +466,13 @@ export default function EmpUpdate() {
                 label="Email"
                 required
               />
-              <LabelInput
-                value={empMobile}
-                onChange={(e) => setEmpMobile(e.target.value)}
-                icon={BsTelephone}
-                label="Phone"
-                required
-              />
+                <LabelInput
+                  value={empMobile}
+                  onChange={(e) => setEmpMobile(e.target.value.replace(/\D/g, ''))}
+                  icon={BsTelephone}
+                  label="Phone"
+                  required
+                />
 
               <div>
                 <Label className="floating-label gap-[10px]">
@@ -553,17 +537,31 @@ export default function EmpUpdate() {
                 icon={LiaClipboardListSolid}
               />
 
-              <LabelInput
-                value={empAdhaar}
-                onChange={(e) => setEmpAdhaar(e.target.value)}
-                icon={PiCreditCard}
-                label="Aadhar Card Number"
-                required
-              />
+              <div className="space-y-1">
+                <LabelInput
+                  value={empAdhaar}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    if (v.length <= 12) setEmpAdhaar(v);
+                  }}
+                  icon={PiCreditCard}
+                  label="Aadhar Card Number"
+                  required
+                />
+                {(empAdhaar ?? '').length > 0 && (
+                  <p
+                    className={`text-xs mt-0.5 ${
+                      isValidAadhaar(empAdhaar ?? '') ? 'text-green-600' : 'text-red-600'
+                    }`}
+                  >
+                    {isValidAadhaar(empAdhaar ?? '') ? 'Aadhaar valid' : 'Aadhaar not valid'}
+                  </p>
+                )}
+              </div>
 
               <LabelInput
                 value={empPan}
-                onChange={(e) => setEmpPan(e.target.value)}
+                onChange={(e) => setEmpPan(e.target.value.toUpperCase())}
                 icon={PiCreditCard}
                 label="PAN Number"
                 required
@@ -1096,81 +1094,11 @@ export default function EmpUpdate() {
               </div>
             </CardContent>
           </Card>
-          <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0 w-1/2">
-            <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center">
-              <CardTitle className="text-[20px] font-[650] text-slate-600">
-                Upload Profile Photo
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex gap-20 py-[10px] overflow-x-auto">
-              <div className="w-1/3 bg-gray-50 p-[20px] rounded-xl shadow-lg flex flex-col items-center">
-                <div className="relative w-[150px] h-[150px] mb-4 overflow-hidden rounded-full bg-gray-200">
-                  <img
-                    src={empPhotoUrl || './ProfileImage.png'}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Optional overlay to indicate upload */}
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center opacity-0 hover:opacity-100 transition-opacity">
-                    <label
-                      htmlFor="profile-upload"
-                      className="cursor-pointer text-white text-lg font-bold"
-                    >
-                      <span>Change</span>
-                    </label>
-                  </div>
-                </div>
-
-                <input
-                  id="profile-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  className="hidden"
-                />
-                <button className="bg-teal-500 text-white rounded-md px-4 py-2 mt-2 hover:bg-teal-600 transition">
-                  Upload Profile Photo
-                </button>
-              </div>
-              <div className="w-1/3 bg-gray-50 p-[20px] rounded-xl shadow-lg flex flex-col items-center">
-                <div className="relative w-[150px] h-[150px] mb-4 overflow-hidden rounded-full bg-gray-200">
-                  <img
-                    src={empFamilyPhotoUrl || './ProfileImage.png'}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Optional overlay to indicate upload */}
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center opacity-0 hover:opacity-100 transition-opacity">
-                    <label
-                      htmlFor="profile-upload"
-                      className="cursor-pointer text-white text-lg font-bold"
-                    >
-                      <span>Change</span>
-                    </label>
-                  </div>
-                </div>
-
-                <input
-                  id="profile-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFamilyPhotoChange}
-                  className="hidden"
-                />
-                <button className="bg-teal-500 text-white rounded-md px-4 py-2 mt-2 hover:bg-teal-600 transition">
-                  Upload Family Photo
-                </button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-
         <div className="p-4">
           <Button
             type="submit"
-            onClick={() => {
-              dispatch(updateEmployeeDetails(payload));
-            }}
+            onClick={handleSubmitEmployee}
           >
             Submit
           </Button>
@@ -1188,6 +1116,8 @@ interface LabelInputProps {
   icon?: React.ElementType; // Use ElementType for component type
   blank?: boolean;
   readOnly?: boolean;
+  /** Stack label above input to avoid overlap with long labels (e.g. in detail views) */
+  stacked?: boolean;
 }
 
 export const LabelInput: React.FC<LabelInputProps> = ({
@@ -1198,7 +1128,29 @@ export const LabelInput: React.FC<LabelInputProps> = ({
   icon: Icon,
   blank = false,
   readOnly = false,
+  stacked = false,
 }) => {
+  if (stacked) {
+    return (
+      <div className="flex flex-col gap-1.5 min-h-[60px]">
+        <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          {Icon && <Icon className="h-[18px] w-[18px] shrink-0" />}
+          <span className="break-words">{label}</span>
+        </label>
+        <Input
+          required={required}
+          className={inputStyle}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+        />
+        {blank && (
+          <p className="text-zinc-400 text-sm">Leave blank if not married</p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="floating-label-group">
       <Input
@@ -1297,7 +1249,7 @@ export const DatePickerWithLabel: React.FC<DatePickerWithLabelProps> = ({
 }) => {
   // Convert null to undefined for the Calendar component
   const validDate = isValidDate(date) ? date : undefined;
-
+  
   return (
     <div className={className}>
       <Label className="floating-label gap-[10px]">

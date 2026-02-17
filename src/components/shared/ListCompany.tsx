@@ -3,15 +3,21 @@ import { AgGridReact } from 'ag-grid-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
+import { getLoggedInUserType } from '@/lib/routeAccess';
 import { ColDef } from 'ag-grid-community';
 import Loading from '@/components/reusable/Loading';
-import { Link } from 'react-router-dom';
 
-const ListCompany: React.FC = () => {
+interface ListCompanyProps {
+  onCompanyClick?: (companyId: string) => void;
+}
+
+const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { companies, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
+  const type = getLoggedInUserType() ?? 'admin';
+
 
   const defaultColDef = useMemo(
     () => ({
@@ -22,19 +28,23 @@ const ListCompany: React.FC = () => {
   );
 
   useEffect(() => {
-    dispatch(searchCompanies());
-  }, [dispatch]);
+    console.log("type", type)
+    dispatch(searchCompanies(type));
+  }, [dispatch, type]);
 
   const actionCellRenderer = (params: any) => {
+    const companyId = params.data?.companyID;
+    const name = params.data?.name ?? '';
     return (
       <div className="flex">
-        <Link
-          to={`/company/${params.data.companyID}`} // Adjust the path as needed
-          className="text-teal-500 hover:text-teal-600"
+        <button
+          type="button"
+          onClick={() => companyId && onCompanyClick?.(companyId)}
+          className="text-teal-500 hover:text-teal-600 hover:underline text-left cursor-pointer bg-transparent border-none"
           aria-label="Show Details"
         >
-          {params.data.name}
-        </Link>
+          {name}
+        </button>
       </div>
     );
   };
@@ -45,15 +55,20 @@ const ListCompany: React.FC = () => {
       field: 'name',
       cellRenderer: actionCellRenderer,
     },
-    { headerName: 'PAN No', field: 'panNo' },
+    {
+      headerName: 'Brand',
+      field: 'brand',
+      valueFormatter: (params) => params.value ?? '—',
+    },
     { headerName: 'Email', field: 'email' },
     { headerName: 'Mobile', field: 'mobile' },
     { headerName: 'Website', field: 'website' },
+ 
     {
       headerName: 'Active Status',
       field: 'activeStatus',
       valueGetter: (params) =>
-        params.data.activeStatus === 'true' ? 'Active' : 'Not Active',
+        params.data?.activeStatus === 'A' ? 'Active' : 'Not Active',
     },
   ];
 

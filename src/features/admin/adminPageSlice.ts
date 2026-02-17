@@ -5,10 +5,14 @@ import { SelectOptionType } from '@/types/general';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 interface AddCompanyPayload {
+  brandName?: string;
+  branchName?: string;
   email: string;
+  hsn?: string[];
   mobile: string;
   name: string;
   panNo: string;
+  ssc?: string[];
   website: string;
 }
 
@@ -43,7 +47,7 @@ export interface SubIndustry {
 }
 
 interface DepartmentResponse {
-  data: Department[] | null;
+  data: any[] | null;
   message: string;
   success: boolean;
 }
@@ -211,6 +215,15 @@ interface AdminPageState {
   companyInfo: BranchDetail[] | null;
   loading: boolean;
   error: string | null;
+  isFetchingJobsLoading: boolean;
+  adduserloading: boolean;
+  addcompanyLoading: boolean;
+  iseditcompany: boolean;
+  addDepartmentLoading: boolean;
+  addDesignationLoading: boolean;
+  isaddbranch: boolean;
+  isbranchUpdate: boolean;
+  loadingworkerlist: boolean
 }
 
 const initialState: AdminPageState = {
@@ -235,7 +248,18 @@ const initialState: AdminPageState = {
   perPincode: [],
   loading: false,
   error: null,
+  isFetchingJobsLoading: false,
+  adduserloading: false,
+  addcompanyLoading: false,
+  iseditcompany: false,
+  addDepartmentLoading: false,
+  addDesignationLoading: false,
+  isaddbranch: false,
+  isbranchUpdate: false,
+  loadingworkerlist: false
 };
+
+
 
 // Define the async thunk for adding a company
 export const addCompany = createAsyncThunk(
@@ -243,7 +267,7 @@ export const addCompany = createAsyncThunk(
   async (companyData: AddCompanyPayload, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post('/company/add', companyData);
-      return response.data.add;
+      return response?.data;
     } catch (error) {
       return rejectWithValue('Failed to add company');
     }
@@ -262,12 +286,18 @@ export const addClient = createAsyncThunk(
   },
 );
 
-// Define the async thunk for fetching companies
-export const searchCompanies = createAsyncThunk<CompanyResponse, void>(
+// Define the async thunk for fetching companies (type = logged-in user type: admin | client)
+export const searchCompanies = createAsyncThunk<
+  CompanyResponse,
+  string | undefined
+>(
   'adminPage/searchCompanies',
-  async (_, { rejectWithValue }) => {
+  async (type, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<CompanyResponse>(`/company/list`);
+      const queryType = type ?? 'admin';
+      const response = await orshAxios.get<CompanyResponse>(
+        `/company/list?type=${queryType}`,
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch companies');
@@ -311,6 +341,38 @@ export const fetchDesignations = createAsyncThunk<DesignationResponse, void>(
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch designations');
+    }
+  },
+);
+
+export const addDepartment = createAsyncThunk<
+  { success: boolean; message: string; data?: Department | null },
+  { departmentName: any },
+  { rejectValue: string }
+>(
+  'adminPage/addDepartment',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post('/fetch/addDepartment', payload);
+      return response?.data ?? { success: false, message: 'No response' };
+    } catch (error) {
+      return rejectWithValue('Failed to add department');
+    }
+  },
+);
+
+export const addDesignation = createAsyncThunk<
+  { success: boolean; message: string; data?: Designation | null },
+  { designationName: string },
+  { rejectValue: string }
+>(
+  'adminPage/addDesignation',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post('/fetch/addDesignation', payload);
+      return response?.data ?? { success: false, message: 'No response' };
+    } catch (error) {
+      return rejectWithValue('Failed to add designation');
     }
   },
 );
@@ -405,19 +467,8 @@ export const companyUpdate = createAsyncThunk<
 >('adminPage/companyUpdate', async (companyData: any, { rejectWithValue }) => {
   try {
     const response = await orshAxios.put('/company/edit', companyData);
-    if (!response.data.success) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: response.data.message,
-      });
-    } else {
-      toast({
-        title: 'Success',
-        description: response.data.message,
-      });
-    }
-    return response.data.add;
+   
+    return response.data;
   } catch (error) {
     return rejectWithValue('Failed to fetch employee');
   }
@@ -477,17 +528,18 @@ export const handleEmpStatus = createAsyncThunk(
 // );
 
 export const addWorker = createAsyncThunk(
-  'adminPage/addworker',
+  'adminPage/user-add',
   async (workerData: FormData, { rejectWithValue }) => {
     try {
       // Make sure to pass formData as the request body
-      const response = await orshAxios.post('/worker/add', workerData, {
+      const response = await orshAxios.post('/worker/add-user', workerData, {
         headers: {
-          'Content-Type': 'multipart/form-data', // Set the content type to multipart/form-data
+          'Content-Type': 'multipart/form-data', 
         },
       });
       return response.data;
     } catch (error) {
+      console.log(error,"error")
       return rejectWithValue('Failed to add worker');
     }
   },
@@ -533,13 +585,13 @@ export const fetchClientList = createAsyncThunk<ClientResponse, void>(
 
 export const fetchWorkers = createAsyncThunk<
   WorkersResponse,
-  { startDate: string; endDate: string; empStatus: string }
+  { startDate: string; endDate: string;}
 >(
   'adminPage/fetchWorkers',
-  async ({ startDate, endDate, empStatus }, { rejectWithValue }) => {
+  async ({ startDate, endDate }, { rejectWithValue }) => {
     try {
       const response = await orshAxios.get<WorkersResponse>(
-        `/worker/list?data=${startDate}-${endDate}&wise=createdDate&empStatus=${empStatus}`,
+        `/worker/list?data=${startDate}-${endDate}`,
       );
       if (!response.data.success) {
         toast({
@@ -565,7 +617,69 @@ export const fetchCountStatus = createAsyncThunk<any, void>(
     }
   },
 );
+export const fetchJobs = createAsyncThunk<any, void>(
+  'adminPage/fetchJobs',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<any>(`/job/getJobs`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch universities');
+    }
+  },
+);
 
+interface CreateJobPayload {
+  company: string;
+  branch: string;
+  jobType: string;
+  designation: string;
+  department: string;
+  minSalary: number;
+  maxSalary: number;
+  skills: string;
+  jobTitle: string;
+  qualification: string;
+  experience: string;
+  jobStatus: string;
+  jobDescription: string;
+}
+
+interface CreateJobResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+export const createJob = createAsyncThunk<CreateJobResponse, CreateJobPayload>(
+  'adminPage/createJob',
+  async (jobData: CreateJobPayload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post<CreateJobResponse>(
+        '/job/createJob',
+        jobData,
+      );
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+        return rejectWithValue(response.data.message);
+      }
+      return response.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || 'Failed to create job';
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: errorMessage,
+      });
+      return rejectWithValue(errorMessage);
+    }
+  },
+);
 export const bulkUpload = createAsyncThunk<void, File, { rejectValue: string }>(
   'adminPage/bulkUpload',
   async (file: File, { rejectWithValue }) => {
@@ -751,16 +865,40 @@ const adminPageSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(addCompany.pending, (state) => {
+         .addCase(fetchJobs.pending, (state) => {
+        state.isFetchingJobsLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchJobs.fulfilled, (state) => {
+        state.isFetchingJobsLoading = false;
+        state.error = null;
+      })
+      .addCase(fetchJobs.rejected, (state, action) => {
+        state.isFetchingJobsLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(createJob.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(addCompany.fulfilled, (state) => {
+      .addCase(createJob.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
       })
-      .addCase(addCompany.rejected, (state, action) => {
+      .addCase(createJob.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(addCompany.pending, (state) => {
+        state.addcompanyLoading = true;
+        state.error = null;
+      })
+      .addCase(addCompany.fulfilled, (state) => {
+        state.addcompanyLoading = false;
+        state.error = null;
+      })
+      .addCase(addCompany.rejected, (state, action) => {
+        state.addcompanyLoading = false;
         state.error = action.payload as string;
       })
       .addCase(searchCompanies.pending, (state) => {
@@ -813,6 +951,30 @@ const adminPageSlice = createSlice({
       })
       .addCase(fetchDesignations.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(addDepartment.pending, (state) => {
+        state.addDepartmentLoading = true;
+        state.error = null;
+      })
+      .addCase(addDepartment.fulfilled, (state) => {
+        state.addDepartmentLoading = false;
+        state.error = null;
+      })
+      .addCase(addDepartment.rejected, (state, action) => {
+        state.addDepartmentLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(addDesignation.pending, (state) => {
+        state.addDesignationLoading = true;
+        state.error = null;
+      })
+      .addCase(addDesignation.fulfilled, (state) => {
+        state.addDesignationLoading = false;
+        state.error = null;
+      })
+      .addCase(addDesignation.rejected, (state, action) => {
+        state.addDesignationLoading = false;
         state.error = action.payload as string;
       })
       .addCase(fetchMarriedStatus.pending, (state) => {
@@ -868,15 +1030,15 @@ const adminPageSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(addWorker.pending, (state) => {
-        state.loading = true;
+        state.adduserloading = true;
         state.error = null;
       })
       .addCase(addWorker.fulfilled, (state) => {
-        state.loading = false;
+        state.adduserloading = false;
         state.error = null;
       })
       .addCase(addWorker.rejected, (state, action) => {
-        state.loading = false;
+        state.adduserloading = false;
         state.error = action.payload as string;
       })
       .addCase(fetchActivityLogs.pending, (state) => {
@@ -906,16 +1068,16 @@ const adminPageSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(fetchWorkers.pending, (state) => {
-        state.loading = true;
+        state.loadingworkerlist = true;
         state.error = null;
       })
       .addCase(fetchWorkers.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingworkerlist = false;
         state.error = null;
         state.workers = action.payload.data;
       })
       .addCase(fetchWorkers.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingworkerlist = false;
         state.error = action.payload as string;
       })
       .addCase(fetchCountStatus.pending, (state) => {
@@ -1015,7 +1177,49 @@ const adminPageSlice = createSlice({
       .addCase(getLocationsFromPinCode.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(companyUpdate.pending, (state) => {
+        state.iseditcompany = true;
+        state.error = null;
+      })
+      .addCase(companyUpdate.fulfilled, (state) => {
+        state.iseditcompany = false;
+     
+   
+        state.error = null;
+      })
+      .addCase(companyUpdate.rejected, (state, action) => {
+        state.iseditcompany = false;
+        state.error = action.payload as string;
+      })  .addCase(addBranch.pending, (state) => {
+        state.isaddbranch = true;
+        state.error = null;
+      })
+      .addCase(addBranch.fulfilled, (state) => {
+        state.isaddbranch = false;
+     
+   
+        state.error = null;
+      })
+      .addCase(addBranch.rejected, (state, action) => {
+        state.isaddbranch = false;
+        state.error = action.payload as string;
+      })
+      .addCase(branchUpdate.pending, (state) => {
+        state.isbranchUpdate = true;
+        state.error = null;
+      })
+      .addCase(branchUpdate.fulfilled, (state) => {
+        state.isbranchUpdate = false;
+     
+   
+        state.error = null;
+      })
+      .addCase(branchUpdate.rejected, (state, action) => {
+        state.isbranchUpdate = false;
+        state.error = action.payload as string;
       });
+
   },
 });
 
