@@ -19,3 +19,12 @@ export const parseDated = (dateString: string | null): Date | null => {
     return null;
   }
 };
+
+/** Capitalize the first letter of every word (e.g. "john doe" → "John Doe"). */
+export function capitalizeName(value: string): string {
+  if (!value.trim()) return value;
+  return value
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
