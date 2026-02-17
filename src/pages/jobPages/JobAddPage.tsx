@@ -70,12 +70,12 @@ const JobAddPage = () => {
       maxSalary: 0,
       skills: '',
       jobTitle: '',
-      qualification: '',
+      qualification: '10th, 12th, Other',
       experience: '',
       jobStatus: '',
       facilities: [
-        { facility: 'Bus', paid: 'no' as const },
-        { facility: 'Canteen', paid: 'no' as const },
+        { facility: 'Bus', paid: 'no' as const, provided: 'no' as const },
+        { facility: 'Canteen', paid: 'no' as const, provided: 'no' as const },
       ],
     },
   });
@@ -117,6 +117,21 @@ const JobAddPage = () => {
   }, [selectedBranchId, branches, form]);
 
   const onSubmit: SubmitHandler<JobFormData> = async (data) => {
+    const raw = data.facilities ?? [];
+    const bus = raw.find((f) => f.facility === 'Bus');
+    const canteen = raw.find((f) => f.facility === 'Canteen');
+    const facilities = [
+      {
+        facility: 'Bus' as const,
+        paid: bus?.paid ?? 'no',
+        provided: (bus as { provided?: 'yes' | 'no' })?.provided ?? 'no',
+      },
+      {
+        facility: 'Canteen' as const,
+        paid: canteen?.paid ?? 'no',
+        provided: (canteen as { provided?: 'yes' | 'no' })?.provided ?? 'no',
+      },
+    ];
     const payload: any = {
       company: data.company,
       branch: data.branch,
@@ -131,8 +146,7 @@ const JobAddPage = () => {
       qualification: data.qualification,
       experience: data.experience,
       jobStatus: data.jobStatus,
-     
-      facilities: data.facilities,
+      facilities,
     };
     try {
       const response = await dispatch(createJob(payload)).unwrap();
@@ -498,9 +512,12 @@ const JobAddPage = () => {
                     <FormControl>
                       <Textarea
                         className={inputStyle}
-                        placeholder="Enter required qualifications"
+                        placeholder="e.g. 10th, 12th, Other"
                         rows={3}
-                        {...field}
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -533,13 +550,27 @@ const JobAddPage = () => {
                 name="facilities"
                 render={({ field }) => {
                   const list = field.value ?? [];
-                  const bus = list.find((f) => f.facility === 'Bus') ?? { facility: 'Bus' as const, paid: 'no' as const };
-                  const canteen = list.find((f) => f.facility === 'Canteen') ?? { facility: 'Canteen' as const, paid: 'no' as const };
+                  const defaultBus = { facility: 'Bus' as const, paid: 'no' as const, provided: 'no' as const };
+                  const defaultCanteen = { facility: 'Canteen' as const, paid: 'no' as const, provided: 'no' as const };
+                  const bus:any = list.find((f) => f.facility === 'Bus') ?? defaultBus;
+                  const canteen:any = list.find((f) => f.facility === 'Canteen') ?? defaultCanteen;
+                  const busWithProvided = 'provided' in bus ? bus : { ...bus, provided: 'no' as const };
+                  const canteenWithProvided = 'provided' in canteen ? canteen : { ...canteen, provided: 'no' as const };
                   const setPaid = (facility: 'Bus' | 'Canteen', paid: 'yes' | 'no') => {
                     const next = facility === 'Bus'
-                      ? [{ ...bus, paid }, canteen]
-                      : [bus, { ...canteen, paid }];
+                      ? [{ ...busWithProvided, paid }, canteenWithProvided]
+                      : [busWithProvided, { ...canteenWithProvided, paid }];
                     field.onChange(next);
+                  };
+                  const setProvided = (facility: 'Bus' | 'Canteen', provided: 'yes' | 'no') => {
+                    const paid = provided === 'no' ? ('no' as const) : undefined;
+                    if (facility === 'Bus') {
+                      const busNext = { ...busWithProvided, provided, ...(paid && { paid }) };
+                      field.onChange([busNext, canteenWithProvided]);
+                    } else {
+                      const canteenNext = { ...canteenWithProvided, provided, ...(paid && { paid }) };
+                      field.onChange([busWithProvided, canteenNext]);
+                    }
                   };
                   return (
                     <FormItem>
@@ -548,6 +579,7 @@ const JobAddPage = () => {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Facility</TableHead>
+                            <TableHead>Provided (Yes / No)</TableHead>
                             <TableHead>Paid (Yes / No)</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -556,8 +588,8 @@ const JobAddPage = () => {
                             <TableCell className="font-medium">Bus</TableCell>
                             <TableCell>
                               <Select
-                                value={bus.paid}
-                                onValueChange={(paid: 'yes' | 'no') => setPaid('Bus', paid)}
+                                value={busWithProvided.provided}
+                                onValueChange={(provided: 'yes' | 'no') => setProvided('Bus', provided)}
                               >
                                 <SelectTrigger className={inputStyle + ' w-[120px]'}>
                                   <SelectValue />
@@ -568,13 +600,31 @@ const JobAddPage = () => {
                                 </SelectContent>
                               </Select>
                             </TableCell>
+                            <TableCell>
+                              {busWithProvided.provided === 'yes' ? (
+                                <Select
+                                  value={busWithProvided.paid}
+                                  onValueChange={(paid: 'yes' | 'no') => setPaid('Bus', paid)}
+                                >
+                                  <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="yes">Yes</SelectItem>
+                                    <SelectItem value="no">No</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
+                            </TableCell>
                           </TableRow>
                           <TableRow>
                             <TableCell className="font-medium">Canteen</TableCell>
                             <TableCell>
                               <Select
-                                value={canteen.paid}
-                                onValueChange={(paid: 'yes' | 'no') => setPaid('Canteen', paid)}
+                                value={canteenWithProvided.provided}
+                                onValueChange={(provided: 'yes' | 'no') => setProvided('Canteen', provided)}
                               >
                                 <SelectTrigger className={inputStyle + ' w-[120px]'}>
                                   <SelectValue />
@@ -584,6 +634,24 @@ const JobAddPage = () => {
                                   <SelectItem value="no">No</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </TableCell>
+                            <TableCell>
+                              {canteenWithProvided.provided === 'yes' ? (
+                                <Select
+                                  value={canteenWithProvided.paid}
+                                  onValueChange={(paid: 'yes' | 'no') => setPaid('Canteen', paid)}
+                                >
+                                  <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="yes">Yes</SelectItem>
+                                    <SelectItem value="no">No</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">—</span>
+                              )}
                             </TableCell>
                           </TableRow>
                         </TableBody>

@@ -112,14 +112,14 @@ const Login: React.FC = () => {
                   Password
                 </Label>
               </div>
-              <div className="flex items-center mt-[-20px]">
+              {/* <div className="flex items-center mt-[-20px]">
                 <Link
                   to="#"
                   className="inline-block ml-auto text-xs underline text-slate-600 text-[12px]"
                 >
                   Forgot password?
                 </Link>
-              </div>
+              </div> */}
               <Button
                 type="submit"
                 className="w-full bg-teal-700 hover:bg-teal-600"

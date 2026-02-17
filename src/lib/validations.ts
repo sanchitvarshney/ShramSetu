@@ -225,6 +225,7 @@ export const jobFormSchema = z
         z.object({
           facility: z.enum(['Bus', 'Canteen']),
           paid: z.enum(['yes', 'no']),
+          provided: z.enum(['yes', 'no']),
         }),
       )
       .min(1, 'At least one facility is required'),

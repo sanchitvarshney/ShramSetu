@@ -22,6 +22,7 @@ import {
 } from '@/features/admin/adminPageSlice';
 import { toast } from '@/components/ui/use-toast';
 import { validateForm, updateBranchSchema } from '@/lib/validations';
+import { CircularProgress } from '@mui/material';
 
 const UpdateBranchModal = (props: any) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -40,6 +41,8 @@ const UpdateBranchModal = (props: any) => {
     states,
     industry: industryList,
     perPincode,
+    isaddbranch,
+    isbranchUpdate
   } = useSelector((state: RootState) => state.adminPage);
 
   useEffect(() => {
@@ -265,9 +268,10 @@ const UpdateBranchModal = (props: any) => {
                 onClick={handleUpdateCompany}
                 icon={<Check size={18} />}
                 className="bg-teal-500 hover:bg-teal-600"
-                disabled={!branchName || !email}
+                disabled={!branchName || !email || isaddbranch}
               >
-                {props?.updatingBranch ? 'Update' : 'Add'}
+                { (isaddbranch || isbranchUpdate) && <CircularProgress size={18} />}
+                {props?.updatingBranch ? 'Update' : 'Create Branch'}
               </Button>
             </div>
           </div>

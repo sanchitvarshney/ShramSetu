@@ -221,6 +221,8 @@ interface AdminPageState {
   iseditcompany: boolean;
   addDepartmentLoading: boolean;
   addDesignationLoading: boolean;
+  isaddbranch: boolean;
+  isbranchUpdate: boolean;
 }
 
 const initialState: AdminPageState = {
@@ -251,6 +253,8 @@ const initialState: AdminPageState = {
   iseditcompany: false,
   addDepartmentLoading: false,
   addDesignationLoading: false,
+  isaddbranch: false,
+  isbranchUpdate: false,
 };
 
 
@@ -287,7 +291,6 @@ export const searchCompanies = createAsyncThunk<
 >(
   'adminPage/searchCompanies',
   async (type, { rejectWithValue }) => {
-    console.log(type,"quary")
     try {
       const queryType = type ?? 'admin';
       const response = await orshAxios.get<CompanyResponse>(
@@ -1154,6 +1157,33 @@ const adminPageSlice = createSlice({
       })
       .addCase(companyUpdate.rejected, (state, action) => {
         state.iseditcompany = false;
+        state.error = action.payload as string;
+      })  .addCase(addBranch.pending, (state) => {
+        state.isaddbranch = true;
+        state.error = null;
+      })
+      .addCase(addBranch.fulfilled, (state) => {
+        state.isaddbranch = false;
+     
+   
+        state.error = null;
+      })
+      .addCase(addBranch.rejected, (state, action) => {
+        state.isaddbranch = false;
+        state.error = action.payload as string;
+      })
+      .addCase(branchUpdate.pending, (state) => {
+        state.isbranchUpdate = true;
+        state.error = null;
+      })
+      .addCase(branchUpdate.fulfilled, (state) => {
+        state.isbranchUpdate = false;
+     
+   
+        state.error = null;
+      })
+      .addCase(branchUpdate.rejected, (state, action) => {
+        state.isbranchUpdate = false;
         state.error = action.payload as string;
       });
 
