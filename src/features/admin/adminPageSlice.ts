@@ -460,6 +460,36 @@ export const updateEmployeeDetails = createAsyncThunk<
   },
 );
 
+export const updateEmployeeDetailsWithPhoto = createAsyncThunk<
+  UpdateEmployeeResponse,
+  FormData,
+  { rejectValue: string }
+>(
+  'adminPage/updateEmployeeDetailsWithPhoto',
+  async (formData: FormData, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.put('/worker/update', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message,
+        });
+      }
+      return response.data.add;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch employee');
+    }
+  },
+);
+
 export const companyUpdate = createAsyncThunk<
   UpdateEmployeeResponse,
   any,

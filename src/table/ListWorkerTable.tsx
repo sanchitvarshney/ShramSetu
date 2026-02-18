@@ -47,6 +47,8 @@ export const columnDefs: ColDef[] = [
     flex: 1,
   },
   { headerName: 'DOB', field: 'empDOB', sortable: true, filter: true, flex: 1 },
+   { headerName: 'Aadhar', field: 'adhaar', sortable: true, filter: true, flex: 1 },
+    { headerName: 'BloodGroup', field: 'bloodGroup', sortable: true, filter: true, flex: 1 },
   { headerName: 'InsertedAt', field: 'empInsertedAt', sortable: true, filter: true, flex: 1 },
 ];
 

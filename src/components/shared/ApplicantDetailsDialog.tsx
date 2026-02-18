@@ -15,64 +15,174 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/reusable/Loading';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
-function buildResumeHtml(d: ApplicantDetail): string {
+function fmt(v: any): string {
+  if (v === undefined || v === null || v === '') return '';
+  if (Array.isArray(v)) return v.filter(Boolean).join(', ');
+  return String(v);
+}
+
+function sectionTitle(title: string): string {
+  return `<div style="margin-top:18px;"><hr style="border:none;border-top:1px solid #e2e8f0;margin:0;" /><h2 style="font-size:11px;font-weight:700;margin:0;padding:8px 12px;background:#f8fafc;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">${title}</h2></div><div style="margin-bottom:8px;"></div>`;
+}
+
+function detailRow(label: string, value: string): string {
+  if (!value) return '';
+  return `<p style="margin:2px 0;font-size:13px;color:#334155;">${label} ${value}</p>`;
+}
+
+function convertMarital(m: string): string {
+  if (m === 'M') return 'Married';
+  if (m === 'U' || m === 'Um') return 'Unmarried';
+  return m || '';
+}
+
+function convertGender(g: string): string {
+  if (g === 'M') return 'Male';
+  if (g === 'F') return 'Female';
+  return g || '';
+}
+
+function buildResumeHtml(d: ApplicantDetail): { fullHtml: string; bodyContent: string } {
   const name = d.empName ?? d.applicantName ?? 'Applicant';
-  const fmt = (v: any) =>
-    v === undefined || v === null || v === '' ? '' : String(v);
+  const email = d.empEmail ?? '';
+  const mobile = d.empMobile ?? '';
+  const dob = d.dob ?? d.empDOB ?? '';
+  const gender = d.gender ?? d.empGender ?? '';
+  const marital = d.empMaritalStatus ?? d.marital ?? '';
+  const hobbies = d.empHobbies ?? d.hobbies ?? '';
+  const houseNo = d.presentHouseNo ?? d.present_houseNo ?? '';
+  const colony = d.presentColony ?? d.present_colony ?? '';
+  const district = d.present_district ?? d.presentDistrict ?? d.present_city ?? d.presentCity ?? '';
+  const state = d.presentState ?? d.present_state ?? '';
+  const pincode = d.presentPincode ?? d.present_pincode ?? '';
+  const addressLine1 = [houseNo, colony, district].filter((x) => x && x !== '--').join(', ');
+  const addressLine2 = [state, pincode].filter((x) => x && x !== '--').join(', ');
+
+  const photoSrc = Array.isArray(d.empPhoto) ? d.empPhoto[0] : d.empPhoto;
+  const photoHtml = photoSrc
+    ? `<div style="flex-shrink:0;width:110px;height:130px;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><img src="${photoSrc}" alt="" style="width:100%;height:100%;object-fit:cover;" /></div>`
+    : '';
 
   const sections: string[] = [];
 
+  // Document-style: title with underline accent
   sections.push(`
-    <h1 style="font-size:22px;margin:0 0 8px 0;color:#0f766e;">${name}</h1>
-    <p style="margin:0 0 16px 0;color:#64748b;">${[d.empEmail, d.empMobile].filter(Boolean).join(' | ')}</p>
-    ${d.address ? `<p style="margin:0 0 16px 0;">${d.address}</p>` : ''}
+    <p style="text-align:center;font-size:20px;font-weight:700;margin:0 0 8px 0;color:#0f172a;text-transform:uppercase;letter-spacing:0.06em;">CURRICULUM VITAE</p>
+    <div style="height:2px;width:48px;background:#0f172a;margin:0 auto 20px auto;"></div>
   `);
 
+  // Header: Name + address + Mob + Email (left) | Photo (right). Email underlined.
   sections.push(`
-    <h2 style="font-size:14px;color:#0f766e;border-bottom:1px solid #0d9488;padding-bottom:4px;margin:16px 0 8px 0;">JOB APPLIED</h2>
-    <p><strong>Job Title:</strong> ${fmt(d.jobTitle)}</p>
-    <p><strong>Company:</strong> ${fmt(d.company)}</p>
-    <p><strong>Applied Date:</strong> ${fmt(d.insertDt)}</p>
-    ${d.minSalary != null ? `<p><strong>Current/Expected Salary:</strong> ${d.minSalary}${d.maxSalary != null ? ' - ' + d.maxSalary : ''}</p>` : ''}
-    ${d.experience ? `<p><strong>Experience:</strong> ${d.experience}</p>` : ''}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
+      <div style="flex:1;min-width:0;">
+        <p style="font-size:17px;font-weight:700;margin:0 0 6px 0;color:#0f172a;">${name}</p>
+        ${addressLine1 ? `<p style="font-size:13px;margin:0 0 2px 0;color:#475569;">${addressLine1}</p>` : ''}
+        ${addressLine2 ? `<p style="font-size:13px;margin:0 0 6px 0;color:#475569;">${addressLine2}</p>` : ''}
+        <p style="margin:4px 0 0 0;font-size:13px;color:#334155;">Mob No: ${mobile || 'N/A'}</p>
+        <p style="margin:2px 0 0 0;font-size:13px;color:#334155;">Email Id: <span style="text-decoration:underline;">${email || 'N/A'}</span></p>
+      </div>
+      ${photoHtml}
+    </div>
+    <div style="height:16px;"></div>
   `);
 
-  if (d.qualification || d.education || d.skills) {
-    sections.push(`
-      <h2 style="font-size:14px;color:#0f766e;border-bottom:1px solid #0d9488;padding-bottom:4px;margin:16px 0 8px 0;">EDUCATION & SKILLS</h2>
-      ${d.qualification ? `<p><strong>Qualification:</strong> ${d.qualification}</p>` : ''}
-      ${d.education ? `<p><strong>Education:</strong> ${d.education}</p>` : ''}
-      ${d.skills ? `<p><strong>Skills:</strong> ${d.skills}</p>` : ''}
-    `);
+  // CAREER OBJECTIVE
+  const careerObjective = d.careerObjective ?? 'To build career in a growing organization, where I can get the opportunities to prove my abilities by accepting challenges, fulfilling the organizational goal and climb the career ladder through continuous learning and commitment.';
+  sections.push(`
+    ${sectionTitle('CAREER OBJECTIVE')}
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#334155;">${careerObjective}</p>
+    <div style="height:12px;"></div>
+  `);
+
+  // EXPERIENCE (companyInfo / employmentList)
+  const employmentList = d.companyInfo ?? d.employmentList ?? d.employment ?? [];
+  const hasEmployment = Array.isArray(employmentList) && employmentList.length > 0;
+  if (hasEmployment) {
+    sections.push(sectionTitle('EXPERIENCE'));
+    employmentList.forEach((item: any) => {
+      const companyName = item.companyName ?? item.company ?? '';
+      const joining = item.empJoiningDate ?? item.joiningDate ?? item.joining ?? '';
+      const relieving = item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '';
+      sections.push(`
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:16px;">
+          <p style="font-size:13px;margin:0;flex:1;color:#334155;">${fmt(companyName)}</p>
+          <p style="font-size:12px;margin:0;color:#64748b;white-space:nowrap;">${fmt(joining)} ${relieving ? '| ' + fmt(relieving) : ''}</p>
+        </div>
+      `);
+    });
+    sections.push('<div style="height:12px;"></div>');
   }
 
-  if (d.department || d.designation || d.previousCompany) {
-    sections.push(`
-      <h2 style="font-size:14px;color:#0f766e;border-bottom:1px solid #0d9488;padding-bottom:4px;margin:16px 0 8px 0;">PROFESSIONAL</h2>
-      ${d.department ? `<p><strong>Department:</strong> ${d.department}</p>` : ''}
-      ${d.designation ? `<p><strong>Designation:</strong> ${d.designation}</p>` : ''}
-      ${d.previousCompany ? `<p><strong>Previous Company:</strong> ${d.previousCompany}</p>` : ''}
-    `);
+  // EDUCATION (degree + university / stream + endYear)
+  const degrees = Array.isArray(d.degree) ? d.degree : d.degree ? [d.degree] : [];
+  const universities = Array.isArray(d.university) ? d.university : d.university ? [d.university] : [];
+  const educationList = d.educationList ?? [];
+  const hasEduList = Array.isArray(educationList) && educationList.length > 0;
+  if (degrees.length > 0 || hasEduList) {
+    sections.push(sectionTitle('EDUCATION'));
+    if (hasEduList) {
+      educationList.forEach((edu: any) => {
+        const deg = edu.employeeDegree ?? edu.degree ?? '';
+        const stream = edu.employeeStream ?? edu.stream ?? '';
+        const endYear = edu.endYear ?? edu.year ?? '';
+        sections.push(`
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:16px;">
+            <p style="margin:0;font-size:13px;color:#334155;">${fmt(deg)}</p>
+            <p style="margin:0;font-size:12px;color:#64748b;white-space:nowrap;">${[stream, endYear].filter(Boolean).join(' | ')}</p>
+          </div>
+        `);
+      });
+    } else {
+      degrees.forEach((deg: any, i: number) => {
+        sections.push(`
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:16px;">
+            <p style="margin:0;font-size:13px;color:#334155;">${fmt(deg)}</p>
+            <p style="margin:0;font-size:12px;color:#64748b;">${fmt(universities[i]) || 'N/A'}</p>
+          </div>
+        `);
+      });
+    }
+    sections.push('<div style="height:12px;"></div>');
   }
 
-  const html = `<!DOCTYPE html>
+  // PERSONAL DETAILS
+  sections.push(sectionTitle('PERSONAL DETAILS'));
+  sections.push(detailRow('Date of Birth', fmt(dob)));
+  sections.push(detailRow('Marital Status', convertMarital(marital)));
+  sections.push(detailRow('Sex', convertGender(gender)));
+  sections.push(detailRow('Nationality', d.nationality ?? 'Indian'));
+  sections.push(detailRow('Hobbies', fmt(hobbies)));
+  sections.push('<div style="height:18px;"></div>');
+
+  // DECLARATION (match PDF: paragraph then Date / Place on one line)
+  sections.push(sectionTitle('DECLARATION'));
+  sections.push(`
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#334155;">I solemnly declare that all the above information is correct to the best of my knowledge and belief.</p>
+    <div style="height:20px;"></div>
+    <p style="margin:0;font-size:13px;color:#334155;">Date ........... &nbsp; Place ...........</p>
+  `);
+
+  const bodyInner = sections.join('\n');
+  const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>${name} - Resume</title>
+  <title>${name} - Curriculum Vitae</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 24px auto; padding: 0 16px; color: #334155; line-height: 1.5; }
-    h1 { font-size: 22px; color: #0f766e; }
-    h2 { font-size: 14px; color: #0f766e; border-bottom: 1px solid #0d9488; padding-bottom: 4px; margin: 16px 0 8px 0; }
-    p { margin: 4px 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; max-width: 700px; margin: 0 auto; padding: 28px 32px; color: #334155; line-height: 1.5; background: #fff; }
+    p { margin: 6px 0; font-size: 13px; }
   </style>
 </head>
 <body>
-  ${sections.join('\n')}
+  ${bodyInner}
 </body>
 </html>`;
-  return html;
+
+  const bodyContent = `<div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;max-width:700px;margin:0;padding:28px 32px;color:#334155;line-height:1.5;background:#fff;box-sizing:border-box;box-shadow:0 1px 3px rgba(0,0,0,0.08);">${bodyInner}</div>`;
+  return { fullHtml, bodyContent };
 }
 
 interface ApplicantDetailsDialogProps {
@@ -100,95 +210,104 @@ export default function ApplicantDetailsDialog({
     }
   }, [open, appliedKey, dispatch]);
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (!applicationDetails) return;
-    const html = buildResumeHtml(applicationDetails);
+    const baseName = (applicationDetails.empName ?? applicationDetails.empEmail ?? 'details').replace(/[^a-zA-Z0-9.-]/g, '_');
+    const { fullHtml, bodyContent } = buildResumeHtml(applicationDetails);
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;background:#fff;';
+    wrap.innerHTML = bodyContent;
+    document.body.appendChild(wrap);
+
+    const el = wrap.firstElementChild as HTMLElement;
+    if (!el) {
+      wrap.remove();
+      fallbackDownloadHtml(fullHtml, baseName);
+      return;
+    }
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+      wrap.remove();
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = -heightLeft;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Applicant-Resume-${baseName}.pdf`);
+    } catch (err) {
+      wrap.remove();
+      console.error('PDF generation failed:', err);
+      fallbackDownloadHtml(fullHtml, baseName);
+    }
+  }, [applicationDetails]);
+
+  function fallbackDownloadHtml(html: string, baseName: string) {
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Applicant-Resume-${(applicationDetails.empName ?? applicationDetails.empEmail ?? 'details').replace(/[^a-zA-Z0-9.-]/g, '_')}.html`;
+    a.download = `Applicant-Resume-${baseName}.html`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [applicationDetails]);
+  }
 
   const d = applicationDetails;
+  const resumePreview = d ? buildResumeHtml(d).bodyContent : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="relative max-w-3xl max-h-[90vh] overflow-y-auto p-6 bg-white rounded-xl shadow-lg">
+      <DialogContent className="fixed left-1/2 top-1/2 max-w-3xl max-h-[90vh] w-full -translate-x-1/2 -translate-y-1/2 flex flex-col p-0 bg-white rounded-xl shadow-lg overflow-hidden">
         {applicationDetailsLoading && (
           <Loading message="Loading applicant..." variant="minimal" />
         )}
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-slate-800 mb-4">
-            {d?.empName ?? 'Applicant Name'}
-          </DialogTitle>
-          <div className="flex gap-6 text-sm text-slate-600 mb-6">
-            <span>Email: {d?.empEmail ?? 'N/A'}</span>
-            <span>Mobile: {d?.empMobile ?? 'N/A'}</span>
-            <span>DOB: {d?.dob ?? 'N/A'}</span>
-            <span>Gender: {d?.gender ?? 'N/A'}</span>
-          </div>
-        </DialogHeader>
-
-        { d && (
-          <div className="space-y-6 text-sm">
-            {/* Education */}
-            <section>
-              <h2 className="text-lg font-semibold mb-2 border-b pb-1">
-                Education
-              </h2>
-              {Array.isArray(d.degree) && Array.isArray(d.university) ? (
-                <ul className="list-disc pl-5 space-y-1">
-                  {d.degree.map((deg: any, i: any) => (
-                    <li key={i}>
-                      <span className="font-medium">{deg}</span> -{' '}
-                      {d.university[i] ?? 'N/A'}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>{d.degree ?? 'N/A'}</p>
-              )}
-            </section>
-
-            {/* Skills */}
-            {d.skills && (
-              <section>
-                <h2 className="text-lg font-semibold mb-2 border-b pb-1">
-                  Skills
-                </h2>
-                <p>
-                  {Array.isArray(d.skills) ? d.skills.join(', ') : d.skills}
-                </p>
-              </section>
-            )}
-
-            {/* Professional */}
-            <section>
-              <h2 className="text-lg font-semibold mb-2 border-b pb-1">
-                Professional Info
-              </h2>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                <div>
-                  <span className="font-medium">Department:</span>{' '}
-                  {d.department ?? 'N/A'}
-                </div>
-                <div>
-                  <span className="font-medium">Designation:</span>{' '}
-                  {d.designation ?? 'N/A'}
-                </div>
-              </div>
-            </section>
-          </div>
+        {d && (
+          <>
+            <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2 border-b border-slate-200/80">
+              <DialogTitle className="text-base font-semibold text-slate-600">
+                Resume preview
+              </DialogTitle>
+              <p className="text-xs text-slate-500 mt-0.5">
+                This is how the resume will look when you download the PDF.
+              </p>
+            </DialogHeader>
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-slate-50/40">
+              <div
+                className="resume-preview max-w-[700px] mx-auto bg-white rounded-lg border border-slate-200/80 shadow-sm p-6 text-left"
+                dangerouslySetInnerHTML={{ __html: resumePreview ?? '' }}
+              />
+            </div>
+          </>
         )}
 
-        { !d && open && appliedKey && (
-          <p className="text-slate-500 py-4">No details available.</p>
+        {!d && open && appliedKey && !applicationDetailsLoading && (
+          <p className="text-slate-500 py-4 px-6">No details available.</p>
         )}
 
-        <DialogFooter className="border-t pt-4 flex justify-between">
+        <DialogFooter className="border-t border-slate-200/80 px-6 py-4 flex justify-between bg-white">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
