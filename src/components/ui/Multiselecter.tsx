@@ -140,7 +140,7 @@ export const MultipleSelect = React.forwardRef<
     //     onValueChange(allValues);
     //   }
     // };
-    const buttonRef = React.useRef<HTMLButtonElement>(null);
+    const buttonRef:any = React.useRef<HTMLButtonElement>(null);
     const mergedRef = React.useCallback(
       (node: HTMLButtonElement | null) => {
         buttonRef.current = node;
