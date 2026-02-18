@@ -207,7 +207,7 @@ export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 export const jobFormSchema = z
   .object({
     company: z.string().min(1, 'Company is required'),
-    branch: z.string().optional(),
+    branch: z.string().min(1, 'Branch is required'),
     jobType: z.string().min(1, 'Job type is required'),
     jobTitle: z.string().min(1, 'Job title is required').max(200, 'Job title is too long'),
     department: z.string().min(1, 'Department is required'),

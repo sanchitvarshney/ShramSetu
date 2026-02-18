@@ -220,7 +220,7 @@ const JobAddPage = () => {
                   name="branch"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Branch</FormLabel>
+                      <FormLabel>Branch *</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -494,12 +494,11 @@ const JobAddPage = () => {
                     <FormLabel>Address *</FormLabel>
                     <FormControl>
                       <Textarea
-                        className={inputStyle}
-                        placeholder="Enter Address (B-88, Sector 2, Noida, Uttar Pradesh, 201301)"
+                        className={`${inputStyle} bg-muted/50 cursor-not-allowed`}
+                        placeholder="Select a branch to fill address"
                         rows={3}
                         value={field.value ?? ''}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
+                        readOnly
                         ref={field.ref}
                       />
                     </FormControl>
