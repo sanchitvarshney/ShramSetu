@@ -827,6 +827,37 @@ export const deleteActivityLog = createAsyncThunk<void, string>(
   },
 );
 
+export const uploadFamilyPhoto = createAsyncThunk<
+  any, // Define the type of the data you expect to return
+  { file: File; id: string ,type:string} // Define the type of the argument you expect
+>('/client/uploadExcel', async ({ file, id,type }) => {
+  const formData = new FormData();
+  formData.append('familyPhoto', file); // Append the file to FormData
+  formData.append('familyUid', id); // Append the channel to FormData
+  formData.append('type', type); // Append the channel to FormData
+
+  const response = await orshAxios.post('worker/familyPhoto', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', // Set appropriate headers
+    },
+  });
+
+  if (response.data.success === true) {
+    toast({
+      title: 'Success',
+      description: response.data.message,
+    });
+  } else {
+    toast({
+      variant: 'destructive',
+      title: 'Error',
+      description: response.data.message,
+    });
+  }
+
+  return response.data;
+});
+
 // Create the slice
 const adminPageSlice = createSlice({
   name: 'adminPage',
