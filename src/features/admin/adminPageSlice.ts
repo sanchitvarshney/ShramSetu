@@ -154,6 +154,54 @@ interface WorkersInfoResponse {
   data: [];
 }
 
+/** Response shape from GET /worker/details/:key */
+export interface WorkerDetailsApiResponse {
+  personalDetails?: {
+    perma_pincode?: string;
+    perma_state?: string;
+    perma_city?: string;
+    perma_district?: string;
+    perma_houseNo?: string;
+    perma_colony?: string;
+    perma_country?: string;
+    present_pincode?: string;
+    present_state?: string;
+    present_district?: string;
+    present_city?: string;
+    present_houseNo?: string;
+    present_colony?: string;
+    present_country?: string;
+    dob?: string;
+    empHobbies?: string;
+    empMaritalStatus?: string;
+    gender?: string;
+  };
+  employeementDetails?: Record<string, unknown> | unknown[];
+  basicDetails?: {
+    empCode?: string;
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
+    empEmail?: string;
+    empPhone?: string;
+    adhaar?: string;
+    /** Photo URL or array of URLs (e.g. S3 signed URL) */
+    empPhoto?: string | string[];
+  };
+  educationDetails?: Array<{
+    empCode?: string;
+    employeeDegree?: string;
+    employeeStream?: string;
+    employeeUniversity?: string;
+    startYear?: string;
+    endYear?: string;
+    percentage?: string;
+    educationType?: string;
+    educationCertificate?: string;
+    educationID?: string;
+  }>;
+}
+
 interface BranchDetail {
   branchID: string;
   branchName: string;
@@ -460,18 +508,27 @@ export const updateEmployeeDetails = createAsyncThunk<
   },
 );
 
-export const updateEmployeeDetailsWithPhoto = createAsyncThunk<
+
+/** Update only current (present) address - different API flow */
+export const updateEmployeeCurrentAddress = createAsyncThunk<
   UpdateEmployeeResponse,
-  FormData,
+  {
+    empId: string;
+    houseNoPresent: string;
+    colonyPresent: string;
+    cityPresent: string;
+    statePresent: string;
+    countryPresent: string;
+    pinCodePresent: string;
+  },
   { rejectValue: string }
 >(
-  'adminPage/updateEmployeeDetailsWithPhoto',
-  async (formData: FormData, { rejectWithValue }) => {
+  'adminPage/updateEmployeeCurrentAddress',
+  async (payload, { rejectWithValue }) => {
+    const type = 'current';
     try {
-      const response = await orshAxios.put('/worker/update', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      if (!response.data.success) {
+      const response = await orshAxios.put(`worker/update/address?type=${type}`, payload);
+      if (!response.data?.success) {
         toast({
           variant: 'destructive',
           title: 'Error',
@@ -480,12 +537,49 @@ export const updateEmployeeDetailsWithPhoto = createAsyncThunk<
       } else {
         toast({
           title: 'Success',
-          description: response.data.message,
+          description: response.data.message ?? 'Current address updated',
         });
       }
-      return response.data.add;
+      return response.data?.add ?? response.data;
     } catch (error) {
-      return rejectWithValue('Failed to fetch employee');
+      return rejectWithValue('Failed to update current address');
+    }
+  },
+);
+
+/** Update only permanent address - different API flow */
+export const updateEmployeePermanentAddress = createAsyncThunk<
+  UpdateEmployeeResponse,
+  {
+    empId: string;
+    houseNoPermanent: string;
+    colonyPermanent: string;
+    cityPermanent: string;
+    statePermanent: string;
+    countryPermanent: string;
+    pinCodePermanent: string;
+  },
+  { rejectValue: string }
+>(
+  'adminPage/updateEmployeePermanentAddress',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.put('/worker/update/address?type=permanent', payload);
+      if (!response.data?.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message ?? 'Permanent address updated',
+        });
+      }
+      return response.data?.add ?? response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to update permanent address');
     }
   },
 );
@@ -741,6 +835,37 @@ export const fetchWorkerDetails = createAsyncThunk<WorkersInfoResponse, string>(
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch workers');
+    }
+  },
+);
+
+/** Fetch full worker details by key (empCode / employeeID) - GET /worker/details/:key */
+export const fetchWorkerDetailsByKey = createAsyncThunk<
+  WorkerDetailsApiResponse,
+  string,
+  { rejectValue: string }
+>(
+  'adminPage/fetchWorkerDetailsByKey',
+  async (key, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<{ success?: boolean; message?: string } & WorkerDetailsApiResponse>(
+        `/worker/details/${encodeURIComponent(key)}`,
+      );
+      if (response.data?.success === false) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: (response.data as any).message ?? 'Failed to load worker details',
+        });
+      }
+      return response.data as WorkerDetailsApiResponse;
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load worker details',
+      });
+      return rejectWithValue('Failed to fetch worker details');
     }
   },
 );

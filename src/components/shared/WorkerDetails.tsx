@@ -1,21 +1,57 @@
-import React, { useState, useCallback } from 'react';
-import { Edit } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Edit, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import IconButton from '@/components/ui/IconButton';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { SelectOptionType } from '@/types/general';
 import { cn } from '@/lib/utils';
-import { differenceInDays, parse } from 'date-fns';
+import { differenceInDays, parse, format } from 'date-fns';
+import dayjs from 'dayjs';
+import { DatePicker, DatePickerProps } from 'antd';
 import { getLoggedInUserType } from '@/lib/routeAccess';
-import WorkerEditDrawer from '@/components/shared/WorkerEditDrawer';
+import {
+  updateEmployeeDetails,
+  updateEmployeeCurrentAddress,
+  updateEmployeePermanentAddress,
+  fetchDepartments,
+  fetchDesignations,
+  type Department,
+  type Designation,
+} from '@/features/admin/adminPageSlice';
+import { AppDispatch, RootState } from '@/store';
+import { inputStyle } from '@/style/CustomStyles';
+import { capitalizeName } from '@/lib/utils';
+import { isValidAadhaar } from '@/lib/validations';
+import { AiOutlineUser } from 'react-icons/ai';
+import { BsTelephone } from 'react-icons/bs';
+import { CiMail } from 'react-icons/ci';
+import { PiCreditCard } from 'react-icons/pi';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  buildResumeHtml,
+  buildAddressLines,
+  cleanAddrPart,
+  fmt,
+  convertMarital,
+  convertGender,
+  type ResumeData,
+} from '@/lib/resumeHtml';
 
 interface WorkerDetailsProps {
   worker: any;
@@ -26,60 +62,22 @@ interface WorkerDetailsProps {
   onOpenChange?: (open: boolean) => void;
   handleStatus?: (status: 'APR' | 'REJ') => void;
   onWorkerUpdated?: () => void;
+  /** When true, show loading state inside the sheet (e.g. while fetching GET /worker/details/:key) */
+  detailsLoading?: boolean;
 }
 
 const getEmployeeId = (worker: any): string | undefined =>
-  worker == null ? undefined : typeof worker === 'string' ? worker : worker?.employeeID ?? worker?.empId ?? worker?.uid;
+  worker == null
+    ? undefined
+    : typeof worker === 'string'
+      ? worker
+      : (worker?.employeeID ?? worker?.empId ?? worker?.empCode ?? worker?.uid);
 
-// --- Resume/CV layout (same as ApplicantDetailsDialog PDF style, with photo) ---
-function fmt(v: any): string {
-  if (v === undefined || v === null || v === '') return '';
-  if (Array.isArray(v)) return v.filter(Boolean).join(', ');
-  return String(v);
-}
-function sectionTitle(title: string): string {
-  return `<div style="margin-top:18px;"><hr style="border:none;border-top:1px solid #e2e8f0;margin:0;" /><h2 style="font-size:11px;font-weight:700;margin:0;padding:8px 12px;background:#f8fafc;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">${title}</h2></div><div style="margin-bottom:8px;"></div>`;
-}
-function detailRow(label: string, value: string): string {
-  if (!value) return '';
-  return `<p style="margin:2px 0;font-size:13px;color:#334155;">${label} ${value}</p>`;
-}
-function convertMarital(m: string): string {
-  if (m === 'M') return 'Married';
-  if (m === 'U' || m === 'Um') return 'Unmarried';
-  return m || '';
-}
-function convertGender(g: string): string {
-  if (g === 'M') return 'Male';
-  if (g === 'F') return 'Female';
-  return g || '';
-}
-
-function cleanAddrPart(x: string | null | undefined): string {
-  const v = x == null ? '' : String(x).trim();
-  return v === '' || v === '--' ? '' : v;
-}
-
-function buildAddressLines(houseNo: string, colony: string, city: string, state: string, country: string, pincode: string): string[] {
-  const parts1 = [houseNo, colony, city].filter(Boolean);
-  const line1 = parts1.join(', ');
-  const parts2 = [state, country, pincode].filter(Boolean);
-  const line2 = parts2.join(', ');
-  const lines: string[] = [];
-  if (line1) lines.push(line1);
-  if (line2) lines.push(line2);
-  return lines;
-}
-
-function buildWorkerResumeHtml(w: any): { bodyContent: string; fullHtml: string } {
-  const name = [w?.empFirstName, w?.empMiddleName, w?.empLastName].filter(Boolean).join(' ') || 'Worker';
-  const email = w?.empEmail ?? '';
-  const mobile = w?.empMobile ?? '';
-  const dob = w?.empDOB ?? '';
-  const gender = w?.empGender ?? '';
-  const marital = w?.empMaritalStatus ?? '';
-  const hobbies = w?.empHobbies ?? '';
-
+function workerToResumeData(w: any): ResumeData {
+  const name =
+    [w?.empFirstName, w?.empMiddleName, w?.empLastName]
+      .filter(Boolean)
+      .join(' ') || 'Worker';
   const presentLines = buildAddressLines(
     cleanAddrPart(w?.present_houseNo),
     cleanAddrPart(w?.present_colony),
@@ -98,107 +96,99 @@ function buildWorkerResumeHtml(w: any): { bodyContent: string; fullHtml: string 
   );
   const hasPresent = presentLines.length > 0;
   const hasPerma = permaLines.length > 0;
-  const sameAddress = hasPresent && hasPerma && presentLines.join(' ') === permaLines.join(' ');
+  const sameAddress =
+    hasPresent && hasPerma && presentLines.join(' ') === permaLines.join(' ');
   const showPerma = hasPerma && !sameAddress;
-
-  const photoSrc = Array.isArray(w?.empPhoto) ? w.empPhoto[0] : w?.empPhoto;
-  const photoHtml = photoSrc
-    ? `<div style="flex-shrink:0;width:110px;height:130px;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><img src="${photoSrc}" alt="" style="width:100%;height:100%;object-fit:cover;" /></div>`
-    : '';
-
   let addressBlock = '';
   if (hasPresent) {
-    addressBlock += presentLines.map((line) => `<p style="font-size:13px;margin:0 0 2px 0;color:#475569;">${line}</p>`).join('');
+    addressBlock += presentLines
+      .map(
+        (l) =>
+          `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+      )
+      .join('');
     if (showPerma) {
-      addressBlock += `<p style="font-size:11px;margin:6px 0 2px 0;color:#64748b;font-weight:600;">Permanent:</p>`;
-      addressBlock += permaLines.map((line) => `<p style="font-size:13px;margin:0 0 2px 0;color:#475569;">${line}</p>`).join('');
+      addressBlock += `<p style="font-size:10px;margin:4px 0 1px 0;color:#64748b;font-weight:600;">Permanent:</p>`;
+      addressBlock += permaLines
+        .map(
+          (l) =>
+            `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+        )
+        .join('');
     }
   } else if (hasPerma) {
-    addressBlock += permaLines.map((line) => `<p style="font-size:13px;margin:0 0 2px 0;color:#475569;">${line}</p>`).join('');
+    addressBlock += permaLines
+      .map(
+        (l) =>
+          `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+      )
+      .join('');
   }
-
-  const sections: string[] = [];
-
-  sections.push(`
-    <p style="text-align:center;font-size:20px;font-weight:700;margin:0 0 8px 0;color:#0f172a;text-transform:uppercase;letter-spacing:0.06em;">CURRICULUM VITAE</p>
-    <div style="height:2px;width:48px;background:#0f172a;margin:0 auto 20px auto;"></div>
-  `);
-  sections.push(`
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
-      <div style="flex:1;min-width:0;">
-        <p style="font-size:17px;font-weight:700;margin:0 0 6px 0;color:#0f172a;">${name}</p>
-        ${addressBlock || ''}
-        <p style="margin:4px 0 0 0;font-size:13px;color:#334155;">Mob No: ${mobile || 'N/A'}</p>
-        <p style="margin:2px 0 0 0;font-size:13px;color:#334155;">Email Id: <span style="text-decoration:underline;">${email || 'N/A'}</span></p>
-      </div>
-      ${photoHtml}
-    </div>
-    <div style="height:16px;"></div>
-  `);
-
-  const careerObjective = w?.careerObjective ?? 'To build career in a growing organization, where I can get the opportunities to prove my abilities by accepting challenges, fulfilling the organizational goal and climb the career ladder through continuous learning and commitment.';
-  sections.push(`
-    ${sectionTitle('CAREER OBJECTIVE')}
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#334155;">${careerObjective}</p>
-    <div style="height:12px;"></div>
-  `);
-
   const employmentList = w?.companyInfo ?? [];
-  const hasEmployment = Array.isArray(employmentList) && employmentList.length > 0;
-  if (hasEmployment) {
-    sections.push(sectionTitle('EXPERIENCE'));
-    employmentList.forEach((item: any) => {
-      const companyName = item.companyName ?? item.company ?? '';
-      const joining = item.empJoiningDate ?? item.joiningDate ?? item.joining ?? '';
-      const relieving = item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '';
-      sections.push(`
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:16px;">
-          <p style="font-size:13px;margin:0;flex:1;color:#334155;">${fmt(companyName)}</p>
-          <p style="font-size:12px;margin:0;color:#64748b;white-space:nowrap;">${fmt(joining)} ${relieving ? '| ' + fmt(relieving) : ''}</p>
-        </div>
-      `);
-    });
-    sections.push('<div style="height:12px;"></div>');
-  }
-
+  const employment = Array.isArray(employmentList)
+    ? employmentList.map((item: any) => ({
+        companyName: item.companyName ?? item.company ?? '',
+        role:
+          typeof item.role === 'object' && item.role != null
+            ? (item.role.text ?? item.role.value ?? '')
+            : (item.role ?? item.empDesignation ?? ''),
+        joining: item.empJoiningDate ?? item.joiningDate ?? item.joining ?? '',
+        relieving:
+          item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '',
+        industry: item.industry ?? '',
+      }))
+    : [];
   const educationList = w?.educationList ?? [];
-  const hasEduList = Array.isArray(educationList) && educationList.length > 0;
-  if (hasEduList) {
-    sections.push(sectionTitle('EDUCATION'));
-    educationList.forEach((edu: any) => {
-      const deg = edu.employeeDegree ?? edu.degree ?? '';
-      const stream = edu.employeeStream ?? edu.stream ?? '';
-      const endYear = edu.endYear ?? edu.year ?? '';
-      sections.push(`
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:16px;">
-          <p style="margin:0;font-size:13px;color:#334155;">${fmt(deg)}</p>
-          <p style="margin:0;font-size:12px;color:#64748b;white-space:nowrap;">${[stream, endYear].filter(Boolean).join(' | ')}</p>
-        </div>
-      `);
+  const education = Array.isArray(educationList)
+    ? educationList.map((edu: any) => ({
+        degree: edu.employeeDegree ?? edu.degree ?? '',
+        stream: edu.employeeStream ?? edu.stream ?? '',
+        university: edu.university ?? edu.institution ?? edu.school ?? '',
+        endYear: edu.endYear ?? edu.year ?? '',
+      }))
+    : [];
+  const dob = w?.empDOB ?? '';
+  const marital = w?.empMaritalStatus ?? '';
+  const gender = w?.empGender ?? '';
+  const nationality = w?.nationality ?? 'Indian';
+  const aadhaar = fmt(w?.adhaar ?? w?.aadhaarNo);
+  const pan = fmt(w?.empPanNo ?? w?.panNo);
+  const bloodGroup = fmt(w?.empBloodGroup ?? w?.bloodGroup);
+  const hobbies = fmt(w?.empHobbies ?? '');
+  const personalRows: { label: string; value: string }[] = [];
+  if (dob) personalRows.push({ label: 'Date of Birth', value: fmt(dob) });
+  if (marital)
+    personalRows.push({
+      label: 'Marital Status',
+      value: convertMarital(marital),
     });
-    sections.push('<div style="height:12px;"></div>');
-  }
+  if (gender)
+    personalRows.push({ label: 'Gender', value: convertGender(gender) });
+  personalRows.push({ label: 'Nationality', value: nationality });
+  if (aadhaar) personalRows.push({ label: 'Aadhaar', value: aadhaar });
+  if (pan) personalRows.push({ label: 'PAN', value: pan });
+  if (bloodGroup)
+    personalRows.push({ label: 'Blood Group', value: bloodGroup });
+  if (hobbies) personalRows.push({ label: 'Hobbies', value: hobbies });
+  return {
+    name,
+    email: w?.empEmail ?? '',
+    mobile: w?.empMobile ?? '',
+    designation: w?.empDesignation ?? '',
+    department: w?.empDepartment ?? '',
+    addressBlock,
+    careerObjective: w?.careerObjective ?? '',
+    employment,
+    education,
+    personalRows,
+  };
+}
 
-  sections.push(sectionTitle('PERSONAL DETAILS'));
-  sections.push(detailRow('Date of Birth', fmt(dob)));
-  sections.push(detailRow('Marital Status', convertMarital(marital)));
-  sections.push(detailRow('Sex', convertGender(gender)));
-  sections.push(detailRow('Nationality', w?.nationality ?? 'Indian'));
-  sections.push(detailRow('Hobbies', fmt(hobbies)));
-  sections.push(detailRow('Aadhaar', fmt(w?.adhaar)));
-  sections.push('<div style="height:18px;"></div>');
-
-  sections.push(sectionTitle('DECLARATION'));
-  sections.push(`
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#334155;">I solemnly declare that all the above information is correct to the best of my knowledge and belief.</p>
-    <div style="height:20px;"></div>
-    <p style="margin:0;font-size:13px;color:#334155;">Date ........... &nbsp; Place ...........</p>
-  `);
-
-  const bodyInner = sections.join('\n');
-  const bodyContent = `<div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;max-width:700px;margin:0;padding:28px 32px;color:#334155;line-height:1.5;background:#fff;box-sizing:border-box;box-shadow:0 1px 3px rgba(0,0,0,0.08);">${bodyInner}</div>`;
-  const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>body{font-family:'Segoe UI',system-ui,sans-serif;margin:0;padding:28px 32px;color:#334155;background:#fff;}</style></head><body>${bodyInner}</body></html>`;
-  return { bodyContent, fullHtml };
+function buildWorkerResumeHtml(w: any): {
+  bodyContent: string;
+  fullHtml: string;
+} {
+  return buildResumeHtml(workerToResumeData(w));
 }
 
 const WorkerDetails: React.FC<WorkerDetailsProps> = ({
@@ -207,20 +197,23 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   open,
   onOpenChange,
   onWorkerUpdated,
+  detailsLoading = false,
 }) => {
   const employeeId = getEmployeeId(worker);
   const isAdmin = getLoggedInUserType() === 'admin';
-  const canEdit = showEdit && isAdmin && employeeId;
-  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  const canEdit = Boolean(showEdit && isAdmin && employeeId);
 
   const handleDownloadResume = useCallback(async () => {
     if (!worker) return;
-    const baseName = [worker?.empFirstName, worker?.empLastName].filter(Boolean).join('-') || 'worker';
+    const baseName =
+      [worker?.empFirstName, worker?.empLastName].filter(Boolean).join('-') ||
+      'worker';
     const safeName = baseName.replace(/[^a-zA-Z0-9.-]/g, '_');
     const { bodyContent, fullHtml } = buildWorkerResumeHtml(worker);
 
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;background:#fff;';
+    wrap.style.cssText =
+      'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;background:#fff;';
     wrap.innerHTML = bodyContent;
     document.body.appendChild(wrap);
 
@@ -283,36 +276,48 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
-          className="flex flex-col h-full w-full max-w-4xl sm:min-w-[560px] p-0 gap-0 overflow-hidden"
+          className="flex flex-col h-full w-full max-w-4xl sm:min-w-[600px] p-0 gap-0 overflow-hidden"
           onInteractOutside={(e: any) => e.preventDefault()}
         >
           <SheetHeader className="flex-shrink-0 flex flex-row items-center justify-between px-6 py-4 border-b bg-slate-50/80">
             <SheetTitle className="text-lg font-semibold text-slate-800">
               Worker Details
             </SheetTitle>
-            {!canEdit && (
-              <IconButton
-                tooltip="Edit Worker"
-                icon={<Edit size={18} className="mt-0.5 text-slate-600" />}
-                onClick={() => setEditDrawerOpen(true)}
-              />
-            )}
           </SheetHeader>
 
-          {worker ? (
+          {detailsLoading ? (
+            <div className="flex-1 flex items-center justify-center px-6 py-12">
+              <p className="text-slate-500">Loading details...</p>
+            </div>
+          ) : worker ? (
             <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-slate-50/40">
               <div className="space-y-5 pb-4">
-                <BasicDetailsFlat details={worker} />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <CurrentAddressFlat details={worker} />
-                  <PermanentAddressFlat details={worker} />
+                <BasicDetailsFlat
+                  details={worker}
+                  employeeId={employeeId}
+                  canEdit={canEdit}
+                  onSuccess={onWorkerUpdated}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+                  <CurrentAddressFlat
+                    details={worker}
+                    employeeId={employeeId}
+                    canEdit={canEdit}
+                    onSuccess={onWorkerUpdated}
+                  />
+                  <PermanentAddressFlat
+                    details={worker}
+                    employeeId={employeeId}
+                    canEdit={canEdit}
+                    onSuccess={onWorkerUpdated}
+                  />
                 </div>
                 {worker && <EmployementDetails details={worker} />}
               </div>
             </div>
           ) : null}
 
-          {worker && (
+          {!detailsLoading && worker && (
             <div className="flex-shrink-0 border-t border-slate-200/80 px-6 py-4 bg-white flex justify-end">
               <Button onClick={handleDownloadResume} variant="default">
                 Download Resume
@@ -321,15 +326,6 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
           )}
         </SheetContent>
       </Sheet>
-
-      <WorkerEditDrawer
-        open={editDrawerOpen}
-        onOpenChange={setEditDrawerOpen}
-        worker={worker}
-        employeeId={employeeId}
-        onSuccess={onWorkerUpdated}
-        onCloseDetails={() => onOpenChange?.(false)}
-      />
     </>
   );
 };
@@ -350,30 +346,432 @@ const SingleDetail = ({
     value == null || value === ''
       ? '--'
       : typeof value === 'object' && value && !Array.isArray(value)
-        ? (value as { text?: string })?.text ?? '--'
+        ? ((value as { text?: string })?.text ?? '--')
         : String(value);
   return (
     <div className="flex justify-between gap-4 py-1.5">
-      <span className="text-sm font-medium text-slate-500 shrink-0">{label}</span>
-      <span className="text-sm text-slate-800 text-right break-words">{display}</span>
+      <span className="text-sm font-medium text-slate-500 shrink-0">
+        {label}
+      </span>
+      <span className="text-sm text-slate-800 text-right break-words">
+        {display}
+      </span>
     </div>
   );
 };
 
-const BasicDetailsFlat = ({ details }: { details: any }) => {
+const parseDOB = (val: string | undefined): Date | null => {
+  if (!val || typeof val !== 'string') return null;
+  const trimmed = val.trim();
+  if (!trimmed) return null;
+  const parts = trimmed.split(/[-/.]/);
+  if (parts.length === 3) {
+    const [a, b, c] = parts;
+    const day = parseInt(a, 10);
+    const month = parseInt(b, 10) - 1;
+    const year = parseInt(c, 10);
+    if (!isNaN(year) && year > 1900 && year < 2100) {
+      const d = new Date(year, isNaN(month) ? 0 : month, isNaN(day) ? 1 : day);
+      if (!isNaN(d.getTime())) return d;
+    }
+  }
+  const d = new Date(trimmed);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const BasicDetailsFlat = ({
+  details,
+  employeeId,
+  canEdit,
+  onSuccess,
+}: {
+  details: any;
+  employeeId: string | undefined;
+  canEdit: boolean;
+  onSuccess?: () => void;
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { department: departmentList, designation: designationList } =
+    useSelector((state: RootState) => state.adminPage);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [empDOBDate, setEmpDOBDate] = useState<Date | null>(null);
+  const [empPhotoFile, setEmpPhotoFile] = useState<File | null>(null);
+  const [empPhotoUrl, setEmpPhotoUrl] = useState<string | null>(null);
+  const [empFirstName, setEmpFirstName] = useState('');
+  const [empMiddleName, setEmpMiddleName] = useState('');
+  const [empLastName, setEmpLastName] = useState('');
+  const [empGender, setEmpGender] = useState('');
+  const [empMobile, setEmpMobile] = useState('');
+  const [empEmail, setEmpEmail] = useState('');
+  const [empMaritalStatus, setEmpMaritalStatus] = useState('');
+  const [empHobbies, setEmpHobbies] = useState('');
+  const [adhaar, setAdhaar] = useState('');
+  const [empPanNo, setEmpPanNo] = useState('');
+  const [empBloodGroup, setEmpBloodGroup] = useState('');
+  const [empDepartment, setEmpDepartment] = useState('');
+  const [empDesignation, setEmpDesignation] = useState('');
+
+  useEffect(() => {
+    if (details && (isEditing || !isEditing)) {
+      setEmpFirstName(details?.empFirstName ?? '');
+      setEmpMiddleName(details?.empMiddleName ?? '');
+      setEmpLastName(details?.empLastName ?? '');
+      setEmpDOBDate(parseDOB(details?.empDOB));
+      setEmpGender(details?.empGender ?? '');
+      setEmpMobile(details?.empMobile ?? '');
+      setEmpEmail(details?.empEmail ?? '');
+      setEmpMaritalStatus(details?.empMaritalStatus ?? '');
+      setEmpHobbies(details?.empHobbies ?? '');
+      setAdhaar((details?.adhaar ?? '').replace(/\s/g, ''));
+      setEmpPanNo(details?.empPanNo ?? '');
+      setEmpBloodGroup(details?.empBloodGroup ?? '');
+      const deptVal =
+        departmentList?.find(
+          (d: Department) =>
+            d.value === details?.department || d.text === details?.department,
+        )?.value ??
+        details?.department ??
+        '';
+      const desgVal =
+        designationList?.find(
+          (d: Designation) =>
+            d.value === details?.designation || d.text === details?.designation,
+        )?.value ??
+        details?.designation ??
+        '';
+      setEmpDepartment(deptVal);
+      setEmpDesignation(desgVal);
+    }
+  }, [details, isEditing, departmentList, designationList]);
+
+  useEffect(() => {
+    if (isEditing) {
+      dispatch(fetchDepartments());
+      dispatch(fetchDesignations());
+    }
+  }, [isEditing, dispatch]);
+
+  const onDOBChange: DatePickerProps['onChange'] = (date) => {
+    setEmpDOBDate(date ? dayjs(date as any).toDate() : null);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEmpPhotoUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(file);
+      });
+      setEmpPhotoFile(file);
+    }
+    e.target.value = '';
+  };
+
+  const buildUpdatePayload = () => {
+    const formData = new FormData();
+    formData.append('empId', employeeId ?? '');
+    formData.append('firstName', empFirstName);
+    formData.append('lastName', empLastName);
+    formData.append('email', empEmail);
+    formData.append('dob', empDOBDate ? format(empDOBDate, 'dd/MM/yyyy') : '');
+    formData.append('department', empDepartment);
+    formData.append('designation', empDesignation);
+    formData.append('mobile', empMobile);
+    formData.append('gender', empGender);
+    formData.append('maritalStatus', empMaritalStatus);
+    formData.append('hobbies', empHobbies);
+    formData.append('panNo', empPanNo);
+    formData.append('bloodGroup', empBloodGroup);
+    const aadhaarDigits = adhaar.replace(/\s/g, '');
+    if (aadhaarDigits) formData.append('aadhaar', aadhaarDigits);
+
+    if (empPhotoFile instanceof File) {
+      formData.append('image', empPhotoFile);
+    }
+
+    return formData;
+  };
+
+  const handleUpdateBasic = async () => {
+    if (!employeeId) return;
+    setSaving(true);
+    try {
+      const payload = buildUpdatePayload();
+
+      await dispatch(updateEmployeeDetails(payload)).unwrap();
+
+      setIsEditing(false);
+      onSuccess?.();
+    } catch {
+      // toast in slice
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const photoSrc =
+    empPhotoUrl ||
+    (Array.isArray(details?.empPhoto)
+      ? details.empPhoto[0]
+      : details?.empPhoto) ||
+    './ProfileImage.png';
+
+  if (isEditing) {
+    return (
+      <Card className="shadow-sm border-slate-200/80">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-base font-semibold text-slate-800">
+            Basic Details
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+              disabled={saving}
+            >
+              <X className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="bg-teal-500 hover:bg-teal-600"
+              onClick={handleUpdateBasic}
+              disabled={saving}
+            >
+              {saving ? 'Updating...' : 'Update Basic Details'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex gap-5">
+            <div className="w-28 shrink-0 flex flex-col items-center">
+              <div className="relative w-24 h-24 rounded-full bg-gray-200 overflow-hidden border-2 border-slate-200">
+                <img
+                  src={photoSrc}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+                <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-white text-xs">
+                  Change
+                </label>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="hidden"
+                id="basic-details-photo"
+              />
+              <Label
+                htmlFor="basic-details-photo"
+                className="mt-2 text-xs cursor-pointer text-teal-600"
+              >
+                {empPhotoFile ? 'Change' : 'Upload'}
+              </Label>
+            </div>
+            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="floating-label-group">
+                <Input
+                  className={inputStyle}
+                  value={empFirstName}
+                  onChange={(e) =>
+                    setEmpFirstName(capitalizeName(e.target.value))
+                  }
+                />
+                <Label className="floating-label">
+                  <span className="flex items-center gap-1">
+                    <AiOutlineUser className="h-4 w-4" /> First Name
+                  </span>
+                </Label>
+              </div>
+              <div className="floating-label-group">
+                <Input
+                  className={inputStyle}
+                  value={empMiddleName}
+                  onChange={(e) =>
+                    setEmpMiddleName(capitalizeName(e.target.value))
+                  }
+                />
+                <Label className="floating-label">
+                  <span className="flex items-center gap-1">
+                    <AiOutlineUser className="h-4 w-4" /> Middle Name
+                  </span>
+                </Label>
+              </div>
+              <div className="floating-label-group">
+                <Input
+                  className={inputStyle}
+                  value={empLastName}
+                  onChange={(e) =>
+                    setEmpLastName(capitalizeName(e.target.value))
+                  }
+                />
+                <Label className="floating-label">
+                  <span className="flex items-center gap-1">
+                    <AiOutlineUser className="h-4 w-4" /> Last Name
+                  </span>
+                </Label>
+              </div>
+              <div>
+                <Label className="floating-label">Gender</Label>
+                <Select value={empGender} onValueChange={setEmpGender}>
+                  <SelectTrigger
+                    className={`${inputStyle} input2 focus:ring-0`}
+                  >
+                    <SelectValue placeholder="--" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M">Male</SelectItem>
+                    <SelectItem value="F">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="floating-label">DOB</Label>
+                <DatePicker
+                  onChange={onDOBChange}
+                  value={empDOBDate ? dayjs(empDOBDate) : null}
+                  className={`${inputStyle} input2 w-full`}
+                  format="DD/MM/YYYY"
+                />
+              </div>
+              <div className="floating-label-group">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={15}
+                  className={inputStyle}
+                  value={empMobile}
+                  onChange={(e) =>
+                    setEmpMobile(e.target.value.replace(/\D/g, ''))
+                  }
+                />
+                <Label className="floating-label">
+                  <span className="flex items-center gap-1">
+                    <BsTelephone className="h-4 w-4" /> Phone
+                  </span>
+                </Label>
+              </div>
+              <div className="floating-label-group col-span-2">
+                <Input
+                  type="email"
+                  className={inputStyle}
+                  value={empEmail}
+                  onChange={(e) => setEmpEmail(e.target.value)}
+                />
+                <Label className="floating-label">
+                  <span className="flex items-center gap-1">
+                    <CiMail className="h-4 w-4" /> Email
+                  </span>
+                </Label>
+              </div>
+              <div className="floating-label-group">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={14}
+                  className={inputStyle}
+                  value={adhaar}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    if (v.length <= 12) setAdhaar(v);
+                  }}
+                  placeholder="12 digits"
+                />
+                <Label className="floating-label">
+                  <span className="flex items-center gap-1">
+                    <PiCreditCard className="h-4 w-4" /> Aadhaar
+                  </span>
+                </Label>
+                {adhaar.length > 0 && (
+                  <p
+                    className={cn(
+                      'text-xs mt-0.5',
+                      isValidAadhaar(adhaar)
+                        ? 'text-green-600'
+                        : 'text-red-600',
+                    )}
+                  >
+                    {isValidAadhaar(adhaar) ? 'Valid' : 'Invalid'}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label className="floating-label">Department</Label>
+                <Select value={empDepartment} onValueChange={setEmpDepartment}>
+                  <SelectTrigger
+                    className={`${inputStyle} input2 focus:ring-0`}
+                  >
+                    <SelectValue placeholder="--" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departmentList?.map((dept: Department) => (
+                      <SelectItem key={dept?.value} value={dept?.value}>
+                        {dept?.text}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="floating-label">Designation</Label>
+                <Select
+                  value={empDesignation}
+                  onValueChange={setEmpDesignation}
+                >
+                  <SelectTrigger
+                    className={`${inputStyle} input2 focus:ring-0`}
+                  >
+                    <SelectValue placeholder="--" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {designationList?.map((desg: Designation) => (
+                      <SelectItem key={desg?.value} value={desg?.value}>
+                        {desg?.text}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-sm border-slate-200/80">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-base font-semibold text-slate-800">
           Basic Details
         </CardTitle>
-        {details?.empPhoto && (
-          <img
-            src={details.empPhoto}
-            alt="No Image"
-            className="h-16 w-16 rounded-full object-cover border-2 border-slate-200"
-          />
-        )}
+        <div className="flex items-center gap-2">
+          {details?.empPhoto && (
+            <img
+              src={
+                Array.isArray(details.empPhoto)
+                  ? details.empPhoto[0]
+                  : details.empPhoto
+              }
+              alt="No Image"
+              className="h-16 w-16 rounded-full object-cover border-2 border-slate-200"
+            />
+          )}
+          {canEdit && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit className="h-4 w-4 mr-1" /> Edit
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="pt-0 space-y-1">
         <DetailRow>
@@ -385,16 +783,34 @@ const BasicDetailsFlat = ({ details }: { details: any }) => {
           <SingleDetail label="DOB" value={details?.empDOB} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Gender" value={details?.empGender === 'M' ? 'Male' : details?.empGender === 'F' ? 'Female' : details?.empGender} />
+          <SingleDetail
+            label="Gender"
+            value={
+              details?.empGender === 'M'
+                ? 'Male'
+                : details?.empGender === 'F'
+                  ? 'Female'
+                  : details?.empGender
+            }
+          />
           <SingleDetail label="Phone" value={details?.empMobile} />
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Email" value={details?.empEmail} />
-          <SingleDetail label="Marital Status" value={details?.empMaritalStatus === 'M' ? 'Married' : details?.empMaritalStatus === 'U' ? 'Unmarried' : details?.empMaritalStatus === "Um" ? "Unmarried" : details?.empMaritalStatus} />
+          <SingleDetail
+            label="Marital Status"
+            value={
+              details?.empMaritalStatus === 'M'
+                ? 'Married'
+                : details?.empMaritalStatus === 'U' ||
+                    details?.empMaritalStatus === 'Um'
+                  ? 'Unmarried'
+                  : details?.empMaritalStatus
+            }
+          />
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Hobbies" value={details?.empHobbies} />
-       
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Aadhaar Number" value={details?.adhaar} />
@@ -409,24 +825,178 @@ const BasicDetailsFlat = ({ details }: { details: any }) => {
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Blood Group" value={details?.empBloodGroup} />
-          <SingleDetail label="Department" value={details?.empDepartment} />
+          <SingleDetail label="Department" value={details?.department} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Designation" value={details?.empDesignation} />
+          <SingleDetail label="Designation" value={details?.designation} />
         </DetailRow>
       </CardContent>
     </Card>
   );
 };
 
-const CurrentAddressFlat = ({ details }: { details: any }) => {
- 
+const CurrentAddressFlat = ({
+  details,
+  employeeId,
+  canEdit,
+  onSuccess,
+}: {
+  details: any;
+  employeeId: string | undefined;
+  canEdit: boolean;
+  onSuccess?: () => void;
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [houseNo, setHouseNo] = useState('');
+  const [colony, setColony] = useState('');
+  const [city, setCity] = useState('');
+  const [stateVal, setStateVal] = useState('');
+  const [country, setCountry] = useState('');
+  const [pincode, setPincode] = useState('');
+
+  useEffect(() => {
+    if (details) {
+      setHouseNo(details?.present_houseNo ?? '');
+      setColony(details?.present_colony ?? '');
+      setCity(details?.present_city ?? '');
+      setStateVal(details?.present_state ?? '');
+      setCountry(details?.present_country ?? '');
+      setPincode(details?.present_pincode ?? '');
+    }
+  }, [details, isEditing]);
+
+  const handleUpdateCurrentAddress = async () => {
+    if (!employeeId) return;
+    setSaving(true);
+    try {
+      await dispatch(
+        updateEmployeeCurrentAddress({
+          empId: employeeId,
+          houseNoPresent: houseNo?.trim() || '',
+          colonyPresent: colony?.trim() || '',
+          cityPresent: city?.trim() || '',
+          statePresent: stateVal?.trim() || '',
+          countryPresent: country?.trim() || '',
+          pinCodePresent: pincode?.trim() || '',
+        }),
+      ).unwrap();
+      setIsEditing(false);
+      onSuccess?.();
+    } catch {
+      // toast in slice
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <Card className="shadow-sm border-slate-200/80">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base font-semibold text-slate-800">
+            Current Address
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+              disabled={saving}
+            >
+              <X className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="bg-teal-500 hover:bg-teal-600"
+              onClick={handleUpdateCurrentAddress}
+              disabled={saving}
+            >
+              {saving ? 'Updating...' : 'Update Current Address'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">House No. / Address</Label>
+            <Input
+              className={inputStyle}
+              value={houseNo}
+              onChange={(e) => setHouseNo(e.target.value)}
+              placeholder="House no"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Colony</Label>
+              <Input
+                className={inputStyle}
+                value={colony}
+                onChange={(e) => setColony(e.target.value)}
+                placeholder="Colony"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">City</Label>
+              <Input
+                className={inputStyle}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">State</Label>
+              <Input
+                className={inputStyle}
+                value={stateVal}
+                onChange={(e) => setStateVal(e.target.value)}
+                placeholder="State"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Country</Label>
+              <Input
+                className={inputStyle}
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Country"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Pin Code</Label>
+              <Input
+                className={inputStyle}
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                placeholder="Pincode"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-sm border-slate-200/80">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold text-slate-800">
           Current Address
         </CardTitle>
+        {canEdit && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="h-4 w-4 mr-1" /> Edit
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-0">
@@ -442,29 +1012,182 @@ const CurrentAddressFlat = ({ details }: { details: any }) => {
   );
 };
 
-const PermanentAddressFlat = ({ details }: { details: any }) => {
- 
+const PermanentAddressFlat = ({
+  details,
+  employeeId,
+  canEdit,
+  onSuccess,
+}: {
+  details: any;
+  employeeId: string | undefined;
+  canEdit: boolean;
+  onSuccess?: () => void;
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [houseNo, setHouseNo] = useState('');
+  const [colony, setColony] = useState('');
+  const [city, setCity] = useState('');
+  const [stateVal, setStateVal] = useState('');
+  const [country, setCountry] = useState('');
+  const [pincode, setPincode] = useState('');
+
+  useEffect(() => {
+    if (details) {
+      setHouseNo(details?.perma_houseNo ?? '');
+      setColony(details?.perma_colony ?? '');
+      setCity(details?.perma_city ?? '');
+      setStateVal(details?.perma_state ?? '');
+      setCountry(details?.perma_country ?? '');
+      setPincode(details?.perma_pincode ?? '');
+    }
+  }, [details, isEditing]);
+
+  const handleUpdatePermanentAddress = async () => {
+    if (!employeeId) return;
+    setSaving(true);
+    try {
+      await dispatch(
+        updateEmployeePermanentAddress({
+          empId: employeeId,
+          houseNoPermanent: houseNo?.trim() || '',
+          colonyPermanent: colony?.trim() || '',
+          cityPermanent: city?.trim() || '',
+          statePermanent: stateVal?.trim() || '',
+          countryPermanent: country?.trim() || '',
+          pinCodePermanent: pincode?.trim() || '',
+        }),
+      ).unwrap();
+      setIsEditing(false);
+      onSuccess?.();
+    } catch {
+      // toast in slice
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <Card className="shadow-sm border-slate-200/80">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base font-semibold text-slate-800">
+            Permanent Address
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+              disabled={saving}
+            >
+              <X className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="bg-teal-500 hover:bg-teal-600"
+              onClick={handleUpdatePermanentAddress}
+              disabled={saving}
+            >
+              {saving ? 'Updating...' : 'Update Permanent Address'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">House No. / Address</Label>
+            <Input
+              className={inputStyle}
+              value={houseNo}
+              onChange={(e) => setHouseNo(e.target.value)}
+              placeholder="House no"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Colony</Label>
+              <Input
+                className={inputStyle}
+                value={colony}
+                onChange={(e) => setColony(e.target.value)}
+                placeholder="Colony"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">City</Label>
+              <Input
+                className={inputStyle}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">State</Label>
+              <Input
+                className={inputStyle}
+                value={stateVal}
+                onChange={(e) => setStateVal(e.target.value)}
+                placeholder="State"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Country</Label>
+              <Input
+                className={inputStyle}
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Country"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Pin Code</Label>
+              <Input
+                className={inputStyle}
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                placeholder="Pincode"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-sm border-slate-200/80">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold text-slate-800">
           Permanent Address
         </CardTitle>
+        {canEdit && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="h-4 w-4 mr-1" /> Edit
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-0">
           <SingleDetail label="House No." value={details?.perma_houseNo} />
-          <SingleDetail label="State" value={details?.present_state} />
+          <SingleDetail label="Colony" value={details?.perma_colony} />
           <SingleDetail label="City" value={details?.perma_city} />
-          <SingleDetail label="District" value={details?.perma_country} />
+          <SingleDetail label="State" value={details?.perma_state} />
+          <SingleDetail label="Country" value={details?.perma_country} />
           <SingleDetail label="Pin Code" value={details?.perma_pincode} />
         </div>
       </CardContent>
     </Card>
   );
 };
-
-
 
 const EmployementDetails = ({ details }: any) => {
   const calculateExperience = (joiningDate: string, relievingDate: string) => {
@@ -490,38 +1213,44 @@ const EmployementDetails = ({ details }: any) => {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-3">
-          {hasList && list.map((emp: any, i: number) => (
-            <div key={i} className={cn('px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50')}>
-              <SingleDetail label="Company" value={emp?.companyName} />
-              <SingleDetail label="Industry" value={emp?.industry} />
-              <DetailRow>
-                <SingleDetail label="Joined on" value={emp?.joiningDate} />
-                <SingleDetail
-                  label="Releived on"
-                  value={emp?.relievingDate ?? '--'}
-                />
-              </DetailRow>
-              <DetailRow>
-                <SingleDetail
-                  label="Role"
-                  value={typeof emp.role === 'object' ? emp?.role?.text : '--'}
-                />
-                {emp?.joiningDate && emp?.relievingDate && (
-                  <SingleDetail
-                    label="Experience"
-                    value={`${calculateExperience(
-                      emp.joiningDate,
-                      emp.relievingDate,
-                    )} years`}
-                  />
+          {hasList &&
+            list.map((emp: any, i: number) => (
+              <div
+                key={i}
+                className={cn(
+                  'px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50',
                 )}
-              </DetailRow>
-            </div>
-          ))}
+              >
+                <SingleDetail label="Company" value={emp?.companyName} />
+                <SingleDetail label="Industry" value={emp?.industry} />
+                <DetailRow>
+                  <SingleDetail label="Joined on" value={emp?.joiningDate} />
+                  <SingleDetail
+                    label="Releived on"
+                    value={emp?.relievingDate ?? '--'}
+                  />
+                </DetailRow>
+                <DetailRow>
+                  <SingleDetail
+                    label="Role"
+                    value={
+                      typeof emp.role === 'object' ? emp?.role?.text : '--'
+                    }
+                  />
+                  {emp?.joiningDate && emp?.relievingDate && (
+                    <SingleDetail
+                      label="Experience"
+                      value={`${calculateExperience(
+                        emp.joiningDate,
+                        emp.relievingDate,
+                      )} years`}
+                    />
+                  )}
+                </DetailRow>
+              </div>
+            ))}
         </div>
       </CardContent>
     </Card>
   );
 };
-
-

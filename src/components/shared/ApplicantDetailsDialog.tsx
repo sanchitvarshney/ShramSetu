@@ -17,172 +17,109 @@ import { Button } from '@/components/ui/button';
 import Loading from '@/components/reusable/Loading';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import {
+  buildResumeHtml as buildResumeHtmlShared,
+  buildAddressLines,
+  cleanAddrPart,
+  fmt,
+  convertMarital,
+  convertGender,
+  type ResumeData,
+} from '@/lib/resumeHtml';
 
-function fmt(v: any): string {
-  if (v === undefined || v === null || v === '') return '';
-  if (Array.isArray(v)) return v.filter(Boolean).join(', ');
-  return String(v);
-}
-
-function sectionTitle(title: string): string {
-  return `<div style="margin-top:18px;"><hr style="border:none;border-top:1px solid #e2e8f0;margin:0;" /><h2 style="font-size:11px;font-weight:700;margin:0;padding:8px 12px;background:#f8fafc;color:#475569;text-transform:uppercase;letter-spacing:0.08em;">${title}</h2></div><div style="margin-bottom:8px;"></div>`;
-}
-
-function detailRow(label: string, value: string): string {
-  if (!value) return '';
-  return `<p style="margin:2px 0;font-size:13px;color:#334155;">${label} ${value}</p>`;
-}
-
-function convertMarital(m: string): string {
-  if (m === 'M') return 'Married';
-  if (m === 'U' || m === 'Um') return 'Unmarried';
-  return m || '';
-}
-
-function convertGender(g: string): string {
-  if (g === 'M') return 'Male';
-  if (g === 'F') return 'Female';
-  return g || '';
+function applicantToResumeData(d: ApplicantDetail): ResumeData {
+  const name = d.empName ?? d.applicantName ?? 'Applicant';
+  const presentLines = buildAddressLines(
+    cleanAddrPart(d.presentHouseNo ?? d.present_houseNo),
+    cleanAddrPart(d.presentColony ?? d.present_colony),
+    cleanAddrPart(d.present_city ?? d.presentCity ?? d.present_district ?? d.presentDistrict),
+    cleanAddrPart(d.presentState ?? d.present_state),
+    cleanAddrPart(d.present_country ?? d.presentCountry),
+    cleanAddrPart(d.presentPincode ?? d.present_pincode),
+  );
+  const permaLines = buildAddressLines(
+    cleanAddrPart(d.perma_houseNo ?? d.permaHouseNo),
+    cleanAddrPart(d.perma_colony ?? d.permaColony),
+    cleanAddrPart(d.perma_city ?? d.permaCity),
+    cleanAddrPart(d.perma_state ?? d.permaState),
+    cleanAddrPart(d.perma_country ?? d.permaCountry),
+    cleanAddrPart(d.perma_pincode ?? d.permaPincode),
+  );
+  const hasPresent = presentLines.length > 0;
+  const hasPerma = permaLines.length > 0;
+  const sameAddress = hasPresent && hasPerma && presentLines.join(' ') === permaLines.join(' ');
+  const showPerma = hasPerma && !sameAddress;
+  let addressBlock = '';
+  if (hasPresent) {
+    addressBlock += presentLines.map((l) => `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`).join('');
+    if (showPerma) {
+      addressBlock += `<p style="font-size:10px;margin:4px 0 1px 0;color:#64748b;font-weight:600;">Permanent:</p>`;
+      addressBlock += permaLines.map((l) => `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`).join('');
+    }
+  } else if (hasPerma) {
+    addressBlock += permaLines.map((l) => `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`).join('');
+  }
+  const employmentList = d.companyInfo ?? d.employmentList ?? d.employment ?? [];
+  const employment = Array.isArray(employmentList)
+    ? employmentList.map((item: any) => ({
+        companyName: item.companyName ?? item.company ?? '',
+        role: typeof item.role === 'object' && item.role != null ? (item.role.text ?? item.role.value ?? '') : (item.role ?? item.empDesignation ?? ''),
+        joining: item.empJoiningDate ?? item.joiningDate ?? item.joining ?? '',
+        relieving: item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '',
+        industry: item.industry ?? '',
+      }))
+    : [];
+  const educationList = d.educationList ?? [];
+  const degrees = Array.isArray(d.degree) ? d.degree : d.degree ? [d.degree] : [];
+  const universities = Array.isArray(d.university) ? d.university : d.university ? [d.university] : [];
+  const education: ResumeData['education'] = [];
+  if (Array.isArray(educationList) && educationList.length > 0) {
+    educationList.forEach((edu: any) => {
+      education.push({
+        degree: edu.employeeDegree ?? edu.degree ?? '',
+        stream: edu.employeeStream ?? edu.stream ?? '',
+        university: edu.university ?? edu.institution ?? edu.school ?? '',
+        endYear: edu.endYear ?? edu.year ?? '',
+      });
+    });
+  } else {
+    degrees.forEach((deg: any, i: number) => {
+      education.push({ degree: fmt(deg), stream: '', university: fmt(universities[i]), endYear: '' });
+    });
+  }
+  const dob = d.dob ?? d.empDOB ?? '';
+  const marital = d.empMaritalStatus ?? d.marital ?? '';
+  const gender = d.gender ?? d.empGender ?? '';
+  const nationality = d.nationality ?? 'Indian';
+  const aadhaar = fmt(d.adhaar ?? d.aadhaarNo);
+  const pan = fmt(d.empPanNo ?? d.panNo);
+  const bloodGroup = fmt(d.empBloodGroup ?? d.bloodGroup);
+  const hobbies = fmt(d.empHobbies ?? d.hobbies ?? '');
+  const personalRows: { label: string; value: string }[] = [];
+  if (dob) personalRows.push({ label: 'Date of Birth', value: fmt(dob) });
+  if (marital) personalRows.push({ label: 'Marital Status', value: convertMarital(marital) });
+  if (gender) personalRows.push({ label: 'Gender', value: convertGender(gender) });
+  personalRows.push({ label: 'Nationality', value: nationality });
+  if (aadhaar) personalRows.push({ label: 'Aadhaar', value: aadhaar });
+  if (pan) personalRows.push({ label: 'PAN', value: pan });
+  if (bloodGroup) personalRows.push({ label: 'Blood Group', value: bloodGroup });
+  if (hobbies) personalRows.push({ label: 'Hobbies', value: hobbies });
+  return {
+    name,
+    email: d.empEmail ?? '',
+    mobile: d.empMobile ?? '',
+    designation: d.designation ?? '',
+    department: d.department ?? '',
+    addressBlock,
+    careerObjective: d.careerObjective ?? '',
+    employment,
+    education,
+    personalRows,
+  };
 }
 
 function buildResumeHtml(d: ApplicantDetail): { fullHtml: string; bodyContent: string } {
-  const name = d.empName ?? d.applicantName ?? 'Applicant';
-  const email = d.empEmail ?? '';
-  const mobile = d.empMobile ?? '';
-  const dob = d.dob ?? d.empDOB ?? '';
-  const gender = d.gender ?? d.empGender ?? '';
-  const marital = d.empMaritalStatus ?? d.marital ?? '';
-  const hobbies = d.empHobbies ?? d.hobbies ?? '';
-  const houseNo = d.presentHouseNo ?? d.present_houseNo ?? '';
-  const colony = d.presentColony ?? d.present_colony ?? '';
-  const district = d.present_district ?? d.presentDistrict ?? d.present_city ?? d.presentCity ?? '';
-  const state = d.presentState ?? d.present_state ?? '';
-  const pincode = d.presentPincode ?? d.present_pincode ?? '';
-  const addressLine1 = [houseNo, colony, district].filter((x) => x && x !== '--').join(', ');
-  const addressLine2 = [state, pincode].filter((x) => x && x !== '--').join(', ');
-
-  const photoSrc = Array.isArray(d.empPhoto) ? d.empPhoto[0] : d.empPhoto;
-  const photoHtml = photoSrc
-    ? `<div style="flex-shrink:0;width:110px;height:130px;border:1px solid #e2e8f0;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);"><img src="${photoSrc}" alt="" style="width:100%;height:100%;object-fit:cover;" /></div>`
-    : '';
-
-  const sections: string[] = [];
-
-  // Document-style: title with underline accent
-  sections.push(`
-    <p style="text-align:center;font-size:20px;font-weight:700;margin:0 0 8px 0;color:#0f172a;text-transform:uppercase;letter-spacing:0.06em;">CURRICULUM VITAE</p>
-    <div style="height:2px;width:48px;background:#0f172a;margin:0 auto 20px auto;"></div>
-  `);
-
-  // Header: Name + address + Mob + Email (left) | Photo (right). Email underlined.
-  sections.push(`
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
-      <div style="flex:1;min-width:0;">
-        <p style="font-size:17px;font-weight:700;margin:0 0 6px 0;color:#0f172a;">${name}</p>
-        ${addressLine1 ? `<p style="font-size:13px;margin:0 0 2px 0;color:#475569;">${addressLine1}</p>` : ''}
-        ${addressLine2 ? `<p style="font-size:13px;margin:0 0 6px 0;color:#475569;">${addressLine2}</p>` : ''}
-        <p style="margin:4px 0 0 0;font-size:13px;color:#334155;">Mob No: ${mobile || 'N/A'}</p>
-        <p style="margin:2px 0 0 0;font-size:13px;color:#334155;">Email Id: <span style="text-decoration:underline;">${email || 'N/A'}</span></p>
-      </div>
-      ${photoHtml}
-    </div>
-    <div style="height:16px;"></div>
-  `);
-
-  // CAREER OBJECTIVE
-  const careerObjective = d.careerObjective ?? 'To build career in a growing organization, where I can get the opportunities to prove my abilities by accepting challenges, fulfilling the organizational goal and climb the career ladder through continuous learning and commitment.';
-  sections.push(`
-    ${sectionTitle('CAREER OBJECTIVE')}
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#334155;">${careerObjective}</p>
-    <div style="height:12px;"></div>
-  `);
-
-  // EXPERIENCE (companyInfo / employmentList)
-  const employmentList = d.companyInfo ?? d.employmentList ?? d.employment ?? [];
-  const hasEmployment = Array.isArray(employmentList) && employmentList.length > 0;
-  if (hasEmployment) {
-    sections.push(sectionTitle('EXPERIENCE'));
-    employmentList.forEach((item: any) => {
-      const companyName = item.companyName ?? item.company ?? '';
-      const joining = item.empJoiningDate ?? item.joiningDate ?? item.joining ?? '';
-      const relieving = item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '';
-      sections.push(`
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:16px;">
-          <p style="font-size:13px;margin:0;flex:1;color:#334155;">${fmt(companyName)}</p>
-          <p style="font-size:12px;margin:0;color:#64748b;white-space:nowrap;">${fmt(joining)} ${relieving ? '| ' + fmt(relieving) : ''}</p>
-        </div>
-      `);
-    });
-    sections.push('<div style="height:12px;"></div>');
-  }
-
-  // EDUCATION (degree + university / stream + endYear)
-  const degrees = Array.isArray(d.degree) ? d.degree : d.degree ? [d.degree] : [];
-  const universities = Array.isArray(d.university) ? d.university : d.university ? [d.university] : [];
-  const educationList = d.educationList ?? [];
-  const hasEduList = Array.isArray(educationList) && educationList.length > 0;
-  if (degrees.length > 0 || hasEduList) {
-    sections.push(sectionTitle('EDUCATION'));
-    if (hasEduList) {
-      educationList.forEach((edu: any) => {
-        const deg = edu.employeeDegree ?? edu.degree ?? '';
-        const stream = edu.employeeStream ?? edu.stream ?? '';
-        const endYear = edu.endYear ?? edu.year ?? '';
-        sections.push(`
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:16px;">
-            <p style="margin:0;font-size:13px;color:#334155;">${fmt(deg)}</p>
-            <p style="margin:0;font-size:12px;color:#64748b;white-space:nowrap;">${[stream, endYear].filter(Boolean).join(' | ')}</p>
-          </div>
-        `);
-      });
-    } else {
-      degrees.forEach((deg: any, i: number) => {
-        sections.push(`
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:16px;">
-            <p style="margin:0;font-size:13px;color:#334155;">${fmt(deg)}</p>
-            <p style="margin:0;font-size:12px;color:#64748b;">${fmt(universities[i]) || 'N/A'}</p>
-          </div>
-        `);
-      });
-    }
-    sections.push('<div style="height:12px;"></div>');
-  }
-
-  // PERSONAL DETAILS
-  sections.push(sectionTitle('PERSONAL DETAILS'));
-  sections.push(detailRow('Date of Birth', fmt(dob)));
-  sections.push(detailRow('Marital Status', convertMarital(marital)));
-  sections.push(detailRow('Sex', convertGender(gender)));
-  sections.push(detailRow('Nationality', d.nationality ?? 'Indian'));
-  sections.push(detailRow('Hobbies', fmt(hobbies)));
-  sections.push('<div style="height:18px;"></div>');
-
-  // DECLARATION (match PDF: paragraph then Date / Place on one line)
-  sections.push(sectionTitle('DECLARATION'));
-  sections.push(`
-    <p style="margin:0;font-size:13px;line-height:1.6;color:#334155;">I solemnly declare that all the above information is correct to the best of my knowledge and belief.</p>
-    <div style="height:20px;"></div>
-    <p style="margin:0;font-size:13px;color:#334155;">Date ........... &nbsp; Place ...........</p>
-  `);
-
-  const bodyInner = sections.join('\n');
-  const fullHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>${name} - Curriculum Vitae</title>
-  <style>
-    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; max-width: 700px; margin: 0 auto; padding: 28px 32px; color: #334155; line-height: 1.5; background: #fff; }
-    p { margin: 6px 0; font-size: 13px; }
-  </style>
-</head>
-<body>
-  ${bodyInner}
-</body>
-</html>`;
-
-  const bodyContent = `<div style="font-family:'Segoe UI',system-ui,-apple-system,sans-serif;max-width:700px;margin:0;padding:28px 32px;color:#334155;line-height:1.5;background:#fff;box-sizing:border-box;box-shadow:0 1px 3px rgba(0,0,0,0.08);">${bodyInner}</div>`;
-  return { fullHtml, bodyContent };
+  return buildResumeHtmlShared(applicantToResumeData(d));
 }
 
 interface ApplicantDetailsDialogProps {

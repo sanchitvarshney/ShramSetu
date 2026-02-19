@@ -7,7 +7,9 @@ import { AppDispatch, RootState } from '@/store';
 import {
   fetchCountStatus,
   fetchWorkers,
+  fetchWorkerDetailsByKey,
   handleEmpStatus,
+  type WorkerDetailsApiResponse,
 } from '@/features/admin/adminPageSlice';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
@@ -19,6 +21,68 @@ import { SearchOutlined } from '@mui/icons-material';
 import { Download } from 'lucide-react';
 
 const { RangePicker } = DatePicker;
+
+const baseUrl = import.meta.env.VITE_REACT_APP_API_BASE_URL ?? '';
+
+
+function normalizeWorkerDetailsFromApi(api: WorkerDetailsApiResponse | { data?: WorkerDetailsApiResponse }): any {
+  const raw = (api as any).data && typeof (api as any).data === 'object' ? (api as any).data : api;
+  const basic = raw.basicDetails ?? {};
+  const personal = raw.personalDetails ?? {};
+  const photoRaw = basic.empPhoto ?? (raw as any).empPhoto;
+  const empPhoto = (() => {
+    if (Array.isArray(photoRaw) && photoRaw.length > 0) {
+      const url = photoRaw[0];
+      return typeof url === 'string' ? url : undefined;
+    }
+    if (typeof photoRaw === 'string' && photoRaw.trim()) {
+      const path = photoRaw.trim();
+      return path.startsWith('http') ? path : `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+    }
+    return undefined;
+  })();
+  const empCode = basic.empCode ?? '';
+  const employment = raw.employeementDetails;
+  const companyInfo = Array.isArray(employment)
+    ? employment
+    : employment && typeof employment === 'object' && !Array.isArray(employment)
+      ? Object.values(employment)
+      : [];
+  return {
+    employeeID: empCode,
+    empId: empCode,
+    empCode,
+    empFirstName: basic.firstName ?? '',
+    empMiddleName: basic.middleName ?? '',
+    empLastName: basic.lastName ?? '',
+    empEmail: basic.empEmail ?? '',
+    empMobile: basic.empPhone ?? '',
+    adhaar: basic.adhaar ?? '',
+    designation : basic.designationName ?? '',
+    department : basic.departmentName ?? '',
+    empPhoto,
+    empDOB: personal.dob ?? '',
+    empGender: personal.gender ?? '',
+    empMaritalStatus: personal.empMaritalStatus ?? '',
+    empHobbies: personal.empHobbies ?? '',
+    present_houseNo: personal.present_houseNo ?? '',
+    present_colony: personal.present_colony ?? '',
+    present_city: personal.present_city ?? '',
+    present_state: personal.present_state ?? '',
+    present_district: personal.present_district ?? '',
+    present_country: personal.present_country ?? '',
+    present_pincode: personal.present_pincode ?? '',
+    perma_houseNo: personal.perma_houseNo ?? '',
+    perma_colony: personal.perma_colony ?? '',
+    perma_city: personal.perma_city ?? '',
+    perma_state: personal.perma_state ?? '',
+    perma_district: personal.perma_district ?? '',
+    perma_country: personal.perma_country ?? '',
+    perma_pincode: personal.perma_pincode ?? '',
+    educationList: raw.educationDetails ?? [],
+    companyInfo,
+  };
+}
 
 
 
@@ -47,9 +111,36 @@ const ListWorker: React.FC = () => {
   );
 
   const [selectedEmpId, setSelectedEmpId] = useState<any | null>(null);
+  const [workerDetails, setWorkerDetails] = useState<any | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   const [status, setStatus] = useState('PEN'); // Default status
   const [startDateRange, setStartDate] = useState<string>('');
   const [endDateRange, setEndDate] = useState<string>('');
+
+  const detailsKey = selectedEmpId
+    ? (selectedEmpId.employeeID ?? selectedEmpId.empId ?? selectedEmpId.empCode ?? selectedEmpId)
+    : null;
+
+  useEffect(() => {
+    if (!detailsKey || typeof detailsKey !== 'string') {
+      setWorkerDetails(null);
+      return;
+    }
+    setWorkerDetails(null);
+    setDetailsLoading(true);
+    dispatch(fetchWorkerDetailsByKey(detailsKey))
+      .unwrap()
+      .then((data:any) => {
+        setWorkerDetails(normalizeWorkerDetailsFromApi(data));
+      })
+      .catch(() => {
+        setWorkerDetails(null);
+      })
+      .finally(() => {
+        setDetailsLoading(false);
+      });
+  }, [detailsKey, dispatch]);
+
   const handleDateRangeUpdate = (dates: any) => {
     if (dates && dates.length === 2) {
       const [startDate, endDate] = dates;
@@ -223,12 +314,22 @@ const ListWorker: React.FC = () => {
         {selectedEmpId && (
           <WorkerDetails
             showEdit
-            worker={selectedEmpId}
-            toggleDetails={toggleShowDetails}
+            worker={workerDetails}
             open={Boolean(selectedEmpId)}
-            onOpenChange={(open) =>
-              setSelectedEmpId(open ? selectedEmpId : null)
-            }
+            onOpenChange={(open) => {
+              if (!open) {
+                setSelectedEmpId(null);
+                setWorkerDetails(null);
+              }
+            }}
+            onWorkerUpdated={() => {
+              if (detailsKey) {
+                dispatch(fetchWorkerDetailsByKey(detailsKey))
+                  .unwrap()
+                  .then((data:any) => setWorkerDetails(normalizeWorkerDetailsFromApi(data)));
+              }
+            }}
+            detailsLoading={detailsLoading}
             handleStatus={handleStatus}
           />
         )}

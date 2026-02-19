@@ -15,7 +15,6 @@ import {
 import { Popover } from '@/components/ui/popover';
 import {
   updateEmployeeDetails,
-  updateEmployeeDetailsWithPhoto,
   fetchDepartments,
   fetchDesignations,
   Department,
@@ -231,7 +230,7 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
     setSaving(true);
     try {
       const payload = buildUpdatePayload();
-      if (empPhotoFile) {
+     
         const formData = new FormData();
         Object.entries(payload).forEach(([key, value]) => {
           if (value !== null && value !== undefined) {
@@ -242,11 +241,10 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
             }
           }
         });
-        formData.append('image', empPhotoFile);
-        await dispatch(updateEmployeeDetailsWithPhoto(formData)).unwrap();
-      } else {
+        // formData.append('image', empPhotoFile);
+    
         await dispatch(updateEmployeeDetails(payload)).unwrap();
-      }
+    
       onOpenChange(false);
       onSuccess?.();
       onCloseDetails?.();
