@@ -1199,7 +1199,7 @@ const EmployementDetails = ({ details }: any) => {
     return yearsDifference.toFixed(1);
   };
 
-  const list = details?.companyInfo ?? [];
+  const list = details?.employeementDetails ?? [];
   const hasList = Array.isArray(list) && list.length > 0;
   return (
     <Card className="shadow-sm border-slate-200/80">
@@ -1224,25 +1224,25 @@ const EmployementDetails = ({ details }: any) => {
                 <SingleDetail label="Company" value={emp?.companyName} />
                 <SingleDetail label="Industry" value={emp?.industry} />
                 <DetailRow>
-                  <SingleDetail label="Joined on" value={emp?.joiningDate} />
+                  <SingleDetail label="Joined on" value={emp?.empJoiningDate} />
                   <SingleDetail
                     label="Releived on"
-                    value={emp?.relievingDate ?? '--'}
+                    value={emp?.empRelievingDate ?? '--'}
                   />
                 </DetailRow>
                 <DetailRow>
                   <SingleDetail
                     label="Role"
                     value={
-                      typeof emp.role === 'object' ? emp?.role?.text : '--'
+                       emp?.empDesignation ?? '--'
                     }
                   />
                   {emp?.joiningDate && emp?.relievingDate && (
                     <SingleDetail
                       label="Experience"
                       value={`${calculateExperience(
-                        emp.joiningDate,
-                        emp.relievingDate,
+                        emp.empJoiningDate,
+                        emp.empRelievingDate,
                       )} years`}
                     />
                   )}
