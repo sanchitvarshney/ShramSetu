@@ -28,3 +28,32 @@ export function capitalizeName(value: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 }
+
+
+export const calculateExperience = (
+  joiningDate?: string,
+  relievingDate?: string
+) => {
+  if (!joiningDate) return '0.0';
+
+  const [startYear, startMonth] = joiningDate.split('-').map(Number);
+  const startDate = new Date(startYear, startMonth - 1);
+
+  let endDate: Date;
+
+  if (!relievingDate || relievingDate === 'Present') {
+    endDate = new Date(); // currently working
+  } else {
+    const [endYear, endMonth] = relievingDate.split('-').map(Number);
+    endDate = new Date(endYear, endMonth - 1);
+  }
+
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    return '0.0';
+  }
+
+  const diffTime = endDate.getTime() - startDate.getTime();
+  const years = diffTime / (1000 * 60 * 60 * 24 * 365.25);
+
+  return years.toFixed(1);
+};
