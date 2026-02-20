@@ -15,8 +15,8 @@ import {
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { SelectOptionType } from '@/types/general';
-import { cn } from '@/lib/utils';
-import { differenceInDays, parse, format } from 'date-fns';
+import { calculateExperience, cn } from '@/lib/utils';
+import {  format } from 'date-fns';
 import dayjs from 'dayjs';
 import { DatePicker, DatePickerProps } from 'antd';
 import { getLoggedInUserType } from '@/lib/routeAccess';
@@ -138,12 +138,12 @@ function workerToResumeData(w: any): ResumeData {
         industry: item.industry ?? '',
       }))
     : [];
-  const educationList = w?.educationList ?? [];
+  const educationList = w?.educationList ?? w?.educationDetails ?? [];
   const education = Array.isArray(educationList)
     ? educationList.map((edu: any) => ({
         degree: edu.employeeDegree ?? edu.degree ?? '',
         stream: edu.employeeStream ?? edu.stream ?? '',
-        university: edu.university ?? edu.institution ?? edu.school ?? '',
+        university: edu.employeeUniversity ?? edu.university ?? edu.institution ?? edu.school ?? '',
         endYear: edu.endYear ?? edu.year ?? '',
       }))
     : [];
@@ -313,6 +313,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
                   />
                 </div>
                 {worker && <EmployementDetails details={worker} />}
+                {worker && <EducationDetailsFlat details={worker} />}
               </div>
             </div>
           ) : null}
@@ -1190,16 +1191,7 @@ const PermanentAddressFlat = ({
 };
 
 const EmployementDetails = ({ details }: any) => {
-  const calculateExperience = (joiningDate: string, relievingDate: string) => {
-    const format = 'dd-MM-yyyy';
-    const startDate = parse(joiningDate, format, new Date());
-    const endDate = parse(relievingDate, format, new Date());
-    const daysDifference = differenceInDays(endDate, startDate);
-    const yearsDifference = daysDifference / 365.25;
-    return yearsDifference.toFixed(1);
-  };
-
-  const list = details?.employeementDetails ?? [];
+  const list = details?.companyInfo ?? [];
   const hasList = Array.isArray(list) && list.length > 0;
   return (
     <Card className="shadow-sm border-slate-200/80">
@@ -1207,9 +1199,7 @@ const EmployementDetails = ({ details }: any) => {
         <CardTitle className="text-base font-semibold text-slate-800">
           Employments
         </CardTitle>
-        <span className="text-sm text-slate-500">
-          {hasList ? `${list.length} found` : 'No employment details'}
-        </span>
+  
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-3">
@@ -1233,19 +1223,67 @@ const EmployementDetails = ({ details }: any) => {
                 <DetailRow>
                   <SingleDetail
                     label="Role"
-                    value={
-                       emp?.empDesignation ?? '--'
-                    }
+                    value={emp?.empDesignation ?? '--'}
                   />
-                  {emp?.joiningDate && emp?.relievingDate && (
+                  {emp?.empJoiningDate && emp?.empRelievingDate && (
                     <SingleDetail
                       label="Experience"
                       value={`${calculateExperience(
-                        emp.empJoiningDate,
-                        emp.empRelievingDate,
+                        emp?.empJoiningDate,
+                        emp?.empRelievingDate,
                       )} years`}
                     />
                   )}
+                </DetailRow>
+              </div>
+            ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const EducationDetailsFlat = ({ details }: { details: any }) => {
+  const list = details?.educationList ?? details?.educationDetails ?? [];
+  const hasList = Array.isArray(list) && list.length > 0;
+  return (
+    <Card className="shadow-sm border-slate-200/80">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-base font-semibold text-slate-800">
+          Education
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="flex flex-col gap-3">
+          {hasList &&
+            list.map((edu: any, i: number) => (
+              <div
+                key={edu?.educationID ?? i}
+                className={cn(
+                  'px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50',
+                )}
+              >
+                <DetailRow>
+                  <SingleDetail
+                    label="Degree"
+                    value={edu?.employeeDegree ?? edu?.degree ?? '--'}
+                  />
+                  <SingleDetail
+                    label="Stream"
+                    value={edu?.employeeStream ?? edu?.stream ?? '--'}
+                  />
+                </DetailRow>
+                <SingleDetail
+                  label="School / University"
+                  value={edu?.employeeUniversity ?? edu?.university ?? edu?.institution ?? edu?.school ?? '--'}
+                />
+                <DetailRow>
+                  <SingleDetail label="Board / Type" value={edu?.educationType ?? '--'} />
+                  <SingleDetail label="Percentage" value={edu?.percentage ?? '--'} />
+                </DetailRow>
+                <DetailRow>
+                  <SingleDetail label="Start Year" value={edu?.startYear ?? '--'} />
+                  <SingleDetail label="End Year" value={edu?.endYear ?? '--'} />
                 </DetailRow>
               </div>
             ))}
