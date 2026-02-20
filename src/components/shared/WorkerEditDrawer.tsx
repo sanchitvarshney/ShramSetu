@@ -83,6 +83,8 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
   const [empDOBDate, setEmpDOBDate] = useState<Date | null>(null);
   const [empPhotoFile, setEmpPhotoFile] = useState<File | null>(null);
   const [empPhotoUrl, setEmpPhotoUrl] = useState<string | null>(null);
+  /** Photo URL that came from API when drawer opened - used in payload when user does not change photo */
+  const [initialPhotoUrl, setInitialPhotoUrl] = useState<string | null>(null);
 
   const [empFirstName, setEmpFirstName] = useState('');
   const [empMiddleName, setEmpMiddleName] = useState('');
@@ -124,6 +126,13 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
+    const existingPhoto =
+      Array.isArray(worker?.empPhoto) && worker.empPhoto.length > 0
+        ? worker.empPhoto[0]
+        : worker?.empPhoto;
+    setInitialPhotoUrl(
+      typeof existingPhoto === 'string' && existingPhoto ? existingPhoto : null,
+    );
     setEmpFirstName(worker?.empFirstName ?? '');
     setEmpMiddleName(worker?.empMiddleName ?? '');
     setEmpLastName(worker?.empLastName ?? '');
@@ -225,26 +234,72 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
     uan: '',
   });
 
+  const urlToBlobViaCanvas = (url: string): Promise<Blob | null> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(null);
+            return;
+          }
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob((blob) => resolve(blob), 'image/png');
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+
+  const getCurrentPhotoForPayload = async (): Promise<File | Blob | null> => {
+    if (empPhotoFile) return empPhotoFile;
+    const urlToUse = initialPhotoUrl;
+    if (!urlToUse) return null;
+    try {
+      const res = await fetch(urlToUse, { mode: 'cors' });
+      if (!res.ok) throw new Error('Fetch not ok');
+      return await res.blob();
+    } catch {
+      const blob = await urlToBlobViaCanvas(urlToUse);
+      return blob;
+    }
+  };
+
   const handleSubmit = async () => {
     if (!employeeId) return;
     setSaving(true);
     try {
       const payload = buildUpdatePayload();
-     
-        const formData = new FormData();
-        Object.entries(payload).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            if (typeof value === 'object' && !(value instanceof File)) {
-              formData.append(key, JSON.stringify(value));
-            } else {
-              formData.append(key, String(value));
-            }
+      const formData = new FormData();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          if (typeof value === 'object' && !(value instanceof File)) {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, String(value));
           }
-        });
-        // formData.append('image', empPhotoFile);
-    
-        await dispatch(updateEmployeeDetails(payload)).unwrap();
-    
+        }
+      });
+      const currentPhoto = await getCurrentPhotoForPayload();
+      if (currentPhoto) {
+        const file =
+          currentPhoto instanceof File
+            ? currentPhoto
+            : new File([currentPhoto], 'photo.png', {
+                type: (currentPhoto as Blob).type || 'image/png',
+              });
+        formData.append('image', file);
+      } else if (initialPhotoUrl) {
+        formData.append('existingPhotoUrl', initialPhotoUrl);
+      }
+      await dispatch(updateEmployeeDetails(formData)).unwrap();
       onOpenChange(false);
       onSuccess?.();
       onCloseDetails?.();

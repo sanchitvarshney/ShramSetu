@@ -286,8 +286,9 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
           </SheetHeader>
 
           {detailsLoading ? (
-            <div className="flex-1 flex items-center justify-center px-6 py-12">
-              <p className="text-slate-500">Loading details...</p>
+            <div className="flex-1 flex items-center justify-center flex-col px-6 py-12">
+              <div className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full" />
+              <p className="text-slate-500">Please wait...</p>
             </div>
           ) : worker ? (
             <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-slate-50/40">
