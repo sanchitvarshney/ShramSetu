@@ -22,7 +22,7 @@ import {
 } from '@/features/admin/adminPageSlice';
 import { inputStyle } from '@/style/CustomStyles';
 import { capitalizeName } from '@/lib/utils';
-import { isValidAadhaar } from '@/lib/validations';
+import { isValidAadhaar, isValidPan } from '@/lib/validations';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { DatePicker, DatePickerProps } from 'antd';
@@ -76,9 +76,8 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
   onCloseDetails,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { department: departmentList, designation: designationList } = useSelector(
-    (state: RootState) => state.adminPage,
-  );
+  const { department: departmentList, designation: designationList } =
+    useSelector((state: RootState) => state.adminPage);
   const [saving, setSaving] = useState(false);
   const [empDOBDate, setEmpDOBDate] = useState<Date | null>(null);
   const [empPhotoFile, setEmpPhotoFile] = useState<File | null>(null);
@@ -143,16 +142,25 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
     setEmpMaritalStatus(worker?.empMaritalStatus ?? '');
     setEmpHobbies(worker?.empHobbies ?? '');
     setAdhaar((worker?.adhaar ?? '').replace(/\s/g, ''));
-    setEmpPanNo(worker?.empPanNo ?? '');
+    setEmpPanNo(
+      (worker?.empPanNo ?? worker?.panNo ?? '').toString().trim().toUpperCase(),
+    );
     setEmpBloodGroup(worker?.empBloodGroup ?? '');
     const deptVal =
       departmentList?.find(
-        (d: Department) => d.value === worker?.empDepartment || d.text === worker?.empDepartment,
-      )?.value ?? worker?.empDepartment ?? '';
+        (d: Department) =>
+          d.value === worker?.empDepartment || d.text === worker?.empDepartment,
+      )?.value ??
+      worker?.empDepartment ??
+      '';
     const desgVal =
       designationList?.find(
-        (d: Designation) => d.value === worker?.empDesignation || d.text === worker?.empDesignation,
-      )?.value ?? worker?.empDesignation ?? '';
+        (d: Designation) =>
+          d.value === worker?.empDesignation ||
+          d.text === worker?.empDesignation,
+      )?.value ??
+      worker?.empDesignation ??
+      '';
     setEmpDepartment(deptVal);
     setEmpDesignation(desgVal);
     setPresent_houseNo(worker?.present_houseNo ?? '');
@@ -203,7 +211,7 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
     gender: empGender?.trim() || '',
     maritalStatus: empMaritalStatus?.trim() || '',
     hobbies: empHobbies?.trim() || '',
-    panNo: empPanNo?.trim() || '',
+    panNo: empPanNo?.trim().toUpperCase() || '',
     bloodGroup: empBloodGroup?.trim() || '',
     department: empDepartment?.trim() || '',
     designation: empDesignation?.trim() || '',
@@ -274,6 +282,10 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
 
   const handleSubmit = async () => {
     if (!employeeId) return;
+    const panTrimmed = empPanNo?.trim() ?? '';
+    if (panTrimmed.length > 0 && !isValidPan(panTrimmed)) {
+      return; // validation message already shown under the field
+    }
     setSaving(true);
     try {
       const payload = buildUpdatePayload();
@@ -380,7 +392,9 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                     <Input
                       className={inputStyle}
                       value={empFirstName}
-                      onChange={(e) => setEmpFirstName(capitalizeName(e.target.value))}
+                      onChange={(e) =>
+                        setEmpFirstName(capitalizeName(e.target.value))
+                      }
                     />
                     <Label className="floating-label gap-[10px]">
                       <span className="flex items-center gap-[10px]">
@@ -393,7 +407,9 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                     <Input
                       className={inputStyle}
                       value={empMiddleName}
-                      onChange={(e) => setEmpMiddleName(capitalizeName(e.target.value))}
+                      onChange={(e) =>
+                        setEmpMiddleName(capitalizeName(e.target.value))
+                      }
                     />
                     <Label className="floating-label gap-[10px]">
                       <span className="flex items-center gap-[10px]">
@@ -406,7 +422,9 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                     <Input
                       className={inputStyle}
                       value={empLastName}
-                      onChange={(e) => setEmpLastName(capitalizeName(e.target.value))}
+                      onChange={(e) =>
+                        setEmpLastName(capitalizeName(e.target.value))
+                      }
                     />
                     <Label className="floating-label gap-[10px]">
                       <span className="flex items-center gap-[10px]">
@@ -423,7 +441,9 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                       </span>
                     </Label>
                     <Select value={empGender} onValueChange={setEmpGender}>
-                      <SelectTrigger className={`${inputStyle} input2 focus:ring-0`}>
+                      <SelectTrigger
+                        className={`${inputStyle} input2 focus:ring-0`}
+                      >
                         <SelectValue placeholder="--" />
                       </SelectTrigger>
                       <SelectContent>
@@ -455,7 +475,9 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                       maxLength={15}
                       className={inputStyle}
                       value={empMobile}
-                      onChange={(e) => setEmpMobile(e.target.value.replace(/\D/g, ''))}
+                      onChange={(e) =>
+                        setEmpMobile(e.target.value.replace(/\D/g, ''))
+                      }
                     />
                     <Label className="floating-label gap-[10px]">
                       <span className="flex items-center gap-[10px]">
@@ -502,13 +524,57 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                     {adhaar.length > 0 && (
                       <p
                         className={`text-xs mt-0.5 ${
-                          isValidAadhaar(adhaar) ? 'text-green-600' : 'text-red-600'
+                          isValidAadhaar(adhaar)
+                            ? 'text-green-600'
+                            : 'text-red-600'
                         }`}
                       >
-                        {isValidAadhaar(adhaar) ? 'Aadhaar valid' : 'Aadhaar not valid'}
+                        {isValidAadhaar(adhaar)
+                          ? 'Aadhaar valid'
+                          : 'Aadhaar not valid'}
                       </p>
                     )}
                   </div>
+
+                  <div className="space-y-0.5">
+                    <div
+                      className={`floating-label-group${empPanNo.trim() ? ' has-value' : ''}`}
+                    >
+                      <Input
+                        type="text"
+                        maxLength={10}
+                        className={inputStyle}
+                        value={empPanNo}
+                      onChange={(e) => {
+                        const v = e.target.value
+                          .replace(/[^A-Za-z0-9]/g, '')
+                          .toUpperCase();
+                        if (v.length <= 10) setEmpPanNo(v);
+                      }}
+                      placeholder="e.g. ABCDE1234F"
+                    />
+                      <Label className="floating-label gap-[10px]">
+                        <span className="flex items-center gap-[10px]">
+                             <PiCreditCard className="h-[18px] w-[18px]" />
+                        PAN No.
+                        </span>
+                      </Label>
+                    </div>
+                   {empPanNo.length > 0 && (
+                      <p
+                        className={`text-xs mt-0.5 ${
+                          isValidPan(empPanNo)
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                        }`}
+                      >
+                        {isValidPan(empPanNo)
+                          ? 'PAN valid (5 letters + 4 digits + 1 letter)'
+                          : 'PAN not valid — use format: ABCDE1234F'}
+                      </p>
+                    )}
+                  </div>
+            
                   <div>
                     <Label className="floating-label gap-[10px]">
                       <span className="flex items-center gap-[10px]">
@@ -516,8 +582,13 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                         Department
                       </span>
                     </Label>
-                    <Select value={empDepartment} onValueChange={setEmpDepartment}>
-                      <SelectTrigger className={`${inputStyle} input2 focus:ring-0`}>
+                    <Select
+                      value={empDepartment}
+                      onValueChange={setEmpDepartment}
+                    >
+                      <SelectTrigger
+                        className={`${inputStyle} input2 focus:ring-0`}
+                      >
                         <SelectValue placeholder="--" />
                       </SelectTrigger>
                       <SelectContent>
@@ -536,8 +607,13 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                         Designation
                       </span>
                     </Label>
-                    <Select value={empDesignation} onValueChange={setEmpDesignation}>
-                      <SelectTrigger className={`${inputStyle} input2 focus:ring-0`}>
+                    <Select
+                      value={empDesignation}
+                      onValueChange={setEmpDesignation}
+                    >
+                      <SelectTrigger
+                        className={`${inputStyle} input2 focus:ring-0`}
+                      >
                         <SelectValue placeholder="--" />
                       </SelectTrigger>
                       <SelectContent>

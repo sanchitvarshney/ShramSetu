@@ -32,7 +32,7 @@ import {
 import { AppDispatch, RootState } from '@/store';
 import { inputStyle } from '@/style/CustomStyles';
 import { capitalizeName } from '@/lib/utils';
-import { isValidAadhaar } from '@/lib/validations';
+import { isValidAadhaar, isValidPan } from '@/lib/validations';
 import { AiOutlineUser } from 'react-icons/ai';
 import { BsTelephone } from 'react-icons/bs';
 import { CiMail } from 'react-icons/ci';
@@ -152,7 +152,7 @@ function workerToResumeData(w: any): ResumeData {
   const gender = w?.empGender ?? '';
   const nationality = w?.nationality ?? 'Indian';
   const aadhaar = fmt(w?.adhaar ?? w?.aadhaarNo);
-  const pan = fmt(w?.empPanNo ?? w?.panNo);
+  const pan = fmt(w?.empPanNo);
   const bloodGroup = fmt(w?.empBloodGroup ?? w?.bloodGroup);
   const hobbies = fmt(w?.empHobbies ?? '');
   const personalRows: { label: string; value: string }[] = [];
@@ -276,7 +276,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
-          className="flex flex-col h-full w-full max-w-4xl sm:min-w-[600px] p-0 gap-0 overflow-hidden"
+          className="flex flex-col h-full w-full max-w-4xl sm:min-w-[1000px] p-0 gap-0 overflow-hidden"
           onInteractOutside={(e: any) => e.preventDefault()}
         >
           <SheetHeader className="flex-shrink-0 flex flex-row items-center justify-between px-6 py-4 border-b bg-slate-50/80">
@@ -426,7 +426,7 @@ const BasicDetailsFlat = ({
       setEmpMaritalStatus(details?.empMaritalStatus ?? '');
       setEmpHobbies(details?.empHobbies ?? '');
       setAdhaar((details?.adhaar ?? '').replace(/\s/g, ''));
-      setEmpPanNo(details?.empPanNo ?? '');
+      setEmpPanNo((details?.empPanNo ?? '').toString().trim().toUpperCase());
       setEmpBloodGroup(details?.empBloodGroup ?? '');
       const deptVal =
         departmentList?.find(
@@ -483,7 +483,7 @@ const BasicDetailsFlat = ({
     formData.append('gender', empGender);
     formData.append('maritalStatus', empMaritalStatus);
     formData.append('hobbies', empHobbies);
-    formData.append('panNo', empPanNo);
+    formData.append('panNo', empPanNo?.trim().toUpperCase() ?? '');
     formData.append('bloodGroup', empBloodGroup);
     const aadhaarDigits = adhaar.replace(/\s/g, '');
     if (aadhaarDigits) formData.append('aadhaar', aadhaarDigits);
@@ -497,6 +497,8 @@ const BasicDetailsFlat = ({
 
   const handleUpdateBasic = async () => {
     if (!employeeId) return;
+    const panTrimmed = empPanNo?.trim() ?? '';
+    if (panTrimmed.length > 0 && !isValidPan(panTrimmed)) return;
     setSaving(true);
     try {
       const payload = buildUpdatePayload();
@@ -701,6 +703,40 @@ const BasicDetailsFlat = ({
                   </p>
                 )}
               </div>
+              <div className="space-y-0.5">
+                <div
+                  className={`floating-label-group${empPanNo.trim() ? ' has-value' : ''}`}
+                >
+                  <Input
+                    type="text"
+                    maxLength={10}
+                    className={inputStyle}
+                    value={empPanNo}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                      if (v.length <= 10) setEmpPanNo(v);
+                    }}
+                    placeholder="e.g. ABCDE1234F"
+                  />
+                  <Label className="floating-label">
+                    <span className="flex items-center gap-1">
+                      <PiCreditCard className="h-4 w-4" /> PAN No.
+                    </span>
+                  </Label>
+                </div>
+                {empPanNo.length > 0 && (
+                  <p
+                    className={cn(
+                      'text-xs mt-0.5',
+                      isValidPan(empPanNo) ? 'text-green-600' : 'text-red-600',
+                    )}
+                  >
+                    {isValidPan(empPanNo)
+                      ? 'PAN valid'
+                      : 'Invalid — use 5 letters + 4 digits + 1 letter'}
+                  </p>
+                )}
+              </div>
               <div>
                 <Label className="floating-label">Department</Label>
                 <Select value={empDepartment} onValueChange={setEmpDepartment}>
@@ -821,7 +857,7 @@ const BasicDetailsFlat = ({
             value={
               details?.empPanNo
                 ? String(details.empPanNo).toUpperCase()
-                : details?.empPanNo
+                : undefined
             }
           />
         </DetailRow>

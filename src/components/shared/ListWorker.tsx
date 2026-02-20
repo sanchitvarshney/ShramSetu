@@ -65,6 +65,7 @@ function normalizeWorkerDetailsFromApi(api: WorkerDetailsApiResponse | { data?: 
     empGender: personal.gender ?? '',
     empMaritalStatus: personal.empMaritalStatus ?? '',
     empHobbies: personal.empHobbies ?? '',
+    empPanNo: basic.panNo ?? basic.empPanNo ?? personal.panNo ?? personal.empPanNo ?? '',
     present_houseNo: personal.present_houseNo ?? '',
     present_colony: personal.present_colony ?? '',
     present_city: personal.present_city ?? '',

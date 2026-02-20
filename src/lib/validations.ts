@@ -40,6 +40,18 @@ const optionalGstSchema = z
   .refine((v) => v == null || v === '' || /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z0-9][A-Z0-9][A-Z0-9]$/i.test(String(v).trim()), 'Invalid GST format');
 
 /**
+ * Validates Indian PAN (Permanent Account Number).
+ * Format: 5 letters + 4 digits + 1 letter (e.g. ABCDE1234F).
+ * Returns true for empty string (optional field) or when format is valid.
+ */
+export function isValidPan(pan: string | undefined | null): boolean {
+  if (pan == null) return true;
+  const trimmed = pan.trim().toUpperCase().replace(/\s/g, '');
+  if (trimmed === '') return true;
+  return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(trimmed);
+}
+
+/**
  * Validates Aadhaar number: exactly 12 digits, only digits, and not the disallowed test number.
  * Use everywhere Aadhaar is accepted or validated.
  */
