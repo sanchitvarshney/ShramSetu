@@ -458,6 +458,113 @@ export const updateEmployeeDetails = createAsyncThunk<
   },
 );
 
+/** Update worker profile image only - separate API from field update */
+export const updateWorkerProfile = createAsyncThunk<
+  UpdateEmployeeResponse,
+  { empId: string; image: File },
+  { rejectValue: string }
+>(
+  'adminPage/updateWorkerProfile',
+  async ({ empId, image }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('empId', empId);
+      formData.append('image', image);
+      const response = await orshAxios.put('/worker/profile-update', formData);
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message ?? 'Profile photo updated',
+        });
+      }
+      return response.data?.add ?? response.data;
+    } catch {
+      return rejectWithValue('Failed to update profile photo');
+    }
+  },
+);
+
+/** Update only current (present) address - different API flow */
+export const updateEmployeeCurrentAddress = createAsyncThunk<
+  UpdateEmployeeResponse,
+  {
+    empId: string;
+    houseNoPresent: string;
+    colonyPresent: string;
+    cityPresent: string;
+    statePresent: string;
+    countryPresent: string;
+    pinCodePresent: string;
+  },
+  { rejectValue: string }
+>(
+  'adminPage/updateEmployeeCurrentAddress',
+  async (payload, { rejectWithValue }) => {
+    const type = 'current';
+    try {
+      const response = await orshAxios.put(`worker/update/address?type=${type}`, payload);
+      if (!response.data?.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message ?? 'Current address updated',
+        });
+      }
+      return response.data?.add ?? response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to update current address');
+    }
+  },
+);
+
+/** Update only permanent address - different API flow */
+export const updateEmployeePermanentAddress = createAsyncThunk<
+  UpdateEmployeeResponse,
+  {
+    empId: string;
+    houseNoPermanent: string;
+    colonyPermanent: string;
+    cityPermanent: string;
+    statePermanent: string;
+    countryPermanent: string;
+    pinCodePermanent: string;
+  },
+  { rejectValue: string }
+>(
+  'adminPage/updateEmployeePermanentAddress',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.put('/worker/update/address?type=permanent', payload);
+      if (!response.data?.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message ?? 'Permanent address updated',
+        });
+      }
+      return response.data?.add ?? response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to update permanent address');
+    }
+  },
+);
+
 export const companyUpdate = createAsyncThunk<
   UpdateEmployeeResponse,
   any,

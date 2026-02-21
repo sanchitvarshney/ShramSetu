@@ -28,6 +28,7 @@ import { AppDispatch } from '@/store';
 import { useToast } from '@/components/ui/use-toast';
 import { CircularProgress } from '@mui/material';
 import { validateForm, loginSchema } from '@/lib/validations';
+import { CLIENT_FIRST_PATH } from '@/config/appRoutes';
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -56,7 +57,12 @@ const Login: React.FC = () => {
           'loggedInUser',
           JSON.stringify(response?.payload?.data),
         );
-        navigate('/');
+        const userTypeFromServer = response?.payload?.data?.type;
+        if (userTypeFromServer === 'admin') {
+          navigate('/');
+        } else {
+          navigate(CLIENT_FIRST_PATH);
+        }
         toast({ title: 'Success!!', description: response.payload.message });
       }
     });

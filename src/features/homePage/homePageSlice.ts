@@ -49,6 +49,20 @@ export interface AdvancedFilterPayload {
   limit: number;
 }
 
+export interface AnalyticsMonthlyItem {
+  month: string;
+  totalApplications: number;
+}
+
+export interface AnalyticsData {
+  totalApplications: number;
+  applicationsLastMonth: number;
+  applicationsLastWeek: number;
+  totalCompanies: number;
+  totalWorkers: number;
+  monthlyApplications: AnalyticsMonthlyItem[];
+}
+
 interface HomePageState {
   companies: Company[] | null;
   searchCompanies: SearchCompany[] | null;
@@ -63,6 +77,8 @@ interface HomePageState {
   notifications: Notification[] | null;
   loading: boolean;
   locationData: any[];
+  analytics: AnalyticsData | null;
+  analyticsLoading: boolean;
 }
 
 const initialState: HomePageState = {
@@ -79,7 +95,21 @@ const initialState: HomePageState = {
   notifications: null,
   loading: false,
   locationData: [],
+  analytics: null,
+  analyticsLoading: false,
 };
+
+export const fetchAnalytics = createAsyncThunk<AnalyticsData, void>(
+  'homePage/fetchAnalytics',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<AnalyticsData>('/dashboard/getAnalytics');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch analytics');
+    }
+  },
+);
 
 export const presentState = createAsyncThunk<CompanyResponse, void>(
   'fetch/empPresentState',
@@ -201,8 +231,9 @@ export const advancedFilter = createAsyncThunk(
   async (companyData: AdvancedFilterPayload, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post(
-        '/job/advance-search',
+        `/worker/searchallemployee`,
         companyData,
+        
       );
       if (!response.data.success) {
         toast({
@@ -378,6 +409,16 @@ const homePageSlice = createSlice({
       .addCase(getLocations.rejected, (state, action) => {
         
         state.error = action.payload as string;
+      })
+      .addCase(fetchAnalytics.pending, (state) => {
+        state.analyticsLoading = true;
+      })
+      .addCase(fetchAnalytics.fulfilled, (state, action) => {
+        state.analytics = action.payload;
+        state.analyticsLoading = false;
+      })
+      .addCase(fetchAnalytics.rejected, (state) => {
+        state.analyticsLoading = false;
       });
   },
 });

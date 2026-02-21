@@ -107,6 +107,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
               </SidebarHeader>
               <aside className="flex-col mt-[20px] rounded-lg">
                 <nav className="grid grid-cols-3 gap-[10px] p-[10px]">
+                     {getLoggedInUserType() === 'admin' && (
                   <NavLink
                     to="/"
                     className={NavlinkStyle}
@@ -115,6 +116,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <Home className="w-5 h-5" />
                     Dashboard
                   </NavLink>
+                )}
                   {getLoggedInUserType() === 'admin' && (
                     <NavLink
                       to="/company/list"
