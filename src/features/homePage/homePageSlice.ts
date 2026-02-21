@@ -228,7 +228,7 @@ export const fetchTopSearchCompanies = createAsyncThunk<SearchCompany[]>(
 
 export const advancedFilter = createAsyncThunk(
   'adminPage/advancedFilter',
-  async (companyData: AdvancedFilterPayload, { rejectWithValue }) => {
+  async (companyData: any, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post(
         `/worker/searchallemployee`,

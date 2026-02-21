@@ -97,6 +97,14 @@ export const getJobApplicationsColumnDefs = (
     flex: 1,
     minWidth: 180,
   },
+   {
+    headerName: 'Branch',
+    field: 'branchName',
+    sortable: true,
+    filter: true,
+    flex: 1,
+    minWidth: 180,
+  },
   {
     headerName: 'Current Salary',
     field: 'minSalary',

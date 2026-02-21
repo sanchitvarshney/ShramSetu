@@ -24,7 +24,8 @@
   }
 
   input:focus ~ .floating-label,
-  input:not(:focus):valid ~ .floating-label {
+  input:not(:focus):valid ~ .floating-label,
+  &.has-value .floating-label {
     top: -15px;
     bottom: 0px;
     left: 0px;
@@ -35,7 +36,8 @@
 
   .input:focus ~ .floating-label,
   .input:not(:focus):valid ~ .floating-label,
-  .sinput2 ~ .floating-label {
+  .sinput2 ~ .floating-label,
+  &.has-value .floating-label {
     top: -15px;
     bottom: 0px;
     left: 0px;

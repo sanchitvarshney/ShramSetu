@@ -154,6 +154,54 @@ interface WorkersInfoResponse {
   data: [];
 }
 
+/** Response shape from GET /worker/details/:key */
+export interface WorkerDetailsApiResponse {
+  personalDetails?: {
+    perma_pincode?: string;
+    perma_state?: string;
+    perma_city?: string;
+    perma_district?: string;
+    perma_houseNo?: string;
+    perma_colony?: string;
+    perma_country?: string;
+    present_pincode?: string;
+    present_state?: string;
+    present_district?: string;
+    present_city?: string;
+    present_houseNo?: string;
+    present_colony?: string;
+    present_country?: string;
+    dob?: string;
+    empHobbies?: string;
+    empMaritalStatus?: string;
+    gender?: string;
+  };
+  employeementDetails?: Record<string, unknown> | unknown[];
+  basicDetails?: {
+    empCode?: string;
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
+    empEmail?: string;
+    empPhone?: string;
+    adhaar?: string;
+    /** Photo URL or array of URLs (e.g. S3 signed URL) */
+    empPhoto?: string | string[];
+  };
+  educationDetails?: Array<{
+    empCode?: string;
+    employeeDegree?: string;
+    employeeStream?: string;
+    employeeUniversity?: string;
+    startYear?: string;
+    endYear?: string;
+    percentage?: string;
+    educationType?: string;
+    educationCertificate?: string;
+    educationID?: string;
+  }>;
+}
+
 interface BranchDetail {
   branchID: string;
   branchName: string;
@@ -223,6 +271,7 @@ interface AdminPageState {
   addDesignationLoading: boolean;
   isaddbranch: boolean;
   isbranchUpdate: boolean;
+  loadingworkerlist: boolean
 }
 
 const initialState: AdminPageState = {
@@ -255,6 +304,7 @@ const initialState: AdminPageState = {
   addDesignationLoading: false,
   isaddbranch: false,
   isbranchUpdate: false,
+  loadingworkerlist: false
 };
 
 
@@ -820,6 +870,37 @@ export const fetchWorkerDetails = createAsyncThunk<WorkersInfoResponse, string>(
   },
 );
 
+/** Fetch full worker details by key (empCode / employeeID) - GET /worker/details/:key */
+export const fetchWorkerDetailsByKey = createAsyncThunk<
+  WorkerDetailsApiResponse,
+  string,
+  { rejectValue: string }
+>(
+  'adminPage/fetchWorkerDetailsByKey',
+  async (key, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<{ success?: boolean; message?: string } & WorkerDetailsApiResponse>(
+        `/worker/details/${encodeURIComponent(key)}`,
+      );
+      if (response.data?.success === false) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: (response.data as any).message ?? 'Failed to load worker details',
+        });
+      }
+      return response.data as WorkerDetailsApiResponse;
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load worker details',
+      });
+      return rejectWithValue('Failed to fetch worker details');
+    }
+  },
+);
+
 export const fetchSubIndustry = createAsyncThunk<SubIndustryResponse, string>(
   'adminPage/fetchSubIndustry',
   async (id, { rejectWithValue }) => {
@@ -1173,16 +1254,16 @@ const adminPageSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(fetchWorkers.pending, (state) => {
-        state.loading = true;
+        state.loadingworkerlist = true;
         state.error = null;
       })
       .addCase(fetchWorkers.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingworkerlist = false;
         state.error = null;
         state.workers = action.payload.data;
       })
       .addCase(fetchWorkers.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingworkerlist = false;
         state.error = action.payload as string;
       })
       .addCase(fetchCountStatus.pending, (state) => {

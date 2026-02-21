@@ -1,9 +1,19 @@
-import React from 'react';
-// import { useDispatch } from 'react-redux';
-// import { AppDispatch } from '@/store';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Edit, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-// import IconButton from '@/components/ui/IconButton';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { SelectOptionType } from '@/types/general';
 import { calculateExperience, cn } from '@/lib/utils';
 import dayjs from 'dayjs';
@@ -34,6 +44,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  buildResumeHtml,
+  buildAddressLines,
+  cleanAddrPart,
+  fmt,
+  convertMarital,
+  convertGender,
+  type ResumeData,
+} from '@/lib/resumeHtml';
 
 interface WorkerDetailsProps {
   worker: any;
@@ -43,123 +62,274 @@ interface WorkerDetailsProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   handleStatus?: (status: 'APR' | 'REJ') => void;
+  onWorkerUpdated?: () => void;
+  /** When true, show loading state inside the sheet (e.g. while fetching GET /worker/details/:key) */
+  detailsLoading?: boolean;
 }
 
-const isFlatEmployee = (data: any): boolean =>
-  data != null && typeof data === 'object' && ('empFirstName' in data || 'firstName' in data) && !('basicInfo' in data);
+const getEmployeeId = (worker: any): string | undefined =>
+  worker == null
+    ? undefined
+    : typeof worker === 'string'
+      ? worker
+      : (worker?.employeeID ?? worker?.empId ?? worker?.empCode ?? worker?.uid);
 
-// const getEmployeeId = (worker: any): string | undefined =>
-//   typeof worker === 'string' ? worker : worker?.employeeID ?? worker?.empId;
+function workerToResumeData(w: any): ResumeData {
+  const name =
+    [w?.empFirstName, w?.empMiddleName, w?.empLastName]
+      .filter(Boolean)
+      .join(' ') || 'Worker';
+  const presentLines = buildAddressLines(
+    cleanAddrPart(w?.present_houseNo),
+    cleanAddrPart(w?.present_colony),
+    cleanAddrPart(w?.present_city),
+    cleanAddrPart(w?.present_state),
+    cleanAddrPart(w?.present_country),
+    cleanAddrPart(w?.present_pincode),
+  );
+  const permaLines = buildAddressLines(
+    cleanAddrPart(w?.perma_houseNo),
+    cleanAddrPart(w?.perma_colony),
+    cleanAddrPart(w?.perma_city),
+    cleanAddrPart(w?.perma_state),
+    cleanAddrPart(w?.perma_country),
+    cleanAddrPart(w?.perma_pincode),
+  );
+  const hasPresent = presentLines.length > 0;
+  const hasPerma = permaLines.length > 0;
+  const sameAddress =
+    hasPresent && hasPerma && presentLines.join(' ') === permaLines.join(' ');
+  const showPerma = hasPerma && !sameAddress;
+  let addressBlock = '';
+  if (hasPresent) {
+    addressBlock += presentLines
+      .map(
+        (l) =>
+          `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+      )
+      .join('');
+    if (showPerma) {
+      addressBlock += `<p style="font-size:10px;margin:4px 0 1px 0;color:#64748b;font-weight:600;">Permanent:</p>`;
+      addressBlock += permaLines
+        .map(
+          (l) =>
+            `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+        )
+        .join('');
+    }
+  } else if (hasPerma) {
+    addressBlock += permaLines
+      .map(
+        (l) =>
+          `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+      )
+      .join('');
+  }
+  const employmentList = w?.companyInfo ?? [];
+  const employment = Array.isArray(employmentList)
+    ? employmentList.map((item: any) => ({
+        companyName: item.companyName ?? item.company ?? '',
+        role:
+          typeof item.role === 'object' && item.role != null
+            ? (item.role.text ?? item.role.value ?? '')
+            : (item.role ?? item.empDesignation ?? ''),
+        joining: item.empJoiningDate ?? item.joiningDate ?? item.joining ?? '',
+        relieving:
+          item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '',
+        industry: item.industry ?? '',
+      }))
+    : [];
+  const educationList = w?.educationList ?? w?.educationDetails ?? [];
+  const education = Array.isArray(educationList)
+    ? educationList.map((edu: any) => ({
+        degree: edu.employeeDegree ?? edu.degree ?? '',
+        stream: edu.employeeStream ?? edu.stream ?? '',
+        university: edu.employeeUniversity ?? edu.university ?? edu.institution ?? edu.school ?? '',
+        endYear: edu.endYear ?? edu.year ?? '',
+      }))
+    : [];
+  const dob = w?.empDOB ?? '';
+  const marital = w?.empMaritalStatus ?? '';
+  const gender = w?.empGender ?? '';
+  const nationality = w?.nationality ?? 'Indian';
+  const aadhaar = fmt(w?.adhaar ?? w?.aadhaarNo);
+  const pan = fmt(w?.empPanNo);
+  const bloodGroup = fmt(w?.empBloodGroup ?? w?.bloodGroup);
+  const hobbies = fmt(w?.empHobbies ?? '');
+  const personalRows: { label: string; value: string }[] = [];
+  if (dob) personalRows.push({ label: 'Date of Birth', value: fmt(dob) });
+  if (marital)
+    personalRows.push({
+      label: 'Marital Status',
+      value: convertMarital(marital),
+    });
+  if (gender)
+    personalRows.push({ label: 'Gender', value: convertGender(gender) });
+  personalRows.push({ label: 'Nationality', value: nationality });
+  if (aadhaar) personalRows.push({ label: 'Aadhaar', value: aadhaar });
+  if (pan) personalRows.push({ label: 'PAN', value: pan });
+  if (bloodGroup)
+    personalRows.push({ label: 'Blood Group', value: bloodGroup });
+  if (hobbies) personalRows.push({ label: 'Hobbies', value: hobbies });
+  return {
+    name,
+    email: w?.empEmail ?? '',
+    mobile: w?.empMobile ?? '',
+    designation: w?.empDesignation ?? '',
+    department: w?.empDepartment ?? '',
+    addressBlock,
+    careerObjective: w?.careerObjective ?? '',
+    employment,
+    education,
+    personalRows,
+  };
+}
+
+function buildWorkerResumeHtml(w: any): {
+  bodyContent: string;
+  fullHtml: string;
+} {
+  return buildResumeHtml(workerToResumeData(w));
+}
 
 const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   worker,
-  // showEdit,
+  showEdit = true,
   open,
   onOpenChange,
+  onWorkerUpdated,
+  detailsLoading = false,
 }) => {
-  // const dispatch = useDispatch<AppDispatch>();
-  // const employeeId = getEmployeeId(worker);
-  const flat = isFlatEmployee(worker);
+  const employeeId = getEmployeeId(worker);
+  const isAdmin = getLoggedInUserType() === 'admin';
+  const canEdit = Boolean(showEdit && isAdmin && employeeId);
 
-  // const handleDownload = () => {
-  //   if (!employeeId) return;
-  //   dispatch(getCV(employeeId)).then((response: any) => {
-  //     if (response.payload?.success) {
-  //       window.open(response.payload.data, '_blank');
-  //     }
-  //   });
-  // };
+  const handleDownloadResume = useCallback(async () => {
+    if (!worker) return;
+    const baseName =
+      [worker?.empFirstName, worker?.empLastName].filter(Boolean).join('-') ||
+      'worker';
+    const safeName = baseName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const { bodyContent, fullHtml } = buildWorkerResumeHtml(worker);
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText =
+      'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;background:#fff;';
+    wrap.innerHTML = bodyContent;
+    document.body.appendChild(wrap);
+
+    const el = wrap.firstElementChild as HTMLElement;
+    if (!el) {
+      wrap.remove();
+      fallbackDownloadHtml(fullHtml, safeName);
+      return;
+    }
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+      wrap.remove();
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = -heightLeft;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Worker-Resume-${safeName}.pdf`);
+    } catch (err) {
+      wrap.remove();
+      console.error('PDF generation failed:', err);
+      fallbackDownloadHtml(fullHtml, safeName);
+    }
+  }, [worker]);
+
+  function fallbackDownloadHtml(html: string, baseName: string) {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Worker-Resume-${baseName}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        className="flex flex-col h-full w-full max-w-4xl sm:min-w-[560px] p-0 gap-0 overflow-hidden"
-        onInteractOutside={(e: any) => e.preventDefault()}
-      >
-        {/* Fixed header */}
-        <SheetHeader className="flex-shrink-0 flex flex-row items-center justify-between px-6 py-4 border-b bg-slate-50/80">
-          <SheetTitle className="text-lg font-semibold text-slate-800">
-            Worker Details
-          </SheetTitle>
-          {/* <div className="flex items-center gap-2">
-            {showEdit && employeeId && (
-              <Link target="_blank" to={`/employee-update/:${employeeId}`}>
-                <IconButton
-                  color="text-primary"
-                  tooltip="Update Worker"
-                  icon={<Edit size={18} className="mt-0.5 text-slate-600" />}
-                />
-              </Link>
-            )}
-            <Button
-              title="Download CV"
-              onClick={handleDownload}
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 text-slate-600 hover:text-slate-800"
-            >
-              <Download className="h-[18px] w-[18px]" />
-            </Button>
-          </div> */}
-        </SheetHeader>
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          className="flex flex-col h-full w-full max-w-4xl sm:min-w-[1000px] p-0 gap-0 overflow-hidden"
+          onInteractOutside={(e: any) => e.preventDefault()}
+        >
+          <SheetHeader className="flex-shrink-0 flex flex-row items-center justify-between px-6 py-4 border-b bg-slate-50/80">
+            <SheetTitle className="text-lg font-semibold text-slate-800">
+              Worker Details
+            </SheetTitle>
+          </SheetHeader>
 
-        {/* Scrollable middle */}
-        {worker ? (
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-slate-50/40">
-            <div className="space-y-5 pb-4">
-              {flat ? (
-                <>
-                  <BasicDetailsFlat details={worker} />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <CurrentAddressFlat details={worker} />
-                    <PermanentAddressFlat details={worker} />
-                  </div>
-                  <EmployementDetails details={{ companyInfo: worker.companyInfo ?? null }} />
-                  {worker.bankDetails && (
-                    <BankDetails details={worker.bankDetails} worker={worker} />
-                  )}
-                </>
-              ) : (
-                <>
-                  {worker.basicInfo && (
-                    <BasicDetails details={worker.basicInfo} empId={worker} />
-                  )}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {worker.basicInfo?.presentAddress && (
-                      <CurrentAddress details={worker.basicInfo.presentAddress} />
-                    )}
-                    {worker.basicInfo?.permanentAddress && (
-                      <PermanentAddress details={worker.basicInfo.permanentAddress} />
-                    )}
-                  </div>
-                  {worker.companyInfo && <EmployementDetails details={worker} />}
-                  {worker.bankDetails && (
-                    <BankDetails details={worker.bankDetails} worker={worker} />
-                  )}
-                </>
-              )}
+          {detailsLoading ? (
+            <div className="flex-1 flex items-center justify-center flex-col px-6 py-12">
+              <div className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full" />
+              <p className="text-slate-500">Please wait...</p>
             </div>
-          </div>
-        ) : null}
+          ) : worker ? (
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-slate-50/40">
+              <div className="space-y-5 pb-4">
+                <BasicDetailsFlat
+                  details={worker}
+                  employeeId={employeeId}
+                  canEdit={canEdit}
+                  onSuccess={onWorkerUpdated}
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+                  <CurrentAddressFlat
+                    details={worker}
+                    employeeId={employeeId}
+                    canEdit={canEdit}
+                    onSuccess={onWorkerUpdated}
+                  />
+                  <PermanentAddressFlat
+                    details={worker}
+                    employeeId={employeeId}
+                    canEdit={canEdit}
+                    onSuccess={onWorkerUpdated}
+                  />
+                </div>
+                {worker && <EmployementDetails details={worker} />}
+                {worker && <EducationDetailsFlat details={worker} />}
+              </div>
+            </div>
+          ) : null}
 
-        {/* Fixed bottom
-        <div className="flex-shrink-0 flex justify-end gap-3 px-6 py-4 border-t bg-white">
-          <Button
-            variant="outline"
-            className="rounded-full border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
-            onClick={() => handleStatus?.('REJ')}
-          >
-            <X className="h-4 w-4 mr-1.5" /> Reject
-          </Button>
-          <Button
-            className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white"
-            onClick={() => handleStatus?.('APR')}
-          >
-            <Check className="h-4 w-4 mr-1.5" /> Approve
-          </Button>
-        </div> */}
-      </SheetContent>
-    </Sheet>
+          {!detailsLoading && worker && (
+            <div className="flex-shrink-0 border-t border-slate-200/80 px-6 py-4 bg-white flex justify-end">
+              <Button onClick={handleDownloadResume} variant="default">
+                Download Resume
+              </Button>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+    </>
   );
 };
 export default WorkerDetails;
@@ -179,12 +349,16 @@ const SingleDetail = ({
     value == null || value === ''
       ? '--'
       : typeof value === 'object' && value && !Array.isArray(value)
-        ? (value as { text?: string })?.text ?? '--'
+        ? ((value as { text?: string })?.text ?? '--')
         : String(value);
   return (
     <div className="flex justify-between gap-4 py-1.5">
-      <span className="text-sm font-medium text-slate-500 shrink-0">{label}</span>
-      <span className="text-sm text-slate-800 text-right break-words">{display}</span>
+      <span className="text-sm font-medium text-slate-500 shrink-0">
+        {label}
+      </span>
+      <span className="text-sm text-slate-800 text-right break-words">
+        {display}
+      </span>
     </div>
   );
 };
@@ -645,55 +819,220 @@ const BasicDetailsFlat = ({
           <SingleDetail label="DOB" value={details?.empDOB} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Gender" value={details?.empGender === 'M' ? 'Male' : details?.empGender === 'F' ? 'Female' : details?.empGender} />
+          <SingleDetail
+            label="Gender"
+            value={
+              details?.empGender === 'M'
+                ? 'Male'
+                : details?.empGender === 'F'
+                  ? 'Female'
+                  : details?.empGender
+            }
+          />
           <SingleDetail label="Phone" value={details?.empMobile} />
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Email" value={details?.empEmail} />
-          <SingleDetail label="Marital Status" value={details?.MaritalStatus === 'M' ? 'Married' : details?.MaritalStatus === 'UM' ? 'Unmarried' : details?.MaritalStatus} />
+          <SingleDetail
+            label="Marital Status"
+            value={
+              details?.empMaritalStatus === 'M'
+                ? 'Married'
+                : details?.empMaritalStatus === 'U' ||
+                    details?.empMaritalStatus === 'Um'
+                  ? 'Unmarried'
+                  : details?.empMaritalStatus
+            }
+          />
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Hobbies" value={details?.empHobbies} />
-          <SingleDetail label="Inserted At" value={details?.empInsertedAt} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Aadhaar Number" value={details?.empAadhaarNo} />
+          <SingleDetail label="Aadhaar Number" value={details?.adhaar} />
           <SingleDetail
             label="PAN Number"
             value={
               details?.empPanNo
                 ? String(details.empPanNo).toUpperCase()
-                : details?.empPanNo
+                : undefined
             }
           />
         </DetailRow>
         <DetailRow>
           <SingleDetail label="Blood Group" value={details?.empBloodGroup} />
-          <SingleDetail label="Department" value={details?.empDepartment} />
+          <SingleDetail label="Department" value={details?.department} />
         </DetailRow>
         <DetailRow>
-          <SingleDetail label="Designation" value={details?.empDesignation} />
+          <SingleDetail label="Designation" value={details?.designation} />
         </DetailRow>
       </CardContent>
     </Card>
   );
 };
 
-const CurrentAddressFlat = ({ details }: { details: any }) => {
-  const hasAny =
-    details?.present_houseNo ||
-    details?.present_colony ||
-    details?.present_city ||
-    details?.present_state ||
-    details?.present_country ||
-    details?.present_pincode;
-  if (!hasAny) return null;
+const CurrentAddressFlat = ({
+  details,
+  employeeId,
+  canEdit,
+  onSuccess,
+}: {
+  details: any;
+  employeeId: string | undefined;
+  canEdit: boolean;
+  onSuccess?: () => void;
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [houseNo, setHouseNo] = useState('');
+  const [colony, setColony] = useState('');
+  const [city, setCity] = useState('');
+  const [stateVal, setStateVal] = useState('');
+  const [country, setCountry] = useState('');
+  const [pincode, setPincode] = useState('');
+
+  useEffect(() => {
+    if (details) {
+      setHouseNo(details?.present_houseNo ?? '');
+      setColony(details?.present_colony ?? '');
+      setCity(details?.present_city ?? '');
+      setStateVal(details?.present_state ?? '');
+      setCountry(details?.present_country ?? '');
+      setPincode(details?.present_pincode ?? '');
+    }
+  }, [details, isEditing]);
+
+  const handleUpdateCurrentAddress = async () => {
+    if (!employeeId) return;
+    setSaving(true);
+    try {
+      await dispatch(
+        updateEmployeeCurrentAddress({
+          empId: employeeId,
+          houseNoPresent: houseNo?.trim() || '',
+          colonyPresent: colony?.trim() || '',
+          cityPresent: city?.trim() || '',
+          statePresent: stateVal?.trim() || '',
+          countryPresent: country?.trim() || '',
+          pinCodePresent: pincode?.trim() || '',
+        }),
+      ).unwrap();
+      setIsEditing(false);
+      onSuccess?.();
+    } catch {
+      // toast in slice
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <Card className="shadow-sm border-slate-200/80">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base font-semibold text-slate-800">
+            Current Address
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+              disabled={saving}
+            >
+              <X className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="bg-teal-500 hover:bg-teal-600"
+              onClick={handleUpdateCurrentAddress}
+              disabled={saving}
+            >
+              {saving ? 'Updating...' : 'Update Current Address'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">House No. / Address</Label>
+            <Input
+              className={inputStyle}
+              value={houseNo}
+              onChange={(e) => setHouseNo(e.target.value)}
+              placeholder="House no"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Colony</Label>
+              <Input
+                className={inputStyle}
+                value={colony}
+                onChange={(e) => setColony(e.target.value)}
+                placeholder="Colony"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">City</Label>
+              <Input
+                className={inputStyle}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">State</Label>
+              <Input
+                className={inputStyle}
+                value={stateVal}
+                onChange={(e) => setStateVal(e.target.value)}
+                placeholder="State"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Country</Label>
+              <Input
+                className={inputStyle}
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Country"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Pin Code</Label>
+              <Input
+                className={inputStyle}
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                placeholder="Pincode"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-sm border-slate-200/80">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold text-slate-800">
           Current Address
         </CardTitle>
+        {canEdit && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="h-4 w-4 mr-1" /> Edit
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-0">
@@ -709,104 +1048,177 @@ const CurrentAddressFlat = ({ details }: { details: any }) => {
   );
 };
 
-const PermanentAddressFlat = ({ details }: { details: any }) => {
-  const hasAny =
-    details?.cityPermanent ||
-    details?.districtPermanent ||
-    (typeof details?.statePermanent === 'object' && details?.statePermanent?.text) ||
-    details?.countryPermanent;
-  if (!hasAny) return null;
+const PermanentAddressFlat = ({
+  details,
+  employeeId,
+  canEdit,
+  onSuccess,
+}: {
+  details: any;
+  employeeId: string | undefined;
+  canEdit: boolean;
+  onSuccess?: () => void;
+}) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [houseNo, setHouseNo] = useState('');
+  const [colony, setColony] = useState('');
+  const [city, setCity] = useState('');
+  const [stateVal, setStateVal] = useState('');
+  const [country, setCountry] = useState('');
+  const [pincode, setPincode] = useState('');
+
+  useEffect(() => {
+    if (details) {
+      setHouseNo(details?.perma_houseNo ?? '');
+      setColony(details?.perma_colony ?? '');
+      setCity(details?.perma_city ?? '');
+      setStateVal(details?.perma_state ?? '');
+      setCountry(details?.perma_country ?? '');
+      setPincode(details?.perma_pincode ?? '');
+    }
+  }, [details, isEditing]);
+
+  const handleUpdatePermanentAddress = async () => {
+    if (!employeeId) return;
+    setSaving(true);
+    try {
+      await dispatch(
+        updateEmployeePermanentAddress({
+          empId: employeeId,
+          houseNoPermanent: houseNo?.trim() || '',
+          colonyPermanent: colony?.trim() || '',
+          cityPermanent: city?.trim() || '',
+          statePermanent: stateVal?.trim() || '',
+          countryPermanent: country?.trim() || '',
+          pinCodePermanent: pincode?.trim() || '',
+        }),
+      ).unwrap();
+      setIsEditing(false);
+      onSuccess?.();
+    } catch {
+      // toast in slice
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <Card className="shadow-sm border-slate-200/80">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base font-semibold text-slate-800">
+            Permanent Address
+          </CardTitle>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(false)}
+              disabled={saving}
+            >
+              <X className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="bg-teal-500 hover:bg-teal-600"
+              onClick={handleUpdatePermanentAddress}
+              disabled={saving}
+            >
+              {saving ? 'Updating...' : 'Update Permanent Address'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">House No. / Address</Label>
+            <Input
+              className={inputStyle}
+              value={houseNo}
+              onChange={(e) => setHouseNo(e.target.value)}
+              placeholder="House no"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Colony</Label>
+              <Input
+                className={inputStyle}
+                value={colony}
+                onChange={(e) => setColony(e.target.value)}
+                placeholder="Colony"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">City</Label>
+              <Input
+                className={inputStyle}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">State</Label>
+              <Input
+                className={inputStyle}
+                value={stateVal}
+                onChange={(e) => setStateVal(e.target.value)}
+                placeholder="State"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Country</Label>
+              <Input
+                className={inputStyle}
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Country"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Pin Code</Label>
+              <Input
+                className={inputStyle}
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                placeholder="Pincode"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-sm border-slate-200/80">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold text-slate-800">
           Permanent Address
         </CardTitle>
+        {canEdit && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="h-4 w-4 mr-1" /> Edit
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-0">
-          <SingleDetail label="State" value={details?.statePermanent} />
-          <SingleDetail label="City" value={details?.cityPermanent} />
-          <SingleDetail label="District" value={details?.districtPermanent} />
-          <SingleDetail label="Country" value={details?.countryPermanent} />
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-const BasicDetails = ({ details, empId }: { details: any; empId: any }) => {
-  return (
-    <Card className="shadow-sm border-slate-200/80">
-      <CardHeader>
-        <CardTitle className="text-base font-semibold text-slate-800">
-          Basic Details
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0 space-y-1">
-        <DetailRow>
-          <SingleDetail label="First Name" value={details?.firstName} />
-          <SingleDetail label="Last Name" value={details?.lastName} />
-        </DetailRow>
-        <DetailRow>
-          <SingleDetail
-            label="Father's Name"
-            value={empId?.familyInfo?.fatherName}
-          />
-          <SingleDetail label="DOB" value={details?.dob} />
-        </DetailRow>
-        <DetailRow>
-          <SingleDetail
-            label="Gender"
-            value={typeof details?.gender === 'object' && details?.gender.text}
-          />
-          <SingleDetail label="Phone" value={details?.mobile} />
-        </DetailRow>
-        <DetailRow>
-          <SingleDetail label="Adhaar Number" value={details?.aadhaarNo} />
-          <SingleDetail label="E-mail" value={details?.email} />
-        </DetailRow>
-      </CardContent>
-    </Card>
-  );
-};
-
-const CurrentAddress = ({ details }: any) => {
-  return (
-    <Card className="shadow-sm border-slate-200/80">
-      <CardHeader>
-        <CardTitle className="text-base font-semibold text-slate-800">
-          Current Address
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex flex-col gap-0">
-          <SingleDetail label="House No." value={details?.houseNoPresent} />
-          <SingleDetail label="Area" value={details?.colonyPresent} />
-          <SingleDetail label="State" value={details?.statePresent} />
-          <SingleDetail label="City" value={details?.cityPresent} />
-          <SingleDetail label="District" value={details?.districtPresent} />
-          <SingleDetail label="Pin Code" value={details?.pincodePresent} />
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-const PermanentAddress = ({ details }: any) => {
-  return (
-    <Card className="shadow-sm border-slate-200/80">
-      <CardHeader>
-        <CardTitle className="text-base font-semibold text-slate-800">
-          Permanent Address
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex flex-col gap-0">
-          <SingleDetail label="House No." value={details?.houseNoPermanent} />
-          <SingleDetail label="Area" value={details?.colonyPermanent} />
-          <SingleDetail label="District" value={details?.districtPermanent} />
-          <SingleDetail label="City" value={details?.cityPermanent} />
-          <SingleDetail label="Pin Code" value={details?.pincodePermanent} />
+          <SingleDetail label="House No." value={details?.perma_houseNo} />
+          <SingleDetail label="Colony" value={details?.perma_colony} />
+          <SingleDetail label="City" value={details?.perma_city} />
+          <SingleDetail label="State" value={details?.perma_state} />
+          <SingleDetail label="Country" value={details?.perma_country} />
+          <SingleDetail label="Pin Code" value={details?.perma_pincode} />
         </div>
       </CardContent>
     </Card>
@@ -814,15 +1226,6 @@ const PermanentAddress = ({ details }: any) => {
 };
 
 const EmployementDetails = ({ details }: any) => {
-  const calculateExperience = (joiningDate: string, relievingDate: string) => {
-    const format = 'dd-MM-yyyy';
-    const startDate = parse(joiningDate, format, new Date());
-    const endDate = parse(relievingDate, format, new Date());
-    const daysDifference = differenceInDays(endDate, startDate);
-    const yearsDifference = daysDifference / 365.25;
-    return yearsDifference.toFixed(1);
-  };
-
   const list = details?.companyInfo ?? [];
   const hasList = Array.isArray(list) && list.length > 0;
   return (
@@ -831,61 +1234,94 @@ const EmployementDetails = ({ details }: any) => {
         <CardTitle className="text-base font-semibold text-slate-800">
           Employments
         </CardTitle>
-        <span className="text-sm text-slate-500">
-          {hasList ? `${list.length} found` : 'No employment details'}
-        </span>
+  
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-3">
-          {hasList && list.map((emp: any, i: number) => (
-            <div key={i} className={cn('px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50')}>
-              <SingleDetail label="Company" value={emp?.companyName} />
-              <SingleDetail label="Industry" value={emp?.industry} />
-              <DetailRow>
-                <SingleDetail label="Joined on" value={emp?.joiningDate} />
-                <SingleDetail
-                  label="Releived on"
-                  value={emp?.relievingDate ?? '--'}
-                />
-              </DetailRow>
-              <DetailRow>
-                <SingleDetail
-                  label="Role"
-                  value={typeof emp.role === 'object' ? emp?.role?.text : '--'}
-                />
-                {emp?.joiningDate && emp?.relievingDate && (
-                  <SingleDetail
-                    label="Experience"
-                    value={`${calculateExperience(
-                      emp.joiningDate,
-                      emp.relievingDate,
-                    )} years`}
-                  />
+          {hasList &&
+            list.map((emp: any, i: number) => (
+              <div
+                key={i}
+                className={cn(
+                  'px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50',
                 )}
-              </DetailRow>
-            </div>
-          ))}
+              >
+                <SingleDetail label="Company" value={emp?.companyName} />
+                <SingleDetail label="Industry" value={emp?.industry} />
+                <DetailRow>
+                  <SingleDetail label="Joined on" value={emp?.empJoiningDate} />
+                  <SingleDetail
+                    label="Releived on"
+                    value={emp?.empRelievingDate ?? '--'}
+                  />
+                </DetailRow>
+                <DetailRow>
+                  <SingleDetail
+                    label="Role"
+                    value={emp?.empDesignation ?? '--'}
+                  />
+                  {emp?.empJoiningDate && emp?.empRelievingDate && (
+                    <SingleDetail
+                      label="Experience"
+                      value={`${calculateExperience(
+                        emp?.empJoiningDate,
+                        emp?.empRelievingDate,
+                      )} years`}
+                    />
+                  )}
+                </DetailRow>
+              </div>
+            ))}
         </div>
       </CardContent>
     </Card>
   );
 };
 
-const BankDetails = ({ details, worker }: { details: any; worker?: any }) => {
+const EducationDetailsFlat = ({ details }: { details: any }) => {
+  const list = details?.educationList ?? details?.educationDetails ?? [];
+  const hasList = Array.isArray(list) && list.length > 0;
   return (
     <Card className="shadow-sm border-slate-200/80">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold text-slate-800">
-          Bank details
+          Education
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex flex-col gap-0">
-          <SingleDetail label="Bank Name" value={details?.bankName} />
-          <SingleDetail label="Account Number" value={details?.accountNo} />
-          <SingleDetail label="IFSC Code" value={details?.ifsCode} />
-          <SingleDetail label="ESI" value={worker?.basicInfo?.esi ?? details?.esi} />
-          <SingleDetail label="UAN" value={worker?.basicInfo?.uan ?? details?.uan} />
+        <div className="flex flex-col gap-3">
+          {hasList &&
+            list.map((edu: any, i: number) => (
+              <div
+                key={edu?.educationID ?? i}
+                className={cn(
+                  'px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50',
+                )}
+              >
+                <DetailRow>
+                  <SingleDetail
+                    label="Degree"
+                    value={edu?.employeeDegree ?? edu?.degree ?? '--'}
+                  />
+                  <SingleDetail
+                    label="Stream"
+                    value={edu?.employeeStream ?? edu?.stream ?? '--'}
+                  />
+                </DetailRow>
+                <SingleDetail
+                  label="School / University"
+                  value={edu?.employeeUniversity ?? edu?.university ?? edu?.institution ?? edu?.school ?? '--'}
+                />
+                <DetailRow>
+                  <SingleDetail label="Board / Type" value={edu?.educationType ?? '--'} />
+                  <SingleDetail label="Percentage" value={edu?.percentage ?? '--'} />
+                </DetailRow>
+                <DetailRow>
+                  <SingleDetail label="Start Year" value={edu?.startYear ?? '--'} />
+                  <SingleDetail label="End Year" value={edu?.endYear ?? '--'} />
+                </DetailRow>
+              </div>
+            ))}
         </div>
       </CardContent>
     </Card>

@@ -19,13 +19,13 @@ const Protected: React.FC<ProtectedProps> = ({
   const authStatus = !!token;
   const navigate = useNavigate();
   const location = useLocation();
-  const state = useSelector((state: RootState) => state);
+  const authToken = useSelector((state: RootState) => state.auth?.token);
 
   useEffect(() => {
-    if (state.auth?.token) {
-      setToken({ token: state.auth.token });
+    if (authToken) {
+      setToken({ token: authToken });
     }
-  }, [state.auth?.token, setToken]);
+  }, [authToken, setToken]);
 
   useEffect(() => {
     if (authentication && !authStatus) {

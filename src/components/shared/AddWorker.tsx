@@ -26,6 +26,7 @@ import { IoIosLock } from 'react-icons/io';
 import { LiaClipboardListSolid } from 'react-icons/lia';
 import { PiCreditCard } from 'react-icons/pi';
 import { format } from 'date-fns';
+import { capitalizeName } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
 import { Popover } from '@/components/ui/popover';
 import { useDispatch, useSelector } from 'react-redux';
@@ -195,7 +196,12 @@ const AddWorker = () => {
                   className="hidden"
                 />
                 <button className="bg-teal-500 text-white rounded-md px-4 py-2 mt-2 hover:bg-teal-600 transition">
-                  Upload Photo
+                  <label
+                      htmlFor="profile-upload"
+                      className="cursor-pointer text-white text-lg font-bold"
+                    >
+                      <span>Upload Image</span>
+                    </label>
                 </button>
               </div>
             
@@ -205,7 +211,7 @@ const AddWorker = () => {
                   required
                   className={inputStyle}
                   value={empFirstName}
-                  onChange={(e) => setEmpFirstName(e.target.value)}
+                  onChange={(e) => setEmpFirstName(capitalizeName(e.target.value))}
                 />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
@@ -219,7 +225,7 @@ const AddWorker = () => {
                   required
                   className={inputStyle}
                   value={empMiddleName}
-                  onChange={(e) => setEmpMiddleName(e.target.value)}
+                  onChange={(e) => setEmpMiddleName(capitalizeName(e.target.value))}
                 />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">
@@ -233,7 +239,7 @@ const AddWorker = () => {
                   required
                   className={inputStyle}
                   value={empLastName}
-                  onChange={(e) => setEmpLastName(e.target.value)}
+                  onChange={(e) => setEmpLastName(capitalizeName(e.target.value))}
                 />
                 <Label className="floating-label  gap-[10px]">
                   <span className="flex items-center gap-[10px]">

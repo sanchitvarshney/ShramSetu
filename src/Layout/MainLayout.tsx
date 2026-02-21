@@ -236,7 +236,6 @@ const MainLayout: React.FC<Props> = ({ children }) => {
           <header className="z-30 flex justify-between bg-[#fff] min-h-[50px] w-full pr-[20px]">
             <div className="flex">
               <img src="/navcurve.jpg" alt="" className="h-[50px]" />
-              <img src="/subtext.svg" alt="Brand logo" className="w-[200px]" />
             </div>
             <div className="flex items-center gap-[20px]">
               <div>

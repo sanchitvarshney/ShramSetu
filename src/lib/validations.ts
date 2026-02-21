@@ -40,6 +40,18 @@ const optionalGstSchema = z
   .refine((v) => v == null || v === '' || /^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z0-9][A-Z0-9][A-Z0-9]$/i.test(String(v).trim()), 'Invalid GST format');
 
 /**
+ * Validates Indian PAN (Permanent Account Number).
+ * Format: 5 letters + 4 digits + 1 letter (e.g. ABCDE1234F).
+ * Returns true for empty string (optional field) or when format is valid.
+ */
+export function isValidPan(pan: string | undefined | null): boolean {
+  if (pan == null) return true;
+  const trimmed = pan.trim().toUpperCase().replace(/\s/g, '');
+  if (trimmed === '') return true;
+  return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(trimmed);
+}
+
+/**
  * Validates Aadhaar number: exactly 12 digits, only digits, and not the disallowed test number.
  * Use everywhere Aadhaar is accepted or validated.
  */
@@ -207,7 +219,7 @@ export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 export const jobFormSchema = z
   .object({
     company: z.string().min(1, 'Company is required'),
-    branch: z.string().optional(),
+    branch: z.string().min(1, 'Branch is required'),
     jobType: z.string().min(1, 'Job type is required'),
     jobTitle: z.string().min(1, 'Job title is required').max(200, 'Job title is too long'),
     department: z.string().min(1, 'Department is required'),
