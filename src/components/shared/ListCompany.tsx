@@ -16,7 +16,7 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
   const { companies, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
-  const type = getLoggedInUserType() ?? 'admin';
+  
 
 
   const defaultColDef = useMemo(
@@ -24,13 +24,13 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
       filter: 'agTextColumnFilter',
       floatingFilter: true,
     }),
-    [],
+    [], 
   );
 
   useEffect(() => {
-    console.log("type", type)
+    const type =   getLoggedInUserType() ?? 'admin';
     dispatch(searchCompanies(type));
-  }, [dispatch, type]);
+  }, []);
 
   const actionCellRenderer = (params: any) => {
     const companyId = params.data?.companyID;
