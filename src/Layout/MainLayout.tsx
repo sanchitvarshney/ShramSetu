@@ -11,9 +11,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { NavLink, useNavigate } from 'react-router-dom';
-import React, {  useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomTooltip from '@/components/reusable/CustomTooltip';
 import {
   Select,
@@ -34,8 +34,8 @@ import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { NavlinkStyle } from '@/style/CustomStyles';
 import NotificationSheet from '@/components/shared/NotificationSheet';
 import { logout } from '@/features/auth/authSlice';
-import { useDispatch, useSelector,  } from 'react-redux';
-import { AppDispatch, RootState,  } from '@/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/store';
 import { IoBriefcaseOutline, IoSettingsOutline } from 'react-icons/io5';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
@@ -68,8 +68,6 @@ const MainLayout: React.FC<Props> = ({ children }) => {
 
   useEffect(() => {
     if (companies?.length > 0) {
-      
-
       const defaultCompany = companies[0]?.companyID;
       setSelectedCompany(defaultCompany);
     }
@@ -108,16 +106,16 @@ const MainLayout: React.FC<Props> = ({ children }) => {
               </SidebarHeader>
               <aside className="flex-col mt-[20px] rounded-lg">
                 <nav className="grid grid-cols-3 gap-[10px] p-[10px]">
-                     {getLoggedInUserType() === 'admin' && (
-                  <NavLink
-                    to="/"
-                    className={NavlinkStyle}
-                    onClick={() => setOpen(false)}
-                  >
-                    <Home className="w-5 h-5" />
-                    Dashboard
-                  </NavLink>
-                )}
+                  {getLoggedInUserType() === 'admin' && (
+                    <NavLink
+                      to="/"
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <Home className="w-5 h-5" />
+                      Dashboard
+                    </NavLink>
+                  )}
                   {/* {getLoggedInUserType() === 'admin' && (
                     <NavLink
                       to="/company/list"
@@ -128,7 +126,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                       Admin
                     </NavLink>
                   )} */}
-                    {getLoggedInUserType() === 'admin' && (
+                  {getLoggedInUserType() === 'admin' && (
                     <NavLink
                       to="/company/list"
                       className={NavlinkStyle}
@@ -138,26 +136,26 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                       Company
                     </NavLink>
                   )}
-                   
-                    <NavLink
-                      to="/workers/list"
-                      className={NavlinkStyle}
-                      onClick={() => setOpen(false)}
-                    >
-                      <GrUserWorker className="w-6 h-6" />
-                      Worker
-                    </NavLink>
-                 
+
+                  <NavLink
+                    to="/workers/list"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <GrUserWorker className="w-6 h-6" />
+                    Worker
+                  </NavLink>
+
                   {getLoggedInUserType() === 'admin' && (
                     <NavLink
-                      to={"/department/list"}
+                      to={'/department/list'}
                       className={NavlinkStyle}
                       onClick={() => setOpen(false)}
                     >
                       <TbLayoutGridFilled className="w-6 h-6" />
                       Master
                     </NavLink>
-                   )}
+                  )}
                   <NavLink
                     to="/job/job-create"
                     className={NavlinkStyle}
@@ -166,16 +164,16 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <IoBriefcaseOutline className="w-6 h-6" />
                     Job
                   </NavLink>
-                 
-                    <NavLink
-                      to="/company/list"
-                      className={NavlinkStyle}
-                      onClick={() => setOpen(false)}
-                    >
-                      <IoSettingsOutline className="w-6 h-6" />
-                      Setting
-                    </NavLink>
-                     <NavLink
+
+                  <NavLink
+                    to="/company/list"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <IoSettingsOutline className="w-6 h-6" />
+                    Setting
+                  </NavLink>
+                  <NavLink
                     to="/invitation/mail"
                     className={NavlinkStyle}
                     onClick={() => setOpen(false)}
@@ -183,7 +181,6 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <Mail className="w-5 h-5" />
                     Invitation
                   </NavLink>
-                 
                 </nav>
               </aside>
               <SidebarFooter className="absolute bottom-[20px] left-[20px] right-[20px] bg-white/20 rounded-lg p-[10px]">
@@ -192,17 +189,13 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <div className="flex items-center justify-between w-full cursor-pointer">
                       <div className="flex items-center gap-[5px]">
                         <Avatar>
-                          <AvatarImage
-                           src="https://github.com/shadcn.png" 
-                        
-                           />
-                         
+                          <AvatarImage src="https://github.com/shadcn.png" />
                         </Avatar>
                         <Separator orientation="vertical" className="" />
                         <div className="flex flex-col font-[500] gap-0 text-white">
                           {data?.firstName} {data?.lastName}
                           <span className="text-[13px] font-[400]">
-                           {data?.type === 'admin' ? 'Admin' : 'Client'}
+                            {data?.email ?? ''}
                           </span>
                         </div>
                       </div>
@@ -248,7 +241,6 @@ const MainLayout: React.FC<Props> = ({ children }) => {
           <div className="bg-[#04b0a8] w-[300px] h-[50px] flex justify-end">
             <img
               src="/lightlogov2.svg"
-              
               alt="Brand logo"
               className="w-[170px]"
             />
@@ -285,10 +277,10 @@ const MainLayout: React.FC<Props> = ({ children }) => {
 
               <CustomTooltip message="Notification" side="bottom">
                 <div
-                  className="relative flex items-center justify-center bg-indigo-50 cursor-pointer notification max-w-max p-[5px] rounded-md"
+                  className="relative flex items-center justify-center bg-white cursor-pointer notification max-w-max p-[5px] rounded-md"
                   onClick={() => setNotification(true)}
                 >
-                  <BellRing className="h-[25px] w-[25px] text-slate-600" />
+                  <BellRing className="h-[20px] w-[20px] text-slate-600" />
                   {/* <Badge className="bg-teal-600 hover:bg-teal-600 h-[15px] w-[15px] rounded-full p-0 flex justify-center items-center absolute top-[-1px] right-[2px]">
                     0
                   </Badge> */}
@@ -298,32 +290,36 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="relative flex items-center justify-center rounded-full cursor-pointer outline-none ring-offset-2 ring-offset-white focus:ring-2 focus:ring-slate-400"
+                    className="relative  min-w-[100px] h-[40px] p-2 bg-white   flex items-center border-[#ccc]   rounded-full cursor-pointer outline-none ring-offset-2 ring-offset-white  border-2 "
                     aria-label="User menu"
                   >
-                    <Avatar className="h-9 w-9 rounded-full border-2 border-slate-200">
-                      <AvatarImage src={(data as any)?.profileImage ?? (data as any)?.imageUrl} alt="" />
-                      <AvatarFallback className="rounded-full bg-indigo-100 text-slate-600 text-sm font-medium">
-                        {data?.firstName?.[0] ?? data?.lastName?.[0] ?? '?'}
-                      </AvatarFallback>
+                    <Avatar className=" w-[20px] h-[20px]">
+                      <AvatarImage src={'/profile.png'} alt="" />
                     </Avatar>
+                 <div className="flex flex-col items-center justify-center ml-2 w-full">
+  <span className="text-[12px] font-bold text-[#000]">
+    {data?.firstName?.toUpperCase() ?? ''}
+  </span>
+  <p className="text-[10px] font-[600] text-[#000]">
+    {data?.type === 'admin' ? 'Admin' : 'Client'}
+  </p>
+</div>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">
-                        {data?.firstName ?? ''} {data?.lastName ?? ''}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{data?.email}</p>
-                    </div>
-                  </DropdownMenuLabel>
+                 
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                  <DropdownMenuItem
+                    onClick={() => navigate('/profile')}
+                    className="cursor-pointer"
+                  >
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsDialogOpen(true)} className="cursor-pointer text-red-600 focus:text-red-600">
+                  <DropdownMenuItem
+                    onClick={() => setIsDialogOpen(true)}
+                    className="cursor-pointer text-red-600 focus:text-red-600"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                   </DropdownMenuItem>
@@ -332,29 +328,25 @@ const MainLayout: React.FC<Props> = ({ children }) => {
             </div>
           </header>
         </div>
-       {
-        !open  && (
-           <div
-          className="sidebar z-[20] fixed h-[100vh] bg-white w-[20px] left-0 top-0 bottom-0 flex justify-center items-center shadow shadow-neutral-300 cursor-pointer "
-          onClick={() => setOpen(true)}
-        >
-          <CustomTooltip message="Menubar" side="right">
-            <Button
-              onClick={() => setOpen(true)}
-              className="p-0 min-h-[50px] min-w-[50px] rounded-full bg-[#04b0a8] text-white shadow shadow-neutral-300 hover:bg-ehite flex justify-end"
-            >
-              <FaChevronRight className="mr-[5px] " />
-            </Button>
-          </CustomTooltip>
-        </div>
-        )
-       }
+        {!open && (
+          <div
+            className="sidebar z-[20] fixed h-[100vh] bg-white w-[20px] left-0 top-0 bottom-0 flex justify-center items-center shadow shadow-neutral-300 cursor-pointer "
+            onClick={() => setOpen(true)}
+          >
+            <CustomTooltip message="Menubar" side="right">
+              <Button
+                onClick={() => setOpen(true)}
+                className="p-0 min-h-[50px] min-w-[50px] rounded-full bg-[#04b0a8] text-white shadow shadow-neutral-300 hover:bg-ehite flex justify-end"
+              >
+                <FaChevronRight className="mr-[5px] " />
+              </Button>
+            </CustomTooltip>
+          </div>
+        )}
 
         <div className="flex flex-col flex-1 min-h-0 max-w-[calc(100vw-20px)] ml-[20px] overflow-hidden">
           <main className="flex flex-col flex-1 min-h-0 gap-4 sm:py-0 md:gap-8 bg-white mt-[75px] overflow-hidden">
-            <div className="flex-1 min-h-0 flex flex-col">
-              {children}
-            </div>
+            <div className="flex-1 min-h-0 flex flex-col">{children}</div>
           </main>
         </div>
       </div>
