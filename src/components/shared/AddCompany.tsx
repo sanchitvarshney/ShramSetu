@@ -31,6 +31,7 @@ import { FaRegCheckCircle } from 'react-icons/fa';
 import { toast } from '@/components/ui/use-toast';
 import { CircularProgress } from '@mui/material';
 import { validateForm, addCompanySchema } from '@/lib/validations';
+import { capitalizeName } from '@/lib/utils';
 
 const AddCompany: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -133,7 +134,7 @@ const AddCompany: React.FC = () => {
               label="Enter Company Name"
               required
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => setInput(capitalizeName(e.target.value))}
             />
 
             <div className="mt-[20px]">

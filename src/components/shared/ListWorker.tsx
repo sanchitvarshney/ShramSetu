@@ -279,7 +279,7 @@ const ListWorker: React.FC = () => {
           </Button>
     
              <Button
-          className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px]"
+            className="shadow bg-teal-500 hover:bg-teal-600 shadow-slate-500 w-[120px] gap-2 h-8"
           onClick={() => navigate('/employee-list')}
         >
        <FilterListAltIcon />
