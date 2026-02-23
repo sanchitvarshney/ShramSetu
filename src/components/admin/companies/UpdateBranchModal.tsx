@@ -134,7 +134,7 @@ const UpdateBranchModal = (props: any) => {
 
   const payload: any = {
     addressID: props?.updatingBranch?.branchID,
-    companyID: companyInfo[0]?.companyID,
+    companyID: companyInfo?.[0]?.companyID,
     address: address.trim() || undefined,
     city: city,
     email: email,

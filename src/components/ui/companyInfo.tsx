@@ -177,7 +177,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
       <AddClient
         branches={branches}
         show={showAddClientDialog}
-        companyId={details[0]?.companyID ?? ''}
+        companyId={details?.[0]?.companyID ?? ''}
         hide={() => setShowAddClientDialog(false)}
       />
       <UpdateCompany
@@ -196,7 +196,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
         <div className="flex gap-2 items-center ml-[-10px]">
           <div className="flex gap-1 items-center">
             <Building2 />
-            <p className="font-semibold text-xl">{details[0]?.name}</p>
+            <p className="font-semibold text-xl">{details?.[0]?.name}</p>
           </div>
         </div>
         <div className="flex gap-2 items-center">
@@ -209,7 +209,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2  px-4 gap-4">
         <LabelInput
-          value={details[0]?.email}
+          value={details?.[0]?.email}
           onChange={() => {}}
           icon={Mail}
           label="Email"
@@ -217,7 +217,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
           stacked
         />
         <LabelInput
-          value={details[0]?.mobile}
+          value={details?.[0]?.mobile}
           onChange={() => {}}
           icon={Phone}
           label="Contact No."
@@ -225,7 +225,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
           stacked
         />
         <LabelInput
-          value={details[0]?.panNo ? String(details[0].panNo).toUpperCase() : ''}
+          value={details?.[0]?.panNo ? String(details?.[0]?.panNo).toUpperCase() : ''}
           onChange={() => {}}
           icon={CreditCard}
           label="PAN No."
@@ -233,7 +233,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
           stacked
         />
         <LabelInput
-          value={details[0]?.website}
+          value={details?.[0]?.website}
           onChange={() => {}}
           icon={Globe}
           label="Website"
@@ -241,28 +241,28 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
           stacked
         />
         <LabelInput
-          value={details[0]?.brand ?? ''}
+          value={details?.[0]?.brand ?? ''}
           onChange={() => {}}
           icon={Tag}
           label="Brand Name"
           stacked
         />
         <LabelInput
-          value={formatHsnSsc((details[0] as any)?.hsn)}
+          value={formatHsnSsc((details?.[0] as any)?.hsn)}
           onChange={() => {}}
           icon={CreditCard}
           label="HSN"
           stacked
         />
         <LabelInput
-          value={formatHsnSsc((details[0] as any)?.ssc)}
+          value={formatHsnSsc((details?.[0] as any)?.ssc)}
           onChange={() => {}}
           icon={CreditCard}
           label="SSC"
           stacked
         />
         <LabelInput
-          value={details[0]?.createdOn}
+          value={ details?.[0]?.createdOn}
           onChange={() => {}}
           icon={CalendarIcon}
           label="Company Added On"
@@ -270,7 +270,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
           stacked
         />
         <LabelInput
-          value={details[0]?.updatedOn}
+          value={details?.[0]?.updatedOn}
           onChange={() => {}}
           icon={CalendarIcon}
           label="Company Last Updated On"

@@ -33,7 +33,7 @@ interface Props {
           </div>
        
           <div className='flex items-center gap-[10px]'>
-            <Input className={"bg-#fff min-w-[300px] focus-visible:ring-0"} placeholder='Search...'/>
+            <Input className="min-w-[300px]" placeholder='Search...'/>
             <Button className='flex items-center gap-[5px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400 shadow'><IoSearchOutline className='h-[20px] w-[20px]'/> Search</Button>
      
         </div>

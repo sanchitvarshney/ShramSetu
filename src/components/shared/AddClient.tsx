@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Check, User } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { LabelInput } from '@/components/ui/EmpUpdate';
+import { LabeledField } from '@/components/ui/LabeledField';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { addClient } from '@/features/admin/adminPageSlice';
@@ -129,47 +129,42 @@ const AddClient = (props: any) => {
           {stage === 'details' && (
             <div>
               <div className="grid grid-cols-2 gap-2">
-                <LabelInput
-                  value={fName}
-                  onChange={(e) => setFName(capitalizeName(e.target.value))}
-                  icon={User}
+                <LabeledField
                   label="First Name"
                   required
+                  value={fName}
+                  onChange={(e) => setFName(capitalizeName(e.target.value))}
                 />
-                <LabelInput
+                <LabeledField
+                  label="Middle Name"
                   value={mName}
                   onChange={(e) => setMName(capitalizeName(e.target.value))}
-                  icon={User}
-                  label="Middle Name"
-                  required
                 />
-                <LabelInput
-                  value={lName}
-                  onChange={(e) => setLName(capitalizeName(e.target.value))}
-                  icon={User}
+                <LabeledField
                   label="Last Name"
                   required
+                  value={lName}
+                  onChange={(e) => setLName(capitalizeName(e.target.value))}
                 />
-                <LabelInput
+                <LabeledField
+                  label="Email"
+                  type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  icon={User}
-                  label="Email"
-                  required
                 />
-                <LabelInput
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                  icon={User}
+                <LabeledField
                   label="Mobile Number"
                   required
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                 />
-                <LabelInput
+                <LabeledField
+                  label="Password"
+                  type="password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  icon={User}
-                  label="Password"
-                  required
                 />
               </div>
               <div className="flex justify-between mt-2">

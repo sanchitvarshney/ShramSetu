@@ -52,7 +52,7 @@ const AddDesignation: React.FC = () => {
   };
 
   return (
-    <Card className="rounded-lg">
+    <Card className="rounded-lg overflow-hidden p-0 m-4">
       <CardHeader>
         <CardTitle className="text-[20px] font-[650] text-slate-600 flex items-center gap-2">
           <Briefcase className="h-5 w-5" />

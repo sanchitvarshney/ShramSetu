@@ -29,7 +29,7 @@ const ListDesignations: React.FC = () => {
   ];
 
   return (
-    <div className="ag-theme-quartz h-[calc(100vh-200px)] min-h-[300px]">
+    <div className="ag-theme-quartz h-[calc(100vh-75px)] p-4">
       {loading && <Loading />}
       <AgGridReact
         rowData={designation ?? []}

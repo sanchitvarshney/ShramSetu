@@ -41,9 +41,15 @@ export const APP_ROUTES: Record<string, RouteDefinition> = {
   },
 
   // ——— Admin section (AdminLayout sidebar) ———
+    COMPANY_CREATE: {
+    path: '/company/create',
+    label: 'Create Company',
+    access: 'admin',
+    inAdminSidebar: true,
+  },
   COMPANY_LIST: {
     path: '/company/list',
-    label: 'Company',
+    label: 'Company List',
     access: 'admin',
     inAdminSidebar: true,
   },
@@ -59,18 +65,54 @@ export const APP_ROUTES: Record<string, RouteDefinition> = {
     access: 'admin',
     inAdminSidebar: true,
   },
-  WORKERS: {
-    path: '/workers',
-    label: 'Workers',
+  // WORKERS: {
+  //   path: '/workers',
+  //   label: 'Workers',
+  //   access: 'both',
+  //   inAdminSidebar: true,
+  // },
+  WORKERS_LIST: {
+    path: '/workers/list',
+    label: 'Workers List',
     access: 'both',
     inAdminSidebar: true,
   },
-  ACTIVITY_LOG: {
-    path: '/activity-log',
-    label: 'Activity Log',
+  WORKERS_CREATE: {
+    path: '/workers/create',
+    label: 'Add Worker',
     access: 'both',
     inAdminSidebar: true,
   },
+  DEPARTMENT_LIST: {
+    path: '/department/list',
+    label: 'Department List',
+    access: 'admin',
+    inAdminSidebar: true,
+  },
+  DEPARTMENT_CREATE: {
+    path: '/department/create',
+    label: 'Add Department',
+    access: 'admin',
+    inAdminSidebar: true,
+  },
+  DESIGNATION_LIST: {
+    path: '/designation/list',
+    label: 'Designation List',
+    access: 'admin',
+    inAdminSidebar: true,
+  },
+  DESIGNATION_CREATE: {
+    path: '/designation/create',
+    label: 'Add Designation',
+    access: 'admin',
+    inAdminSidebar: true,
+  },
+  // ACTIVITY_LOG: {
+  //   path: '/activity-log',
+  //   label: 'Activity Log',
+  //   access: 'both',
+  //   inAdminSidebar: true,
+  // },
   MASTER: {
     path: '/master',
     label: 'Master',
@@ -123,21 +165,36 @@ export const APP_ROUTES: Record<string, RouteDefinition> = {
 
 /** Ordered list of sidebar items for AdminLayout – Admin user */
 export const ADMIN_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
-  'COMPANY_LIST',
+   'COMPANY_LIST',
+    'COMPANY_CREATE',
+   
+
+
   'CLIENT_USER',
-  'WORKERS',
-  'ACTIVITY_LOG',
-  'MASTER',
+
+];
+export const Worker_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
+    'WORKERS_LIST',
+  'WORKERS_CREATE',
+ 
+
+
+];
+export const Master_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
+   'DEPARTMENT_LIST',
+  'DEPARTMENT_CREATE',
+  'DESIGNATION_LIST',
+  'DESIGNATION_CREATE',
 ];
 
 /** Ordered list of sidebar items for Client (Workers, Activity Log only; Master/Department/Designation are Admin only) */
 export const CLIENT_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
-  'WORKERS',
+  'WORKERS_LIST',
   'ACTIVITY_LOG',
 ];
 
 /** First route for Client section (used by MainLayout "Client" link) */
-export const CLIENT_FIRST_PATH = APP_ROUTES.WORKERS.path; // '/workers'
+export const CLIENT_FIRST_PATH = APP_ROUTES.WORKERS_LIST.path; // '/workers'
 
 /**
  * Get all path patterns that are admin-only (for route guard).

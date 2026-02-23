@@ -1,10 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { BsBuildingUp } from 'react-icons/bs';
+import { IoBriefcaseOutline } from "react-icons/io5";
+import { MdOutlineAddBusiness } from "react-icons/md";
+import { HiOutlineOfficeBuilding } from "react-icons/hi";
+import { PiUserList } from "react-icons/pi";
+import { GiRank3 } from "react-icons/gi";
 import { GrUserWorker } from 'react-icons/gr';
 import { FaUserGroup } from 'react-icons/fa6';
 import { TbLayoutGridFilled } from 'react-icons/tb';
-import { IoLibrary } from 'react-icons/io5';
+// import { IoLibrary } from 'react-icons/io5';
 import {
   ADMIN_SIDEBAR_ORDER,
   CLIENT_SIDEBAR_ORDER,
@@ -18,11 +22,15 @@ interface Props {
 }
 
 const SIDEBAR_ICONS: Record<string, React.ReactNode> = {
-  COMPANY_LIST: <BsBuildingUp className="h-[20px] w-[20px]" />,
+  COMPANY_LIST: <HiOutlineOfficeBuilding className="h-[20px] w-[20px]" />,
+  COMPANY_CREATE: <MdOutlineAddBusiness className="h-[20px] w-[20px]" />,
   CLIENT_USER: <FaUserGroup className="h-[20px] w-[20px]" />,
-  WORKERS: <GrUserWorker className="h-[20px] w-[20px]" />,
-  ACTIVITY_LOG: <TbLayoutGridFilled className="h-[20px] w-[20px]" />,
-  MASTER: <IoLibrary className="h-[20px] w-[20px]" />,
+  WORKERS_LIST: <GrUserWorker className="h-[20px] w-[20px]" />,
+  WORKERS_CREATE: <PiUserList className="h-[20px] w-[20px]" />,
+  DEPARTMENT_LIST: <TbLayoutGridFilled className="h-[20px] w-[20px]" />,
+  DEPARTMENT_CREATE: <TbLayoutGridFilled className="h-[20px] w-[20px]" />,
+  DESIGNATION_LIST: <IoBriefcaseOutline className="h-[20px] w-[20px]" />,
+  DESIGNATION_CREATE: <GiRank3 className="h-[20px] w-[20px]" />,
 };
 
 function canAccess(access: RouteAccess, isAdmin: boolean): boolean {
@@ -38,7 +46,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
   const sidebarOrder = isAdmin ? ADMIN_SIDEBAR_ORDER : CLIENT_SIDEBAR_ORDER;
 
   return (
-    <div className="h-[calc(100vh-70px)] w-[calc(100vw-34px)] grid grid-cols-[300px_1fr]">
+    <div className="h-[calc(100vh-70px)] w-[calc(100vw-20px)] grid grid-cols-[300px_1fr]">
       <div className="w-full border p-[10px] ">
         <nav className="w-full flex flex-col gap-[5px]">
           {sidebarOrder.map((key) => {

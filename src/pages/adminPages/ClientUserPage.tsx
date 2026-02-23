@@ -21,7 +21,7 @@ const ClientUserPage: React.FC = () => {
   }, [dispatch]);
 
   return (
-    <div className=" ag-theme-quartz h-[calc(100vh-70px)]">
+    <div className=" ag-theme-quartz h-[calc(100vh-70px)] p-4">
       {loading && <Loading />}
       <AgGridReact
         rowData={clientList}

@@ -9,8 +9,8 @@ interface Props {
 }
 const JobLayout: React.FC<Props> = ({ children }) => {
   return (
-    <div className="h-[calc(100vh-70px)] w-[calc(100vw-34px)] grid grid-cols-[300px_1fr]">
-      <div className="w-full border p-[10px] ">
+    <div className="grid grid-cols-[300px_1fr] h-full min-h-0 overflow-hidden flex-1">
+      <div className="w-full border p-[10px] shrink-0">
         <nav className="w-full flex flex-col gap-[5px]">
           <NavLink
             to="/job/job-create"
@@ -53,7 +53,7 @@ const JobLayout: React.FC<Props> = ({ children }) => {
           </NavLink>
         </nav>
       </div>
-      <div className=" overflow-hidden flex flex-col">{children}</div>
+      <div className="min-h-0 overflow-y-auto">{children}</div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
@@ -6,12 +6,30 @@ import { searchCompanies } from '@/features/admin/adminPageSlice';
 import { getLoggedInUserType } from '@/lib/routeAccess';
 import { ColDef } from 'ag-grid-community';
 import Loading from '@/components/reusable/Loading';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { CompanyInfoContent } from '@/components/ui/companyInfo';
 
-interface ListCompanyProps {
-  onCompanyClick?: (companyId: string) => void;
-}
 
-const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
+
+const ListCompany = () => {
+    const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+
+
+  const handleCompanyClick = (companyId: string) => {
+    setSelectedCompanyId(companyId);
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerOpenChange = (open: boolean) => {
+    setDrawerOpen(open);
+    if (!open) setSelectedCompanyId(null);
+  };
   const dispatch = useDispatch<AppDispatch>();
   const { companies, loading } = useSelector(
     (state: RootState) => state.adminPage,
@@ -39,7 +57,7 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
       <div className="flex">
         <button
           type="button"
-          onClick={() => companyId && onCompanyClick?.(companyId)}
+          onClick={() => companyId && handleCompanyClick?.(companyId)}
           className="text-teal-500 hover:text-teal-600 hover:underline text-left cursor-pointer bg-transparent border-none"
           aria-label="Show Details"
         >
@@ -73,7 +91,7 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
   ];
 
   return (
-    <div className="ag-theme-quartz h-[calc(100vh-140px)]">
+    <div className="ag-theme-quartz h-[calc(100vh-80px)] p-2">
       {loading && <Loading />}
       <AgGridReact
         rowData={companies || []}
@@ -82,6 +100,20 @@ const ListCompany: React.FC<ListCompanyProps> = ({ onCompanyClick }) => {
         pagination={true}
         suppressCellFocus={true}
       />
+
+      <Sheet open={drawerOpen} onOpenChange={handleDrawerOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-2xl overflow-y-auto p-0"
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Company details</SheetTitle>
+          </SheetHeader>
+          {selectedCompanyId && (
+            <CompanyInfoContent companyId={selectedCompanyId} embedded  />
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

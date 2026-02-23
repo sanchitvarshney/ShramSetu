@@ -30,18 +30,19 @@ import {
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import { MdOutlineAdminPanelSettings } from 'react-icons/md';
-import { FaUserCircle } from 'react-icons/fa';
-import { CLIENT_FIRST_PATH } from '@/config/appRoutes';
+
 import { NavlinkStyle } from '@/style/CustomStyles';
 import NotificationSheet from '@/components/shared/NotificationSheet';
 import { logout } from '@/features/auth/authSlice';
 import { useDispatch, useSelector,  } from 'react-redux';
 import { AppDispatch, RootState,  } from '@/store';
-import { IoAddOutline, IoSettingsOutline } from 'react-icons/io5';
+import { IoBriefcaseOutline, IoSettingsOutline } from 'react-icons/io5';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
 import { getLoggedInUserType } from '@/lib/routeAccess';
+import { BsBuildingUp } from 'react-icons/bs';
+import { GrUserWorker } from 'react-icons/gr';
+import { TbLayoutGridFilled } from 'react-icons/tb';
 
 interface Props {
   children: React.ReactNode;
@@ -95,13 +96,13 @@ const MainLayout: React.FC<Props> = ({ children }) => {
         description="Are you sure you want to Logout."
       />
       <NotificationSheet uiState={{ notification, setNotification }} />
-      <div className="flex flex-col min-h-screen bg-muted/40">
+      <div className="flex flex-col h-[100vh] min-h-0 overflow-hidden bg-muted/40">
         <Sidebar open={open} onOpenChange={setOpen}>
           <SidebarContent
             side={'left'}
             className=" bg-transparent border-none shadow-none p-[20px]"
           >
-            <div className=" relative  rounded-xl bg-teal-800 border-0 min-w-[300px] shadow shadow-stone-400 p-[20px] h-[calc(100vh-40px)]  ">
+            <div className=" relative  rounded-xl bg-teal-800 border-0 min-w-[300px] shadow shadow-stone-400 p-[20px] h-[calc(100vh-40px)]   ">
               <SidebarHeader className="bg-white rounded-lg p-[20px] ">
                 <img src="/main-logo.svg" alt="" className="w-[100%]" />
               </SidebarHeader>
@@ -117,7 +118,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     Dashboard
                   </NavLink>
                 )}
-                  {getLoggedInUserType() === 'admin' && (
+                  {/* {getLoggedInUserType() === 'admin' && (
                     <NavLink
                       to="/company/list"
                       className={NavlinkStyle}
@@ -126,26 +127,46 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                       <MdOutlineAdminPanelSettings className="w-6 h-6" />
                       Admin
                     </NavLink>
-                  )}
-                  {getLoggedInUserType() === 'client' && (
+                  )} */}
+                    {getLoggedInUserType() === 'admin' && (
                     <NavLink
-                      to={CLIENT_FIRST_PATH}
+                      to="/company/list"
                       className={NavlinkStyle}
                       onClick={() => setOpen(false)}
                     >
-                      <FaUserCircle className="w-6 h-6" />
-                      Client
+                      <BsBuildingUp className="w-6 h-6" />
+                      Company
                     </NavLink>
                   )}
+                   
+                    <NavLink
+                      to="/workers/list"
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <GrUserWorker className="w-6 h-6" />
+                      Worker
+                    </NavLink>
+                 
+                  {getLoggedInUserType() === 'admin' && (
+                    <NavLink
+                      to={"/department/list"}
+                      className={NavlinkStyle}
+                      onClick={() => setOpen(false)}
+                    >
+                      <TbLayoutGridFilled className="w-6 h-6" />
+                      Master
+                    </NavLink>
+                   )}
                   <NavLink
                     to="/job/job-create"
                     className={NavlinkStyle}
                     onClick={() => setOpen(false)}
                   >
-                    <IoAddOutline className="w-6 h-6" />
-                    Add Job
+                    <IoBriefcaseOutline className="w-6 h-6" />
+                    Job
                   </NavLink>
-                  {getLoggedInUserType() === 'admin' && (
+                 
                     <NavLink
                       to="/company/list"
                       className={NavlinkStyle}
@@ -154,8 +175,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                       <IoSettingsOutline className="w-6 h-6" />
                       Setting
                     </NavLink>
-                  )}
-                  <NavLink
+                     <NavLink
                     to="/invitation/mail"
                     className={NavlinkStyle}
                     onClick={() => setOpen(false)}
@@ -330,9 +350,11 @@ const MainLayout: React.FC<Props> = ({ children }) => {
         )
        }
 
-        <div className="flex flex-col max-w-[calc(100vw-20px)] ml-[20px]">
-          <main className="grid items-start flex-1 gap-4 sm:py-0 md:gap-8 bg-white min-h-[calc(100vh-70px)] mt-[70px]">
-            {children}
+        <div className="flex flex-col flex-1 min-h-0 max-w-[calc(100vw-20px)] ml-[20px] overflow-hidden">
+          <main className="flex flex-col flex-1 min-h-0 gap-4 sm:py-0 md:gap-8 bg-white mt-[75px] overflow-hidden">
+            <div className="flex-1 min-h-0 flex flex-col">
+              {children}
+            </div>
           </main>
         </div>
       </div>

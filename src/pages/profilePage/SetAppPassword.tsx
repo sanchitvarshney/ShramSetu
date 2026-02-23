@@ -96,8 +96,7 @@ const SetPassword = () => {
                 <Input
                   required
                   type={showOldPassword ? 'text' : 'password'}
-                  className={`${inputStyle} py-5 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 text-lg`}
-                  style={{ height: '3.4rem' }} // Increase height of the input
+                  className={`${inputStyle} py-5 text-lg h-[3.4rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                 />
@@ -125,8 +124,7 @@ const SetPassword = () => {
                 <Input
                   required
                   type={showNewPassword ? 'text' : 'password'}
-                  className={`${inputStyle} py-5 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 text-lg`}
-                  style={{ height: '3.5rem' }} // Increase height of the input
+                  className={`${inputStyle} py-5 text-lg h-[3.5rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
                   value={newPassword}
                   onChange={(e) => {
                     setNewPassword(e.target.value);
@@ -157,8 +155,7 @@ const SetPassword = () => {
                 <Input
                   required
                   type={showConfirmPassword ? 'text' : 'password'}
-                  className={`${inputStyle} py-5 px-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 text-lg`}
-                  style={{ height: '3.5rem' }} // Increase height of the input
+                  className={`${inputStyle} py-5 text-lg h-[3.5rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />

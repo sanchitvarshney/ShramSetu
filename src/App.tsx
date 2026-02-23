@@ -9,9 +9,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '@ag-grid-community/styles/ag-theme-quartz.css';
 import EmployeeData from './pages/EmployeeData';
 import AdminLayout from './Layout/AdminLayout';
-import CompanyPage from './pages/adminPages/CompanyPage';
-import WorkersPage from './pages/adminPages/WorkersPage';
-import ActivityLogPage from './pages/adminPages/ActivityLogPage';
+
 import InvitationPage from './pages/invitation/InvitationPage';
 import WhatsAppInvitationPage from './components/shared/WhatsAppInvitationPage';
 import MailInvitationPage from './components/shared/MailInvitationPage';
@@ -33,7 +31,16 @@ import { ErrorBoundary } from "react-error-boundary";
 import FallBackUI from './components/error/FallBackUI';
 import RootLayout from './Layout/RootLayout';
 import ClientUserPage from './pages/adminPages/ClientUserPage';
-import MasterPage from './pages/adminPages/MasterPage';
+import ListCompany from './components/shared/ListCompany';
+import AddCompany from './components/shared/AddCompany';
+import AddWorker from './components/shared/AddWorker';
+import ListWorker from './components/shared/ListWorker';
+import WorkerLayout from './Layout/WorkerLayout';
+import AddDepartment from './components/master/AddDepartment';
+import MasterLayout from './Layout/MasterLayout';
+import AddDesignation from './components/master/AddDesignation';
+import ListDesignations from './components/master/ListDesignations';
+import ListDepartments from './components/master/ListDepartments';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -76,7 +83,19 @@ const router = createBrowserRouter([
       <Protected authentication>
         <MainLayout>
           <AdminLayout>
-            <CompanyPage />
+            <ListCompany />
+          </AdminLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+    {
+    path: '/company/create',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <AdminLayout>
+            <AddCompany />
           </AdminLayout>
         </MainLayout>
       </Protected>
@@ -95,13 +114,25 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: '/workers',
+    path: '/workers/create',
     element: (
       <Protected authentication>
         <MainLayout>
-          <AdminLayout>
-            <WorkersPage />
-          </AdminLayout>
+          <WorkerLayout>
+            <AddWorker />
+          </WorkerLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+   {
+    path: '/workers/list',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <WorkerLayout>
+            <ListWorker />
+          </WorkerLayout>
         </MainLayout>
       </Protected>
     ),
@@ -118,26 +149,62 @@ const router = createBrowserRouter([
       </Protected>
     ),
   },
+  // {
+  //   path: '/activity-log',
+  //   element: (
+  //     <Protected authentication>
+  //       <MainLayout>
+  //         <AdminLayout>
+  //           <ActivityLogPage />
+  //         </AdminLayout>
+  //       </MainLayout>
+  //     </Protected>
+  //   ),
+  // },
   {
-    path: '/activity-log',
+    path: '/department/create',
     element: (
       <Protected authentication>
         <MainLayout>
-          <AdminLayout>
-            <ActivityLogPage />
-          </AdminLayout>
+          <MasterLayout>
+            <AddDepartment />
+          </MasterLayout>
         </MainLayout>
       </Protected>
     ),
   },
-  {
-    path: '/master',
+    {
+    path: '/department/list',
     element: (
       <Protected authentication>
         <MainLayout>
-          <AdminLayout>
-            <MasterPage />
-          </AdminLayout>
+          <MasterLayout>
+            <ListDepartments />
+          </MasterLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+    {
+    path: '/designation/create',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <MasterLayout>
+            <AddDesignation />
+          </MasterLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+    {
+    path: '/designation/list',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <MasterLayout>
+            <ListDesignations />
+          </MasterLayout>
         </MainLayout>
       </Protected>
     ),

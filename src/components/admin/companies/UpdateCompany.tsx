@@ -54,7 +54,7 @@ const UpdateCompany = (props: any) => {
   const { companyInfo, iseditcompany } = useSelector((state: RootState) => state.adminPage);
 
   useEffect(() => {
-    const c = companyInfo[0];
+    const c = companyInfo?.[0];
     if (!c) return;
     setCompanyName(c?.name ?? '');
     setEmail(c?.email ?? '');
@@ -88,7 +88,7 @@ const UpdateCompany = (props: any) => {
       return;
     }
     const payloadData: Record<string, unknown> = {
-      companyID: companyInfo[0]?.companyID,
+      companyID: companyInfo?.[0]?.companyID,
       email,
       name: companyName,
       panNo,
@@ -114,7 +114,7 @@ const UpdateCompany = (props: any) => {
         title: 'Success!!',
         description: res?.message ?? 'Company and branch name updated.',
       });
-      const cid = companyInfo[0]?.companyID;
+      const cid = companyInfo?.[0]?.companyID;
       if (cid) dispatch(getCompanyInfo(cid));
       props.hide();
     } catch (error: any) {
