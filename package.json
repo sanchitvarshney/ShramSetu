@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@ag-grid-community/styles": "^32.0.2",
+    "@ant-design/charts": "^2.6.7",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^3.9.0",
