@@ -16,15 +16,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BiSolidLogInCircle } from 'react-icons/bi';
-import { Input } from '../ui/input';
+import { LabeledField } from '@/components/ui/LabeledField';
 import { inputStyle } from '@/style/CustomStyles';
 import { Label } from '../ui/label';
-import { AiOutlineUser } from 'react-icons/ai';
-import { BsTelephone } from 'react-icons/bs';
-import { CiMail } from 'react-icons/ci';
-import { IoIosLock } from 'react-icons/io';
-import { LiaClipboardListSolid } from 'react-icons/lia';
-import { PiCreditCard } from 'react-icons/pi';
 import { format } from 'date-fns';
 import { capitalizeName } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
@@ -157,7 +151,7 @@ const AddWorker = () => {
   return (
     <div className="overflow-y-auto ">
       <div className="p-[10px]">
-        <Card className="rounded-lg max-h-[calc(100vh-210px)] overflow-hidden p-0">
+        <Card className="rounded-lg max-h-[calc(100vh-90px)] overflow-hidden p-0">
           <CardHeader className="border-b p-0 px-[20px] h-[70px] gap-0 flex justify-center ">
             <CardTitle className="text-[20px] font-[650] text-slate-600">
               Add Worker
@@ -167,7 +161,7 @@ const AddWorker = () => {
               the result
             </CardDescription>
           </CardHeader>
-          <CardContent className="py-[10px] h-[calc(100vh-330px)] overflow-x-auto">
+          <CardContent className="py-[10px] min-h-[calc(100vh-230px)] overflow-x-auto">
             <div className="flex gap-[20px]">
               {/* Left Section: Profile Photo Upload */}
               <div className="w-1/3 bg-gray-50 p-[20px] rounded-xl shadow-lg flex flex-col items-center">
@@ -206,61 +200,28 @@ const AddWorker = () => {
               </div>
             
             <div className="w-2/3 grid grid-cols-3 gap-[20px]">
-              <div className="floating-label-group">
-                <Input
-                  required
-                  className={inputStyle}
-                  value={empFirstName}
-                  onChange={(e) => setEmpFirstName(capitalizeName(e.target.value))}
-                />
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <AiOutlineUser className="h-[18px] w-[18px]" />
-                    First Name
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
-                <Input
-                  required
-                  className={inputStyle}
-                  value={empMiddleName}
-                  onChange={(e) => setEmpMiddleName(capitalizeName(e.target.value))}
-                />
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <AiOutlineUser className="h-[18px] w-[18px]" />
-                    Middle Name
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
-                <Input
-                  required
-                  className={inputStyle}
-                  value={empLastName}
-                  onChange={(e) => setEmpLastName(capitalizeName(e.target.value))}
-                />
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <AiOutlineUser className="h-[18px] w-[18px]" />
-                    Last Name
-                  </span>
-                </Label>
-              </div>
-              <div>
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <AiOutlineUser className="h-[18px] w-[18px]" />
-                    Gender
-                  </span>
-                </Label>
+              <LabeledField
+                label="First Name"
+                required
+                value={empFirstName}
+                onChange={(e) => setEmpFirstName(capitalizeName(e.target.value))}
+              />
+              <LabeledField
+                label="Middle Name"
+                value={empMiddleName}
+                onChange={(e) => setEmpMiddleName(capitalizeName(e.target.value))}
+              />
+              <LabeledField
+                label="Last Name"
+                required
+                value={empLastName}
+                onChange={(e) => setEmpLastName(capitalizeName(e.target.value))}
+              />
+              <div className="flex flex-col gap-[10px]">
+                <Label className="gap-[10px]">Gender</Label>
                 <Select onValueChange={setEmpGender}>
-                  <SelectTrigger
-                    className={`${inputStyle} input2  focus:ring-0`}
-                    ref={buttonRef}
-                  >
-                    <SelectValue className="" placeholder="--" />
+                  <SelectTrigger className={`${inputStyle} input2 focus:ring-0`} ref={buttonRef}>
+                    <SelectValue placeholder="--" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="M">Male</SelectItem>
@@ -268,166 +229,91 @@ const AddWorker = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <AiOutlineUser className="h-[18px] w-[18px]" />
-                    Date Of Birth
-                  </span>
-                </Label>
+              <div className="flex flex-col gap-[10px]">
+                <Label className="gap-[10px]">Date Of Birth</Label>
                 <Popover>
                   <DatePicker
                     onChange={onChange}
-                    className={`${inputStyle} input2  focus:ring-0 w-[100%]`}
-                    format={'YYYY/MM/DD'}
+                    className={`${inputStyle} input2 focus:ring-0 w-[100%]`}
+                    format="YYYY/MM/DD"
                   />
                 </Popover>
               </div>
-              <div className="floating-label-group">
-                <Input
+              <LabeledField
+                label="Phone"
+                type="text"
+                inputMode="numeric"
+                maxLength={15}
+                required
+                value={empMobile}
+                onChange={(e) => setEmpMobile(e.target.value.replace(/\D/g, ''))}
+              />
+              <LabeledField
+                label="Email"
+                type="email"
+                required
+                value={empEmail}
+                onChange={(e) => setEmpEmail(e.target.value)}
+              />
+              <div className="space-y-1">
+                <LabeledField
+                  label="Aadhaar Number"
                   type="text"
                   inputMode="numeric"
-                  maxLength={15}
-                  required
-                  className={inputStyle}
-                  value={empMobile}
-                  onChange={(e) => setEmpMobile(e.target.value.replace(/\D/g, ''))}
+                  maxLength={14}
+                  value={empAadhaarNo}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '');
+                    if (v.length <= 12) setEmpAadhaarNo(v);
+                  }}
+                  placeholder="12 digits (e.g. 234512345678)"
                 />
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <BsTelephone className="h-[18px] w-[18px]" />
-                    Phone
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
-                <Input
-                  type="email"
-                  required
-                  className={inputStyle}
-                  value={empEmail}
-                  onChange={(e) => setEmpEmail(e.target.value)}
-                />
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <CiMail className="h-[18px] w-[18px]" />
-                    Email
-                  </span>
-                </Label>
-              </div>
-              <div className="space-y-1">
-                <div className="floating-label-group">
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={14}
-                    className={inputStyle}
-                    value={empAadhaarNo}
-                    onChange={(e) => {
-                      const v = e.target.value.replace(/\D/g, '');
-                      if (v.length <= 12) setEmpAadhaarNo(v);
-                    }}
-                    placeholder="12 digits (e.g. 234512345678)"
-                  />
-                  <Label className="floating-label  gap-[10px]">
-                    <span className="flex items-center gap-[10px]">
-                      <PiCreditCard className="h-[18px] w-[18px]" />
-                      Aadhaar Number
-                    </span>
-                  </Label>
-                </div>
                 {empAadhaarNo.length > 0 && (
-                  <p
-                    className={`text-xs mt-0.5 ${
-                      isValidAadhaar(empAadhaarNo) ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
+                  <p className={`text-xs mt-0.5 ${isValidAadhaar(empAadhaarNo) ? 'text-green-600' : 'text-red-600'}`}>
                     {isValidAadhaar(empAadhaarNo) ? 'Aadhaar valid' : 'Aadhaar not valid'}
                   </p>
                 )}
               </div>
-              <div>
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <LiaClipboardListSolid className="h-[18px] w-[18px]" />
-                    Department
-                  </span>
-                </Label>
+              <div className="flex flex-col gap-[10px]">
+                <Label className="gap-[10px]">Department</Label>
                 <Select onValueChange={setEmpDepartment}>
-                  <SelectTrigger
-                    className={`${inputStyle} input2  focus:ring-0`}
-                    ref={buttonRef}
-                  >
-                    <SelectValue className="" placeholder="--" />
+                  <SelectTrigger className={`${inputStyle} input2 focus:ring-0`} ref={buttonRef}>
+                    <SelectValue placeholder="--" />
                   </SelectTrigger>
                   <SelectContent>
-                    {department?.map((department: Department) => (
-                      <SelectItem
-                        value={department?.value}
-                        key={department?.value}
-                      >
-                        {department?.text}
-                      </SelectItem>
+                    {department?.map((d: Department) => (
+                      <SelectItem value={d?.value} key={d?.value}>{d?.text}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <LiaClipboardListSolid className="h-[18px] w-[18px]" />
-                    Designation
-                  </span>
-                </Label>
+              <div className="flex flex-col gap-[10px]">
+                <Label className="gap-[10px]">Designation</Label>
                 <Select onValueChange={setEmpDesignation}>
-                  <SelectTrigger
-                    className={`${inputStyle} input2  focus:ring-0`}
-                    ref={buttonRef}
-                  >
-                    <SelectValue className="" placeholder="--" />
+                  <SelectTrigger className={`${inputStyle} input2 focus:ring-0`} ref={buttonRef}>
+                    <SelectValue placeholder="--" />
                   </SelectTrigger>
                   <SelectContent>
-                    {designation?.map((designation: Designation) => (
-                      <SelectItem
-                        value={designation?.value}
-                        key={designation?.value}
-                      >
-                        {designation?.text}
-                      </SelectItem>
+                    {designation?.map((d: Designation) => (
+                      <SelectItem value={d?.value} key={d?.value}>{d?.text}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="floating-label-group">
-                <Input
-                  type="password"
-                  required
-                  className={inputStyle}
-                  value={empPassword}
-                  onChange={(e) => setEmpPassword(e.target.value)}
-                />
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <IoIosLock className="h-[18px] w-[18px]" />
-                    Password
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
-                <Input
-                  type="password"
-                  required
-                  className={inputStyle}
-                  value={empConfirmPassword}
-                  onChange={(e) => setEmpConfirmPassword(e.target.value)}
-                />
-                <Label className="floating-label  gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <IoIosLock className="h-[18px] w-[18px]" />
-                    Confirm Password
-                  </span>
-                </Label>
-              </div>
+              <LabeledField
+                label="Password"
+                type="password"
+                required
+                value={empPassword}
+                onChange={(e) => setEmpPassword(e.target.value)}
+              />
+              <LabeledField
+                label="Confirm Password"
+                type="password"
+                required
+                value={empConfirmPassword}
+                onChange={(e) => setEmpConfirmPassword(e.target.value)}
+              />
             </div></div>
           </CardContent>
           <CardFooter className="p-0 px-[20px] flex justify-end items-center border-t h-[50px]">

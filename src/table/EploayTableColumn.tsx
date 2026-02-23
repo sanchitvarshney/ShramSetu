@@ -13,7 +13,7 @@ const actionCellRenderer = (params: any) => {
         className="w-full text-teal-500 text-start hover:text-teal-600"
         aria-label="Show Name"
       >
-        {params.data?.empFirstName}
+        {params.data?.firstName + ' ' + params.data?.lastName}
       </button>
     </div>
   );
@@ -33,14 +33,9 @@ export const columnDefs: ColDef[] = [
     filter: true,
     cellRenderer: actionCellRenderer,
   },
-  {
-    headerName: 'Last Name',
-    field: 'empLastName',
-    sortable: true,
-    filter: true,
-  },
-  { headerName: 'Gender', field: 'empGender', sortable: true, filter: true },
-  { headerName: 'DOB', field: 'empDOB', sortable: true, filter: true },
+ 
+  { headerName: 'Gender', field: 'gender', sortable: true, filter: true },
+  { headerName: 'DOB', field: 'dob', sortable: true, filter: true },
   // {
   //   headerName: 'Department',
   //   field: 'department',
@@ -54,7 +49,7 @@ export const columnDefs: ColDef[] = [
   //   filter: true,
   // },
   { headerName: 'Email', field: 'empEmail', sortable: true, filter: true },
-  { headerName: 'Phone', field: 'empMobile', sortable: true, filter: true },
+  { headerName: 'Phone', field: 'empPhone', sortable: true, filter: true },
   // {
   //   headerName: 'Action',
   //   cellRenderer: () => (

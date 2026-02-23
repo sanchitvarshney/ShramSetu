@@ -10,10 +10,9 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '../ui/label';
+import { LabeledField } from '@/components/ui/LabeledField';
 import { inputStyle } from '@/style/CustomStyles';
-import { Building2, Mail, Phone, Tag } from 'lucide-react';
-import { CgWebsite } from 'react-icons/cg';
-import { FaCreditCard, FaSave } from 'react-icons/fa';
+import { FaSave } from 'react-icons/fa';
 import {
   Modal,
   ModalContent,
@@ -32,6 +31,7 @@ import { FaRegCheckCircle } from 'react-icons/fa';
 import { toast } from '@/components/ui/use-toast';
 import { CircularProgress } from '@mui/material';
 import { validateForm, addCompanySchema } from '@/lib/validations';
+import { capitalizeName } from '@/lib/utils';
 
 const AddCompany: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -130,19 +130,12 @@ const AddCompany: React.FC = () => {
             </ModalDescription>
           </ModalHeader>
           <div className="modal-body px-[20px]">
-            <div className="floating-label-group">
-              <Input
-                required
-                className={inputStyle}
-                onChange={(e) => setInput(e.target.value)}
-                value={input}
-              />
-              <Label className="floating-label gap-[10px]">
-                <span className="flex items-center gap-[10px]">
-                  <Building2 className="h-[18px] w-[18px]" /> Enter Company Name
-                </span>
-              </Label>
-            </div>
+            <LabeledField
+              label="Enter Company Name"
+              required
+              value={input}
+              onChange={(e) => setInput(capitalizeName(e.target.value))}
+            />
 
             <div className="mt-[20px]">
               <ModalTitle className="text-slate-600 text-[16px]">
@@ -214,7 +207,7 @@ const AddCompany: React.FC = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      <div>
+      <div className="p-4 max-h-[calc(100vh-80px)] overflow-y-auto">
         <Card className="rounded-lg">
           <CardHeader>
             <CardTitle className="text-[20px] font-[650] text-slate-600">
@@ -231,90 +224,51 @@ const AddCompany: React.FC = () => {
                 className="justify-start w-full bg-transparent rounded-none shadow-none text-[#9e9e9e] border-b border-neutral-400 hover:bg-transparent"
               >
                 {company === null || company === '' ? (
-                  <span className="flex items-center gap-[10px]">
-                    <Building2 className="h-[18px] w-[18px]" /> Enter Company
-                    Name
-                  </span>
+                  'Enter Company Name'
                 ) : (
                   company
                 )}
               </Button>
             </div>
             <div className="grid grid-cols-2 gap-[20px] mt-[50px]">
-         
-              <div className="floating-label-group">
-                <Input
-                  className={inputStyle}
-                  onChange={(e) => setBrandName(e.target.value)}
-                  value={brandName}
-                  placeholder="e.g. Company Brand"
-                />
-                <Label className="floating-label gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <Tag className="h-[18px] w-[18px]" /> Brand Name
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
-                <Input
-                  required
-                  className={inputStyle}
-                  onChange={(e) => setEmail(e.target.value)}
-                  value={email}
-                />
-                <Label className="floating-label gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <Mail className="h-[18px] w-[18px]" /> Email
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={15}
-                  required
-                  className={inputStyle}
-                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                  value={mobile}
-                />
-                <Label className="floating-label gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <Phone className="h-[18px] w-[18px]" /> Phone Number
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
-                <Input
-                  required
-                  className={`${inputStyle} uppercase`}
-                  onChange={(e) => setPanNo(e.target.value.toUpperCase())}
-                  value={panNo}
-                  maxLength={10}
-                />
-                <Label className="floating-label gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <FaCreditCard className="h-[18px] w-[18px]" /> Pan No.
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
-                <Input
-                  required
-                  className={inputStyle}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  value={website}
-                />
-                <Label className="floating-label gap-[10px]">
-                  <span className="flex items-center gap-[10px]">
-                    <CgWebsite className="h-[18px] w-[18px]" /> Company Website
-                  </span>
-                </Label>
-              </div>
+              <LabeledField
+                label="Brand Name"
+                placeholder="e.g. Company Brand"
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+              />
+              <LabeledField
+                label="Email"
+                required
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <LabeledField
+                label="Phone Number"
+                type="text"
+                inputMode="numeric"
+                maxLength={15}
+                required
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+              />
+              <LabeledField
+                label="Pan No."
+                required
+                maxLength={10}
+                value={panNo}
+                onChange={(e) => setPanNo(e.target.value.toUpperCase())}
+                inputClassName="uppercase"
+              />
+              <LabeledField
+                label="Company Website"
+                required
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+              />
               <div className="col-span-2 space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <FaCreditCard className="h-[18px] w-[18px]" /> HSN (multiple)
-                </Label>
+                <Label className="text-sm font-medium">HSN (multiple)</Label>
                 {hsnList.map((val, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
                     <Input
@@ -359,9 +313,7 @@ const AddCompany: React.FC = () => {
                 </Button>
               </div>
               <div className="col-span-2 space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <FaCreditCard className="h-[18px] w-[18px]" /> SSC (multiple)
-                </Label>
+                <Label className="text-sm font-medium">SSC (multiple)</Label>
                 {sscList.map((val, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
                     <Input

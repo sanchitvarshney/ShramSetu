@@ -15,6 +15,7 @@ import {
 import { Popover } from '@/components/ui/popover';
 import {
   updateEmployeeDetails,
+  updateWorkerProfile,
   fetchDepartments,
   fetchDesignations,
   Department,
@@ -23,7 +24,7 @@ import {
 import { inputStyle } from '@/style/CustomStyles';
 import { capitalizeName } from '@/lib/utils';
 import { isValidAadhaar, isValidPan } from '@/lib/validations';
-import { format } from 'date-fns';
+import { buildWorkerUpdatePayload } from '@/lib/workerUpdatePayload';
 import dayjs from 'dayjs';
 import { DatePicker, DatePickerProps } from 'antd';
 import { AiOutlineUser } from 'react-icons/ai';
@@ -82,8 +83,6 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
   const [empDOBDate, setEmpDOBDate] = useState<Date | null>(null);
   const [empPhotoFile, setEmpPhotoFile] = useState<File | null>(null);
   const [empPhotoUrl, setEmpPhotoUrl] = useState<string | null>(null);
-  /** Photo URL that came from API when drawer opened - used in payload when user does not change photo */
-  const [initialPhotoUrl, setInitialPhotoUrl] = useState<string | null>(null);
 
   const [empFirstName, setEmpFirstName] = useState('');
   const [empMiddleName, setEmpMiddleName] = useState('');
@@ -125,13 +124,6 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
-    const existingPhoto =
-      Array.isArray(worker?.empPhoto) && worker.empPhoto.length > 0
-        ? worker.empPhoto[0]
-        : worker?.empPhoto;
-    setInitialPhotoUrl(
-      typeof existingPhoto === 'string' && existingPhoto ? existingPhoto : null,
-    );
     setEmpFirstName(worker?.empFirstName ?? '');
     setEmpMiddleName(worker?.empMiddleName ?? '');
     setEmpLastName(worker?.empLastName ?? '');
@@ -181,14 +173,22 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
     setEmpDOBDate(date ? dayjs(date as any).toDate() : null);
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setEmpPhotoUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return URL.createObjectURL(file);
-      });
-      setEmpPhotoFile(file);
+    if (!file || !employeeId) {
+      e.target.value = '';
+      return;
+    }
+    setEmpPhotoUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setEmpPhotoFile(file);
+    try {
+      await dispatch(updateWorkerProfile({ empId: employeeId, image: file })).unwrap();
+      onSuccess?.();
+    } catch {
+      // toast handled in slice
     }
     e.target.value = '';
   };
@@ -199,87 +199,6 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
     };
   }, [empPhotoUrl]);
 
-  const buildUpdatePayload = () => ({
-    empId: employeeId,
-    firstName: empFirstName?.trim() || '',
-    middleName: empMiddleName?.trim() || '',
-    lastName: empLastName?.trim() || '',
-    DOB: empDOBDate ? format(empDOBDate, 'dd/MM/yyyy') : null,
-    aadhaarNo: adhaar?.trim() || '',
-    email: empEmail?.trim() || '',
-    mobile: empMobile?.trim() || '',
-    gender: empGender?.trim() || '',
-    maritalStatus: empMaritalStatus?.trim() || '',
-    hobbies: empHobbies?.trim() || '',
-    panNo: empPanNo?.trim().toUpperCase() || '',
-    bloodGroup: empBloodGroup?.trim() || '',
-    department: empDepartment?.trim() || '',
-    designation: empDesignation?.trim() || '',
-    houseNoPresent: present_houseNo?.trim() || '',
-    colonyPresent: present_colony?.trim() || '',
-    cityPresent: present_city?.trim() || '',
-    statePresent: present_state?.trim() || '',
-    countryPresent: present_country?.trim() || '',
-    pinCodePresent: present_pincode?.trim() || '',
-    houseNoPermanent: perma_houseNo?.trim() || '',
-    colonyPermanent: perma_colony?.trim() || '',
-    cityPermanent: perma_city?.trim() || '',
-    statePermanent: perma_state?.trim() || '',
-    countryPermanent: perma_country?.trim() || '',
-    pinCodePermanent: perma_pincode?.trim() || '',
-    childCount: '',
-    childData: [],
-    identificationMark: '',
-    spouse: '',
-    fatherName: '',
-    motherName: '',
-    districtPermanent: '',
-    companyData: [],
-    educationData: [],
-    bankDetail: { bankName: '', accountNo: '', ifsCode: '' },
-    empFamilyKey: 'Chandra',
-    esi: '',
-    uan: '',
-  });
-
-  const urlToBlobViaCanvas = (url: string): Promise<Blob | null> =>
-    new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            resolve(null);
-            return;
-          }
-          ctx.drawImage(img, 0, 0);
-          canvas.toBlob((blob) => resolve(blob), 'image/png');
-        } catch {
-          resolve(null);
-        }
-      };
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
-
-  const getCurrentPhotoForPayload = async (): Promise<File | Blob | null> => {
-    if (empPhotoFile) return empPhotoFile;
-    const urlToUse = initialPhotoUrl;
-    if (!urlToUse) return null;
-    try {
-      const res = await fetch(urlToUse, { mode: 'cors' });
-      if (!res.ok) throw new Error('Fetch not ok');
-      return await res.blob();
-    } catch {
-      const blob = await urlToBlobViaCanvas(urlToUse);
-      return blob;
-    }
-  };
-
   const handleSubmit = async () => {
     if (!employeeId) return;
     const panTrimmed = empPanNo?.trim() ?? '';
@@ -288,30 +207,39 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
     }
     setSaving(true);
     try {
-      const payload = buildUpdatePayload();
-      const formData = new FormData();
-      Object.entries(payload).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          if (typeof value === 'object' && !(value instanceof File)) {
-            formData.append(key, JSON.stringify(value));
-          } else {
-            formData.append(key, String(value));
-          }
-        }
-      });
-      const currentPhoto = await getCurrentPhotoForPayload();
-      if (currentPhoto) {
-        const file =
-          currentPhoto instanceof File
-            ? currentPhoto
-            : new File([currentPhoto], 'photo.png', {
-                type: (currentPhoto as Blob).type || 'image/png',
-              });
-        formData.append('image', file);
-      } else if (initialPhotoUrl) {
-        formData.append('existingPhotoUrl', initialPhotoUrl);
-      }
-      await dispatch(updateEmployeeDetails(formData)).unwrap();
+      const payload = buildWorkerUpdatePayload(
+        {
+          empId: employeeId,
+          firstName: empFirstName,
+          middleName: empMiddleName,
+          lastName: empLastName,
+          email: empEmail,
+          mobile: empMobile,
+          gender: empGender,
+          maritalStatus: empMaritalStatus,
+          hobbies: empHobbies,
+          panNo: empPanNo,
+          bloodGroup: empBloodGroup,
+          department: empDepartment,
+          designation: empDesignation,
+          aadhaar: adhaar,
+          dob: empDOBDate ?? undefined,
+          houseNoPresent: present_houseNo,
+          colonyPresent: present_colony,
+          cityPresent: present_city,
+          statePresent: present_state,
+          countryPresent: present_country,
+          pinCodePresent: present_pincode,
+          houseNoPermanent: perma_houseNo,
+          colonyPermanent: perma_colony,
+          cityPermanent: perma_city,
+          statePermanent: perma_state,
+          countryPermanent: perma_country,
+          pinCodePermanent: perma_pincode,
+        },
+        { full: true }
+      );
+      await dispatch(updateEmployeeDetails(payload)).unwrap();
       onOpenChange(false);
       onSuccess?.();
       onCloseDetails?.();

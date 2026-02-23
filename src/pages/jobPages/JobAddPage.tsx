@@ -166,9 +166,9 @@ const JobAddPage = () => {
   };
 
   return (
-    <>
+      <div className="p-4 h-full">
       {loading && <Loading />}
-      <div className="p-4 max-h-[calc(100vh-75px)] overflow-y-auto">
+      <div>
         <Card className="rounded-lg">
         <CardHeader>
           <CardTitle className="text-[20px] font-[650] text-slate-600">
@@ -701,7 +701,7 @@ const JobAddPage = () => {
         </CardContent>
       </Card>
       </div>
-    </>
+  </div>
   );
 };
 

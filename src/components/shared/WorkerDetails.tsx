@@ -16,12 +16,12 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { SelectOptionType } from '@/types/general';
 import { calculateExperience, cn } from '@/lib/utils';
-import {  format } from 'date-fns';
 import dayjs from 'dayjs';
 import { DatePicker, DatePickerProps } from 'antd';
 import { getLoggedInUserType } from '@/lib/routeAccess';
 import {
   updateEmployeeDetails,
+  updateWorkerProfile,
   updateEmployeeCurrentAddress,
   updateEmployeePermanentAddress,
   fetchDepartments,
@@ -33,6 +33,7 @@ import { AppDispatch, RootState } from '@/store';
 import { inputStyle } from '@/style/CustomStyles';
 import { capitalizeName } from '@/lib/utils';
 import { isValidAadhaar, isValidPan } from '@/lib/validations';
+import { buildWorkerUpdatePayload } from '@/lib/workerUpdatePayload';
 import { AiOutlineUser } from 'react-icons/ai';
 import { BsTelephone } from 'react-icons/bs';
 import { CiMail } from 'react-icons/ci';
@@ -458,41 +459,24 @@ const BasicDetailsFlat = ({
     setEmpDOBDate(date ? dayjs(date as any).toDate() : null);
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setEmpPhotoUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
-        return URL.createObjectURL(file);
-      });
-      setEmpPhotoFile(file);
+    if (!file || !employeeId) {
+      e.target.value = '';
+      return;
+    }
+    setEmpPhotoUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
+    setEmpPhotoFile(file);
+    try {
+      await dispatch(updateWorkerProfile({ empId: employeeId, image: file })).unwrap();
+      onSuccess?.();
+    } catch {
+      // toast in slice
     }
     e.target.value = '';
-  };
-
-  const buildUpdatePayload = () => {
-    const formData = new FormData();
-    formData.append('empId', employeeId ?? '');
-    formData.append('firstName', empFirstName);
-    formData.append('lastName', empLastName);
-    formData.append('email', empEmail);
-    formData.append('dob', empDOBDate ? format(empDOBDate, 'dd/MM/yyyy') : '');
-    formData.append('department', empDepartment);
-    formData.append('designation', empDesignation);
-    formData.append('mobile', empMobile);
-    formData.append('gender', empGender);
-    formData.append('maritalStatus', empMaritalStatus);
-    formData.append('hobbies', empHobbies);
-    formData.append('panNo', empPanNo?.trim().toUpperCase() ?? '');
-    formData.append('bloodGroup', empBloodGroup);
-    const aadhaarDigits = adhaar.replace(/\s/g, '');
-    if (aadhaarDigits) formData.append('aadhaar', aadhaarDigits);
-
-    if (empPhotoFile instanceof File) {
-      formData.append('image', empPhotoFile);
-    }
-
-    return formData;
   };
 
   const handleUpdateBasic = async () => {
@@ -501,10 +485,24 @@ const BasicDetailsFlat = ({
     if (panTrimmed.length > 0 && !isValidPan(panTrimmed)) return;
     setSaving(true);
     try {
-      const payload = buildUpdatePayload();
-
+      const payload = buildWorkerUpdatePayload({
+        empId: employeeId,
+        firstName: empFirstName,
+        middleName: empMiddleName,
+        lastName: empLastName,
+        email: empEmail,
+        mobile: empMobile,
+        gender: empGender,
+        maritalStatus: empMaritalStatus,
+        hobbies: empHobbies,
+        panNo: empPanNo ?? '',
+        bloodGroup: empBloodGroup,
+        department: empDepartment,
+        designation: empDesignation,
+        aadhaar: adhaar,
+        dob: empDOBDate ?? undefined,
+      });
       await dispatch(updateEmployeeDetails(payload)).unwrap();
-
       setIsEditing(false);
       onSuccess?.();
     } catch {

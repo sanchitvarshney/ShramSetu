@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LabeledField } from '@/components/ui/LabeledField';
 import {
   Select,
   SelectContent,
@@ -28,6 +28,7 @@ import { AppDispatch } from '@/store';
 import { useToast } from '@/components/ui/use-toast';
 import { CircularProgress } from '@mui/material';
 import { validateForm, loginSchema } from '@/lib/validations';
+import { CLIENT_FIRST_PATH } from '@/config/appRoutes';
 
 const Login: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -56,7 +57,12 @@ const Login: React.FC = () => {
           'loggedInUser',
           JSON.stringify(response?.payload?.data),
         );
-        navigate('/');
+        const userTypeFromServer = response?.payload?.data?.type;
+        if (userTypeFromServer === 'admin') {
+          navigate('/');
+        } else {
+          navigate(CLIENT_FIRST_PATH);
+        }
         toast({ title: 'Success!!', description: response.payload.message });
       }
     });
@@ -88,29 +94,28 @@ const Login: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-1 floating-label-group">
-                <Input
-                  id="email"
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className={inputStyle}
-                />
-                <Label htmlFor="email" className="floating-label">
-                  E-Mail / Phone Number
-                </Label>
-              </div>
-              <div className="grid gap-1 floating-label-group">
-                <PasswordInput
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  className={`${inputStyle} input`}
-                  required
-                />
-                <Label htmlFor="password" className="floating-label">
+              <LabeledField
+                label="E-Mail / Phone Number"
+                id="email"
+                type="text"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <div className="flex flex-col gap-[10px]">
+                <Label htmlFor="password" className="text-sm font-medium">
                   Password
                 </Label>
+                <div className="relative">
+                  <PasswordInput
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    className={inputStyle}
+                    required
+                  />
+                </div>
               </div>
               {/* <div className="flex items-center mt-[-20px]">
                 <Link
@@ -215,42 +220,6 @@ const Wrapper = styled.div`
       rgba(255, 255, 255, 0)
     );
   }
-  .floating-label-group {
-    position: relative;
-    margin-top: 15px;
-    margin-bottom: 25px;
-
-    .floating-label {
-      font-size: 15px;
-      color: #9e9e9e;
-      position: absolute;
-      pointer-events: none;
-      top: 9px;
-      left: 12px;
-      transition: all 0.1s ease;
-    }
-
-    input:focus ~ .floating-label,
-    input:not(:focus):valid ~ .floating-label {
-      top: -15px;
-      bottom: 0px;
-      left: 0px;
-      font-size: 14px;
-      opacity: 1;
-      color: #404040;
-    }
-
-    .input:focus ~ .floating-label,
-    .input:not(:focus):valid ~ .floating-label {
-      top: -15px;
-      bottom: 0px;
-      left: 0px;
-      font-size: 14px;
-      opacity: 1;
-      color: #404040;
-    }
-  }
-
   .row {
     margin-top: 50px;
   }

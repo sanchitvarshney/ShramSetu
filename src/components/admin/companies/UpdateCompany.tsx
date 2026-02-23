@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Building, Check, RefreshCcw, Tag, User } from 'lucide-react';
+import { Check, RefreshCcw } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,11 +9,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LabelInput } from '@/components/ui/EmpUpdate';
+import { LabeledField } from '@/components/ui/LabeledField';
 import { inputStyle } from '@/style/CustomStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
-import { FaCreditCard } from 'react-icons/fa';
 import { companyUpdate, getCompanyInfo } from '@/features/admin/adminPageSlice';
 import { validateForm, updateCompanySchema } from '@/lib/validations';
 import { toast } from '@/components/ui/use-toast';
@@ -54,7 +53,7 @@ const UpdateCompany = (props: any) => {
   const { companyInfo, iseditcompany } = useSelector((state: RootState) => state.adminPage);
 
   useEffect(() => {
-    const c = companyInfo[0];
+    const c = companyInfo?.[0];
     if (!c) return;
     setCompanyName(c?.name ?? '');
     setEmail(c?.email ?? '');
@@ -88,7 +87,7 @@ const UpdateCompany = (props: any) => {
       return;
     }
     const payloadData: Record<string, unknown> = {
-      companyID: companyInfo[0]?.companyID,
+      companyID: companyInfo?.[0]?.companyID,
       email,
       name: companyName,
       panNo,
@@ -114,7 +113,7 @@ const UpdateCompany = (props: any) => {
         title: 'Success!!',
         description: res?.message ?? 'Company and branch name updated.',
       });
-      const cid = companyInfo[0]?.companyID;
+      const cid = companyInfo?.[0]?.companyID;
       if (cid) dispatch(getCompanyInfo(cid));
       props.hide();
     } catch (error: any) {
@@ -148,62 +147,55 @@ const UpdateCompany = (props: any) => {
         </DialogHeader>
 
         <div>
-          <LabelInput
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            icon={Building}
+          <LabeledField
             label="Company Name"
             required
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
           />
-  
-          <div className="floating-label-group mt-4">
-            <Input
-              className={inputStyle}
-              onChange={(e) => setBrandName(e.target.value)}
-              value={brandName}
+          <div className="mt-4">
+            <LabeledField
+              label="Brand Name"
               placeholder="e.g. Company Brand"
+              value={brandName}
+              onChange={(e) => setBrandName(e.target.value)}
             />
-            <Label className="floating-label gap-[10px]">
-              <span className="flex items-center gap-[10px]">
-                <Tag className="h-[18px] w-[18px]" /> Brand Name
-              </span>
-            </Label>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <LabelInput
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              icon={User}
+          <div className="grid grid-cols-2 gap-[20px] mt-4">
+            <LabeledField
               label="Email"
               required
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-            <LabelInput
+            <LabeledField
+              label="Mobile Number"
+              type="text"
+              inputMode="numeric"
+              maxLength={15}
+              required
               value={mobile}
               onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-              icon={User}
-              label="Mobile Number"
-              required
             />
-            <LabelInput
-              value={panNo}
-              onChange={(e) => setPanNo(e.target.value.toUpperCase())}
-              icon={FaCreditCard}
+            <LabeledField
               label="PAN Number"
               required
+              maxLength={10}
+              value={panNo}
+              onChange={(e) => setPanNo(e.target.value.toUpperCase())}
+              inputClassName="uppercase"
             />
-            <LabelInput
-              value={companyWeb}
-              onChange={(e) => setCompanyWeb(e.target.value)}
-              icon={FaCreditCard}
+            <LabeledField
               label="Company Website"
               required
+              value={companyWeb}
+              onChange={(e) => setCompanyWeb(e.target.value)}
             />
           </div>
           <div className="grid grid-cols-1 gap-2 mt-4">
             <div className="space-y-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <FaCreditCard className="h-[18px] w-[18px]" /> HSN (multiple)
-              </Label>
+              <Label className="text-sm font-medium">HSN (multiple)</Label>
               {hsnList.map((val, idx) => (
                 <div key={idx} className="flex gap-2 items-center">
                   <Input
@@ -246,9 +238,7 @@ const UpdateCompany = (props: any) => {
               </Button>
             </div>
             <div className="space-y-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <FaCreditCard className="h-[18px] w-[18px]" /> SSC (multiple)
-              </Label>
+              <Label className="text-sm font-medium">SSC (multiple)</Label>
               {sscList.map((val, idx) => (
                 <div key={idx} className="flex gap-2 items-center">
                   <Input

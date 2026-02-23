@@ -19,6 +19,9 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { SearchOutlined } from '@mui/icons-material';
 import { Download } from 'lucide-react';
+import FilterListAltIcon from '@mui/icons-material/FilterListAlt';
+import { FileUploadDialog } from './FileUploadDialog';
+import { useNavigate } from 'react-router-dom';
 
 const { RangePicker } = DatePicker;
 
@@ -106,6 +109,8 @@ function workerToExcelRow(worker: any): Record<string, string | number | undefin
 
 
 const ListWorker: React.FC = () => {
+    const [isDialogOpen, setDialogOpen] = useState(false);
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { workers, loading, loadingworkerlist } = useSelector(
     (state: RootState) => state.adminPage,
@@ -244,27 +249,16 @@ const ListWorker: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)]">
+    <div className="flex flex-col h-[calc(100vh-75px)] p-4">
       { (loading || loadingworkerlist) && <Loading />}
-      <div className="mb-4 pl-5 pt-5">
+      <div className="mb-4">
         <Space direction="vertical" size={12} className="flex-row">
           <RangePicker
             onChange={handleDateRangeUpdate}
             format="DD-MM-YYYY"
             className="w-full"
           />
-          {/* <Select
-            defaultValue={status}
-            onChange={(value) => {
-              handleStatusChange(value);
-            }}
-            className="w-[120px]"
-            style={{ marginBottom: '16px' }}
-          >
-            <Option value="APR">Approved</Option>
-            <Option value="REJ">Reject</Option>
-            <Option value="PEN">Pending</Option>
-          </Select> */}
+       
           <Button
             type="submit"
             className="shadow bg-teal-500 hover:bg-teal-600 shadow-slate-500 w-[120px] gap-2 h-8"
@@ -283,24 +277,17 @@ const ListWorker: React.FC = () => {
             <Download className="h-4 w-4" />
             Download Excel
           </Button>
-          {/* <div className="flex gap-4 pl-4 rounded-lg ">
-            <p className="text-green-600 font-semibold text-[24px]">
-              Approved:{' '}
-              <span className="text-black">{workersStatusCount[0]?.apr}</span>
-            </p>
-            <p className="text-red-600 font-semibold text-[24px]">
-              Rejected:{' '}
-              <span className="text-black">{workersStatusCount[0]?.rej}</span>
-            </p>
-            <p className="text-yellow-600 font-semibold text-[24px]">
-              Pending:{' '}
-              <span className="text-black">{workersStatusCount[0]?.pen}</span>
-            </p>
-          </div> */}
+    
+             <Button
+            className="shadow bg-teal-500 hover:bg-teal-600 shadow-slate-500 w-[120px] gap-2 h-8"
+          onClick={() => navigate('/employee-list')}
+        >
+       <FilterListAltIcon />
+          Filter
+        </Button>
         </Space>
       </div>
-      <div className="flex flex-1">
-        <div className="flex-1 mr-4">
+
           <div className="ag-theme-quartz h-full">
             <AgGridReact
               rowData={workers}
@@ -310,8 +297,8 @@ const ListWorker: React.FC = () => {
               context={{ toggleShowDetails }}
               suppressCellFocus={true}
             />
-          </div>
-        </div>
+        
+     
         {selectedEmpId && (
           <WorkerDetails
             showEdit
@@ -335,6 +322,9 @@ const ListWorker: React.FC = () => {
           />
         )}
       </div>
+        {isDialogOpen && (
+        <FileUploadDialog onClose={() => setDialogOpen(false)} />
+      )}
     </div>
   );
 };

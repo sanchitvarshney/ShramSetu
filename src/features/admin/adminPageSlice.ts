@@ -508,6 +508,37 @@ export const updateEmployeeDetails = createAsyncThunk<
   },
 );
 
+/** Update worker profile image only - separate API from field update */
+export const updateWorkerProfile = createAsyncThunk<
+  UpdateEmployeeResponse,
+  { empId: string; image: File },
+  { rejectValue: string }
+>(
+  'adminPage/updateWorkerProfile',
+  async ({ empId, image }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('empId', empId);
+      formData.append('image', image);
+      const response = await orshAxios.put('/worker/profile-update', formData);
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message ?? 'Profile photo updated',
+        });
+      }
+      return response.data?.add ?? response.data;
+    } catch {
+      return rejectWithValue('Failed to update profile photo');
+    }
+  },
+);
 
 /** Update only current (present) address - different API flow */
 export const updateEmployeeCurrentAddress = createAsyncThunk<

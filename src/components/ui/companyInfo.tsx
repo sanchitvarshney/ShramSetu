@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LabelInput } from '@/components/ui/EmpUpdate';
+import { LabeledField } from '@/components/ui/LabeledField';
 import IconButton from '@/components/ui/IconButton';
 import {
   branchUpdate,
@@ -31,14 +31,9 @@ import { AppDispatch, RootState } from '@/store';
 import {
   Building2,
   CalendarIcon,
-  CreditCard,
   Edit,
   Ellipsis,
-  Globe,
-  Mail,
-  Phone,
   PlusIcon,
-  Tag,
   User,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -177,7 +172,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
       <AddClient
         branches={branches}
         show={showAddClientDialog}
-        companyId={details[0]?.companyID ?? ''}
+        companyId={details?.[0]?.companyID ?? ''}
         hide={() => setShowAddClientDialog(false)}
       />
       <UpdateCompany
@@ -196,7 +191,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
         <div className="flex gap-2 items-center ml-[-10px]">
           <div className="flex gap-1 items-center">
             <Building2 />
-            <p className="font-semibold text-xl">{details[0]?.name}</p>
+            <p className="font-semibold text-xl">{details?.[0]?.name}</p>
           </div>
         </div>
         <div className="flex gap-2 items-center">
@@ -207,75 +202,66 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
           />
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2  px-4 gap-4">
-        <LabelInput
-          value={details[0]?.email}
-          onChange={() => {}}
-          icon={Mail}
+      <div className="grid grid-cols-1 lg:grid-cols-2 px-4 gap-[20px]">
+        <LabeledField
           label="Email"
           required
-          stacked
-        />
-        <LabelInput
-          value={details[0]?.mobile}
+          readOnly
+          value={details?.[0]?.email ?? ''}
           onChange={() => {}}
-          icon={Phone}
+        />
+        <LabeledField
           label="Contact No."
           required
-          stacked
-        />
-        <LabelInput
-          value={details[0]?.panNo ? String(details[0].panNo).toUpperCase() : ''}
+          readOnly
+          value={details?.[0]?.mobile ?? ''}
           onChange={() => {}}
-          icon={CreditCard}
+        />
+        <LabeledField
           label="PAN No."
           required
-          stacked
-        />
-        <LabelInput
-          value={details[0]?.website}
+          readOnly
+          value={details?.[0]?.panNo ? String(details?.[0]?.panNo).toUpperCase() : ''}
           onChange={() => {}}
-          icon={Globe}
+        />
+        <LabeledField
           label="Website"
           required
-          stacked
-        />
-        <LabelInput
-          value={details[0]?.brand ?? ''}
+          readOnly
+          value={details?.[0]?.website ?? ''}
           onChange={() => {}}
-          icon={Tag}
+        />
+        <LabeledField
           label="Brand Name"
-          stacked
-        />
-        <LabelInput
-          value={formatHsnSsc((details[0] as any)?.hsn)}
+          readOnly
+          value={details?.[0]?.brand ?? ''}
           onChange={() => {}}
-          icon={CreditCard}
+        />
+        <LabeledField
           label="HSN"
-          stacked
-        />
-        <LabelInput
-          value={formatHsnSsc((details[0] as any)?.ssc)}
+          readOnly
+          value={formatHsnSsc((details?.[0] as any)?.hsn)}
           onChange={() => {}}
-          icon={CreditCard}
+        />
+        <LabeledField
           label="SSC"
-          stacked
-        />
-        <LabelInput
-          value={details[0]?.createdOn}
+          readOnly
+          value={formatHsnSsc((details?.[0] as any)?.ssc)}
           onChange={() => {}}
-          icon={CalendarIcon}
+        />
+        <LabeledField
           label="Company Added On"
           required
-          stacked
-        />
-        <LabelInput
-          value={details[0]?.updatedOn}
+          readOnly
+          value={details?.[0]?.createdOn ?? ''}
           onChange={() => {}}
-          icon={CalendarIcon}
+        />
+        <LabeledField
           label="Company Last Updated On"
           required
-          stacked
+          readOnly
+          value={details?.[0]?.updatedOn ?? ''}
+          onChange={() => {}}
         />
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-500 flex items-center gap-2">
@@ -344,62 +330,54 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <LabelInput
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-[20px]">
+                  <LabeledField
+                    label="Branch Name"
+                    readOnly
                     value={branch.branchName ?? branch.companyName ?? ''}
                     onChange={() => {}}
-                    icon={Building2}
-                    label="Branch Name"
-                    stacked
                   />
-                  <LabelInput
+                  <LabeledField
+                    label="Email"
+                    readOnly
                     value={branch.email ?? ''}
                     onChange={() => {}}
-                    icon={Mail}
-                    label="Email"
-                    stacked
                   />
-                  <LabelInput
+                  <LabeledField
+                    label="Contact No."
+                    readOnly
                     value={branch.mobile ?? ''}
                     onChange={() => {}}
-                    icon={Phone}
-                    label="Contact No."
-                    stacked
                   />
-                  <LabelInput
+                  <LabeledField
+                    label="GST Number"
+                    readOnly
                     value={branch.gst ?? ''}
                     onChange={() => {}}
-                    icon={CreditCard}
-                    label="GST Number"
-                    stacked
                   />
-                  <LabelInput
+                  <LabeledField
+                    label="Pin Code"
+                    readOnly
                     value={branch.pinCode ?? ''}
                     onChange={() => {}}
-                    icon={CreditCard}
-                    label="Pin Code"
-                    stacked
                   />
-                  <LabelInput
+                  <LabeledField
+                    label="State"
+                    readOnly
                     value={branchFieldText(branch.state)}
                     onChange={() => {}}
-                    icon={Globe}
-                    label="State"
-                    stacked
                   />
-                  <LabelInput
+                  <LabeledField
+                    label="City"
+                    readOnly
                     value={branch.city ?? ''}
                     onChange={() => {}}
-                    icon={Globe}
-                    label="City"
-                    stacked
                   />
-                  <LabelInput
+                  <LabeledField
+                    label="Industry"
+                    readOnly
                     value={branchFieldText(branch.industry)}
                     onChange={() => {}}
-                    icon={Tag}
-                    label="Industry"
-                    stacked
                   />
                 </div>
               </div>
