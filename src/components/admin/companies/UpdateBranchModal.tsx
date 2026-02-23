@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Building, Check, Cross, Map, Phone, User } from 'lucide-react';
+import { Check, Cross, Map } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,10 +9,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { LabelInput, SelectWithLabel } from '@/components/ui/EmpUpdate';
+import { LabeledField } from '@/components/ui/LabeledField';
+import { SelectWithLabel } from '@/components/ui/EmpUpdate';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
-import { FaCreditCard } from 'react-icons/fa';
 import {
   addBranch,
   branchUpdate,
@@ -23,6 +23,7 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { validateForm, updateBranchSchema } from '@/lib/validations';
 import { CircularProgress } from '@mui/material';
+import { inputStyle } from '@/style/CustomStyles';
 
 const UpdateBranchModal = (props: any) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -177,34 +178,34 @@ const UpdateBranchModal = (props: any) => {
         </DialogHeader>
 
         <div>
-          <div className="grid grid-cols-3 gap-2">
-            <LabelInput
-              value={branchName}
-              onChange={(e) => setBranchName(e.target.value)}
-              icon={Building}
+          <div className="grid grid-cols-3 gap-[20px]">
+            <LabeledField
               label="Branch Name"
               required
+              value={branchName}
+              onChange={(e) => setBranchName(e.target.value)}
             />
-            <LabelInput
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              icon={User}
+            <LabeledField
               label="Email"
               required
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
-            <LabelInput
+            <LabeledField
+              label="Contact"
+              type="text"
+              inputMode="numeric"
+              maxLength={15}
+              required
               value={mobile}
               onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-              icon={Phone}
-              label="Contact"
-              required
             />
-            <LabelInput
-              value={gstNo}
-              onChange={(e) => setGstNo(e.target.value)}
-              icon={FaCreditCard}
+            <LabeledField
               label="GST Number"
               required
+              value={gstNo}
+              onChange={(e) => setGstNo(e.target.value)}
             />
             <SelectWithLabel
               label="Industry"
@@ -213,14 +214,16 @@ const UpdateBranchModal = (props: any) => {
               options={industryList}
               textKey="name"
               optionKey="industryID"
-              icon={Building}
+              icon={Map}
             />
-            <LabelInput
-              value={pinCode}
-              onChange={(e) => setPinCode(e.target.value)}
-              icon={FaCreditCard}
+            <LabeledField
               label="Pin Code"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
               required
+              value={pinCode}
+              onChange={(e) => setPinCode(e.target.value.replace(/\D/g, ''))}
             />
             <SelectWithLabel
               label="State"
@@ -240,17 +243,14 @@ const UpdateBranchModal = (props: any) => {
               optionKey="name"
               icon={Map}
             />
-            <div className="col-span-3 flex flex-col gap-1.5">
-              <Label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Map className="h-[18px] w-[18px] shrink-0" />
-                Address
-              </Label>
+            <div className="col-span-3 flex flex-col gap-[10px]">
+              <Label className="text-sm font-medium">Address</Label>
               <Textarea
                 placeholder="Street, building, landmark..."
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 rows={2}
-                className="resize-none"
+                className={inputStyle + ' resize-none min-h-[60px]'}
               />
             </div>
           </div>

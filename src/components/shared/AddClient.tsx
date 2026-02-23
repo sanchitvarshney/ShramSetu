@@ -128,7 +128,7 @@ const AddClient = (props: any) => {
 
           {stage === 'details' && (
             <div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-[20px]">
                 <LabeledField
                   label="First Name"
                   required
@@ -155,6 +155,9 @@ const AddClient = (props: any) => {
                 />
                 <LabeledField
                   label="Mobile Number"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={15}
                   required
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
