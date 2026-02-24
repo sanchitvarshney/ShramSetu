@@ -1,6 +1,6 @@
 const TermAndCondition = () => {
   return (
-    <div className="w-full min-h-screen ">
+    <div className="w-full max-h-[calc(100vh-60px)] ] overflow-y-auto  ">
       <div className="max-w-4xl mx-auto px-6 py-4">
         {/* Header */}
         <div className="mb-8">

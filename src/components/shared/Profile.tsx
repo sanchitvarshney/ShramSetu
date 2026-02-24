@@ -15,6 +15,11 @@ import {
 } from '@/features/profile/profilePageSlice';
 import Loading from '@/components/reusable/Loading';
 
+/** API returns "true"/"false" or boolean; true = show Verify button (field is not verified) */
+function isNotVerified(value: unknown): boolean {
+  return value !== 'true' && value !== true;
+}
+
 function Profile() {
   const dispatch = useDispatch<AppDispatch>();
   const { userProfile, loading } = useSelector(
@@ -32,11 +37,12 @@ function Profile() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (userProfile.length > 0) {
-      setMobile(userProfile[0]?.phoneNumber || '');
-      setEmail(userProfile[0]?.email || '');
-      setSupportEmail(userProfile[0]?.emailSupport || '');
-      setRecruitmentEmail(userProfile[0]?.emailRecruitment || '');
+    if (userProfile?.length > 0) {
+      const p = userProfile[0];
+      setMobile(p?.phoneNumber ?? '');
+      setEmail(p?.email ?? '');
+      setSupportEmail(p?.emailSupport ?? '');
+      setRecruitmentEmail(p?.emailRecruitment ?? '');
     }
   }, [userProfile]);
 
@@ -72,40 +78,56 @@ function Profile() {
   };
 
   return (
-    <div  className="h-full">
+    <div className="h-full min-h-0">
       {loading && <Loading />}
       {userProfile && (
-        <div className="flex flex-col items-center ">
-          <div className="w-3/4 flex flex-col gap-4 mt-[50px]">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  <div className="flex gap-2 items-center text-[25px] font-[650]">
-                    <User />
-                    {userProfile[0]?.name}
+        <div className="flex flex-col items-center w-full px-4 py-6 sm:px-6">
+          <div className="w-full max-w-3xl flex flex-col gap-6">
+            <Card className="shadow-sm border-border/80 overflow-hidden">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl sm:text-2xl font-semibold text-foreground">
+                  <div className="flex gap-3 items-center">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#115e59]/10 text-[#115e59]">
+                      <User size={22} />
+                    </div>
+                    <span className="truncate">{userProfile[0]?.name}</span>
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                <div className="flex">
-                  <div className="flex gap-1">
-                    <div className="flex items-center gap-1 text-muted-foreground text-[20px]">
-                      <Building2 size={19} />
-                      <strong>Company : </strong>
-                    </div>
-                    <p className="ml-4">{userProfile[0]?.nameOfCompany}</p>
+              <CardContent className="flex flex-col gap-5 pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="flex flex-wrap items-center  gap-x-2 gap-y-1">
+                    <span className="flex items-center gap-2 text-muted-foreground text-sm font-medium shrink-0">
+                      <Building2 size={18} className="shrink-0" />
+                      Company
+                    </span>
+                    <span className="text-foreground font-medium">
+                      {userProfile[0]?.nameOfCompany || '—'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="flex items-center gap-2 text-muted-foreground text-sm font-medium shrink-0">
+                      <Building2 size={18} className="shrink-0" />
+                      Branch
+                    </span>
+                    <span className="text-foreground font-medium">
+                      {userProfile[0]?.nameOfBranch || '—'}
+                    </span>
                   </div>
                 </div>
-                <div className="h-[2px] w-full bg-muted my-2" />
-                <div className="grid grid-cols-3 gap-4 gap-y-6">
+                <div className="border-t border-border" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <SingleItem
                     label="Contact No."
                     icon={<Phone size={19} />}
                     value={mobile}
                     editable
-                    notVerified={userProfile[0]?.phoneVerify}
+                    notVerified={isNotVerified(userProfile[0]?.phoneVerify)}
                     onUpdate={(newValue) => {
-                      const digitsOnly = String(newValue ?? '').replace(/\D/g, '');
+                      const digitsOnly = String(newValue ?? '').replace(
+                        /\D/g,
+                        '',
+                      );
                       setMobile(digitsOnly);
                       updateUserData('mobile', digitsOnly, 'mobile');
                     }}
@@ -118,7 +140,7 @@ function Profile() {
                     icon={<Mail size={19} />}
                     value={email}
                     editable
-                    notVerified={userProfile[0]?.emailVerify}
+                    notVerified={isNotVerified(userProfile[0]?.emailVerify)}
                     onUpdate={(newValue) => {
                       setEmail(newValue);
                       updateUserData('email', newValue, 'email');
@@ -130,7 +152,9 @@ function Profile() {
                     icon={<Mail size={19} />}
                     value={supportEmail}
                     editable
-                    notVerified={userProfile[0]?.supportEmailVerify}
+                    notVerified={isNotVerified(
+                      userProfile[0]?.supportEmailVerify,
+                    )}
                     onUpdate={(newValue) => {
                       setSupportEmail(newValue);
                       updateUserData('email', newValue, 'supportEmail');
@@ -144,7 +168,9 @@ function Profile() {
                     icon={<Mail size={19} />}
                     value={recruitmentEmail}
                     editable
-                    notVerified={userProfile[0]?.recruitmentEmailVerify}
+                    notVerified={isNotVerified(
+                      userProfile[0]?.recruitmentEmailVerify,
+                    )}
                     onUpdate={(newValue) => {
                       setRecruitmentEmail(newValue);
                       updateUserData('email', newValue, 'recruitmentEmail');
@@ -186,7 +212,7 @@ interface PropTypes {
   label: string;
   value: string;
   editable?: boolean;
-  notVerified?: string;
+  notVerified?: boolean;
   extra?: ReactNode;
   onUpdate?: (newValue: string) => void;
   onVerify?: () => void; // Added onVerify prop
@@ -232,7 +258,7 @@ const SingleItem = ({
           <strong>{label}</strong>
         </div>
 
-        {notVerified === 'false' && (
+        {notVerified && (
           <div className="bg-white text-black">
             <IconButton
               tooltip={
