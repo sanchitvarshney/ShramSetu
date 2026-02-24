@@ -80,13 +80,13 @@ const SetPassword = () => {
     passwordStrength.score > 3;
 
   return (
-    <div style={{ backgroundColor: '#f5f5f5' }} className="h-full">
-      <div className="flex justify-center pt-10">
+    <div style={{ backgroundColor: '#f5f5f5' }} className="h-full min-h-[calc(100vh-100px)] flex items-center justify-center  ">
+      <div className="flex justify-center shink-0 p-4 w-full max-w-4xl">
         <div className="w-full max-w-5xl  bg-white rounded-lg shadow-lg p-12 flex space-x-12 overflow-y-auto">
           {/* Left Section */}
           <div className="w-1/2">
-            <h2 className="text-3xl font-semibold mb-8 text-gray-700">
-              Set Your Password
+            <h2 className="text-2xl font-semibold mb-8 text-gray-700">
+              Reset Your Password
             </h2>
             <form onSubmit={handleSubmit} className="space-y-8">
               {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -96,13 +96,13 @@ const SetPassword = () => {
                 <Input
                   required
                   type={showOldPassword ? 'text' : 'password'}
-                  className={`${inputStyle} py-5 text-lg h-[3.4rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
+                  className={`${inputStyle} py-5 text-lg h-[2.5rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                 />
                 <Label className="absolute top-[-0.75rem] left-4 bg-white px-2 text-gray-600 text-lg font-medium">
-                  <span className="flex items-center gap-2">
-                    <IoIosLock className="h-8 w-8 text-teal-500" />
+                  <span className="flex items-center text-[16px] gap-2">
+                    <IoIosLock className="h-6 w-6 text-teal-500" />
                     Old Password
                   </span>
                 </Label>
@@ -112,9 +112,9 @@ const SetPassword = () => {
                   onClick={() => setShowOldPassword(!showOldPassword)}
                 >
                   {showOldPassword ? (
-                    <IoEyeOff className="h-8 w-8" />
+                    <IoEyeOff className="h-6 w-6" />
                   ) : (
-                    <IoEye className="h-8 w-8" />
+                    <IoEye className="h-6 w-6" />
                   )}
                 </button>
               </div>
@@ -124,7 +124,7 @@ const SetPassword = () => {
                 <Input
                   required
                   type={showNewPassword ? 'text' : 'password'}
-                  className={`${inputStyle} py-5 text-lg h-[3.5rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
+                  className={`${inputStyle} py-5 text-lg h-[2.5rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
                   value={newPassword}
                   onChange={(e) => {
                     setNewPassword(e.target.value);
@@ -132,8 +132,8 @@ const SetPassword = () => {
                   }}
                 />
                 <Label className="absolute top-[-0.75rem] left-4 bg-white px-2 text-gray-600 text-lg font-medium">
-                  <span className="flex items-center gap-2">
-                    <IoIosLock className="h-8 w-8 text-teal-500" />
+                  <span className="flex items-center text-[16px] gap-2">
+                    <IoIosLock className="h-6 w-6 text-teal-500" />
                     New Password
                   </span>
                 </Label>
@@ -143,9 +143,9 @@ const SetPassword = () => {
                   onClick={() => setShowNewPassword(!showNewPassword)}
                 >
                   {showNewPassword ? (
-                    <IoEyeOff className="h-8 w-8" />
+                    <IoEyeOff className="h-6 w-6" />
                   ) : (
-                    <IoEye className="h-8 w-8" />
+                    <IoEye className="h-6 w-6" />
                   )}
                 </button>
               </div>
@@ -155,13 +155,13 @@ const SetPassword = () => {
                 <Input
                   required
                   type={showConfirmPassword ? 'text' : 'password'}
-                  className={`${inputStyle} py-5 text-lg h-[3.5rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
+                  className={`${inputStyle} py-5 text-lg h-[2.5rem] focus-visible:ring-2 focus-visible:ring-teal-500`}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
                 <Label className="absolute top-[-0.75rem] left-4 bg-white px-2 text-gray-600 text-lg font-medium">
-                  <span className="flex items-center gap-2">
-                    <IoIosLock className="h-8 w-8 text-teal-500" />
+                  <span className="flex items-center text-[16px] gap-2">
+                    <IoIosLock className="h-6 w-6 text-teal-500" />
                     Confirm Password
                   </span>
                 </Label>
@@ -171,16 +171,16 @@ const SetPassword = () => {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
-                    <IoEyeOff className="h-8 w-8" />
+                    <IoEyeOff className="h-6 w-6" />
                   ) : (
-                    <IoEye className="h-8 w-8" />
+                    <IoEye className="h-6 w-6" />
                   )}
                 </button>
               </div>
 
               <button
                 type="submit"
-                className={`py-5 text-white rounded-lg w-full mt-8 
+                className={`py-3 text-white rounded-lg w-full mt-8 
                 ${
                   isFormValid
                     ? 'bg-[#115e59] hover:bg-[#0d4a46]'
@@ -194,13 +194,13 @@ const SetPassword = () => {
           </div>
 
           {/* Right Section */}
-          <div className="w-1/2 pl-12 border-l border-gray-200">
-            <h3 className="text-2xl font-semibold mb-6 text-gray-700">
+          <div className="w-1/2 pl-10 border-l border-gray-200">
+            <h3 className="text-2xl font-semibold mb-4 text-gray-700">
               Password Requirements
             </h3>
-            <ul className="space-y-5 text-gray-600 text-lg">
+            <ul className="space-y-2 text-gray-600 text-lg">
               <li
-                className={`flex items-center ${
+                className={`flex items-center  ${
                   passwordChecks.hasUpperCase
                     ? 'text-green-600'
                     : 'text-gray-500'

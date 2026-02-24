@@ -37,7 +37,7 @@ const ProfileLayout: React.FC<Props> = ({ children }) => {
             <div className="h-[20px] w-[20px]">
               <IoLockClosedOutline className="h-[20px] w-[20px]" />
             </div>
-            Set App Password
+            Reset Password
           </NavLink>
         </nav>
       </div>
