@@ -19,6 +19,8 @@ import { Toaster } from '@/components/ui/toaster';
 import EmpUpdate from '@/components/ui/EmpUpdate';
 import CompanyInfo from '@/components/ui/companyInfo';
 import ProfilePage from '@/pages/profilePage/ProfilePage';
+import SetAppPassword from '@/pages/profilePage/SetAppPassword';
+import ProfileLayout from './Layout/ProfileLayout';
 import PageNotFound from './pages/PageNotFound';
 import JobLayout from './Layout/JobLayout';
 import JobAddPage from './pages/jobPages/JobAddPage';
@@ -72,7 +74,21 @@ const router = createBrowserRouter([
     element: (
       <Protected authentication>
         <MainLayout>
-          <ProfilePage />
+          <ProfileLayout>
+            <ProfilePage />
+          </ProfileLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
+    path: '/profile/set-password',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <ProfileLayout>
+            <SetAppPassword />
+          </ProfileLayout>
         </MainLayout>
       </Protected>
     ),
