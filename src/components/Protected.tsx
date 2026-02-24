@@ -1,6 +1,6 @@
 import useToken from '@/hooks/useToken';
-import { isAdminOnlyPathFromConfig } from '@/config/appRoutes';
-import { getLoggedInUserType } from '@/lib/routeAccess';
+import { isAdminOnlyPathFromConfig, CLIENT_FIRST_PATH } from '@/config/appRoutes';
+import { getLoggedInUserType, hasLoggedInUserInStorage } from '@/lib/routeAccess';
 import { RootState } from '@/store';
 import React, { useEffect, ReactNode } from 'react';
 import { useSelector } from 'react-redux';
@@ -16,25 +16,26 @@ const Protected: React.FC<ProtectedProps> = ({
   authentication = true,
 }) => {
   const { token, setToken } = useToken();
-  //@ts-ignore
-  const authStatus = !!token || localStorage.getItem('loggedInUser')?.token as any;
+  const hasUserInStorage = hasLoggedInUserInStorage();
+  const authStatus = !!token || hasUserInStorage;
   const navigate = useNavigate();
   const location = useLocation();
-  const authToken = useSelector((state: RootState) => state.auth?.token);
+  const authUser = useSelector((state: RootState) => state.auth?.user);
 
   useEffect(() => {
-    if (authToken) {
-      setToken({ token: authToken });
+    if (authUser?.token) {
+      setToken({ token: authUser.token });
     }
-  }, [authToken, setToken]);
+  }, [authUser?.token, setToken]);
 
   useEffect(() => {
     if (authentication && !authStatus) {
       navigate('/login');
     } else if (!authentication && authStatus) {
-      navigate('/');
+      const userType = getLoggedInUserType();
+      navigate(userType === 'admin' ? '/' : CLIENT_FIRST_PATH, { replace: true });
     }
-  }, [authStatus, authentication]);
+  }, [authStatus, authentication, navigate]);
 
   // Redirect client users from admin-only routes (central config)
   useEffect(() => {

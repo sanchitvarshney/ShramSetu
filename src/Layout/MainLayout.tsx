@@ -36,6 +36,7 @@ import NotificationSheet from '@/components/shared/NotificationSheet';
 import { logout } from '@/features/auth/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
+import useToken from '@/hooks/useToken';
 import { IoBriefcaseOutline, IoSettingsOutline } from 'react-icons/io5';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
@@ -52,6 +53,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
+  const { setToken } = useToken();
   const [open, setOpen] = useState<boolean>(false);
   const [notification, setNotification] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -79,8 +81,9 @@ const MainLayout: React.FC<Props> = ({ children }) => {
   }, [selectedCompany]);
 
   const handleLogout = () => {
+    setToken({ token: null });
     dispatch(logout());
-    navigate('/login');
+    navigate('/login', { replace: true });
     toast({ description: 'Logged Out Successfully' });
   };
 

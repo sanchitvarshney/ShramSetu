@@ -327,9 +327,9 @@ const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <Protected authentication={false}>
+    element: 
       <Login />
-    </Protected>,
+  
   },
   {
     path: '/loading',

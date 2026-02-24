@@ -1,6 +1,20 @@
 import { getAdminOnlyPaths, getRouteByPathname } from '@/config/appRoutes';
 
 /**
+ * Check if a valid logged-in user exists in localStorage (has token).
+ */
+export function hasLoggedInUserInStorage(): boolean {
+  try {
+    const raw = localStorage.getItem('loggedInUser');
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    return !!(data?.token);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Get the logged-in user's type from localStorage ('admin' | 'client' | null).
  */
 export function getLoggedInUserType(): string | null {

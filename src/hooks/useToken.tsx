@@ -37,26 +37,20 @@ export default function useToken(): UseToken {
 
   
 
-  // Function to save the token to localStorage
+  // Function to save the token to localStorage (or clear it when userToken.token is null)
   const saveToken = (userToken: UserToken): void => {
     try {
-      // Retrieve current 'loggedInUser' string
       const loggedInUserString = localStorage.getItem('loggedInUser');
       if (loggedInUserString) {
-        // Parse the current 'loggedInUser' string as JSON
         const loggedInUser = JSON.parse(loggedInUserString);
-
-        // Update the token in the parsed object
         loggedInUser.token = userToken.token || null;
-
-        // Save the updated object back to localStorage
         localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
       }
-      
-      // Update state with the new token
+      // Always update state so logout (token: null) clears in-memory token
       setToken(userToken.token);
     } catch (error) {
       console.error("Failed to save token to localStorage", error);
+      setToken(userToken.token);
     }
   };
 

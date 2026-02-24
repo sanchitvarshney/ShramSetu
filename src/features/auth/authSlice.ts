@@ -15,11 +15,20 @@ interface LoginCredentials {
   type: string;
 }
 
-const initialState: AuthState = {
-  user: null, // Initialize with null
-  error: null,
-  loading: false
-};
+function getInitialAuthState(): AuthState {
+  try {
+    const stored = localStorage.getItem('loggedInUser');
+    if (stored) {
+      const user = JSON.parse(stored);
+      if (user?.token) return { user, error: null, loading: false };
+    }
+  } catch {
+    // ignore
+  }
+  return { user: null, error: null, loading: false };
+}
+
+const initialState: AuthState = getInitialAuthState();
 
 interface LoginResponseData {
   id: string;
@@ -69,9 +78,13 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       state.error = null;
-
       localStorage.removeItem('loggedInUser');
       localStorage.removeItem('companySelect');
+    },
+    setUserFromStorage(state, action) {
+      if (action.payload) {
+        state.user = action.payload;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -98,5 +111,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, logout } = authSlice.actions;
+export const { clearError, logout, setUserFromStorage } = authSlice.actions;
 export default authSlice.reducer;
