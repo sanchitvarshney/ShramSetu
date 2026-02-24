@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import {  useState } from 'react';
 
 // Define the type for the userToken object
 interface UserToken {
@@ -33,11 +33,8 @@ export default function useToken(): UseToken {
   };
 
   // Initialize state with the token from localStorage
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(getToken());
 
-  useEffect(() => {
-    getToken();
-  }, [])
   
 
   // Function to save the token to localStorage
