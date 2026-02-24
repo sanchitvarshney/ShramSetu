@@ -42,7 +42,7 @@ const MasterLayout: React.FC<Props> = ({ children }) => {
                 to={route.path}
                 className={({ isActive }) =>
                   `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
-                    isActive ? 'bg-teal-500 text-white' : ''
+                    isActive ? 'bg-[#115e59] text-white' : ''
                   }`
                 }
               >

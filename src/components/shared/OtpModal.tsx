@@ -94,7 +94,7 @@ export default function OtpModal({
           <Button
             onClick={handleSubmit}
             disabled={otp.join('').length !== 8}
-            className="bg-teal-500 hover:bg-teal-600"
+            className="bg-[#115e59] hover:bg-[#0d4a46]"
           >
             Submit
           </Button>

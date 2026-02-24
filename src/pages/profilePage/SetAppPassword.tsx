@@ -183,7 +183,7 @@ const SetPassword = () => {
                 className={`py-5 text-white rounded-lg w-full mt-8 
                 ${
                   isFormValid
-                    ? 'bg-teal-500 hover:bg-teal-600'
+                    ? 'bg-[#115e59] hover:bg-[#0d4a46]'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
                 disabled={!isFormValid}

@@ -539,7 +539,7 @@ const BasicDetailsFlat = ({
             <Button
               type="button"
               size="sm"
-              className="bg-teal-500 hover:bg-teal-600"
+              className="bg-[#115e59] hover:bg-[#0d4a46]"
               onClick={handleUpdateBasic}
               disabled={saving}
             >
@@ -947,7 +947,7 @@ const CurrentAddressFlat = ({
             <Button
               type="button"
               size="sm"
-              className="bg-teal-500 hover:bg-teal-600"
+              className="bg-[#115e59] hover:bg-[#0d4a46]"
               onClick={handleUpdateCurrentAddress}
               disabled={saving}
             >
@@ -1124,7 +1124,7 @@ const PermanentAddressFlat = ({
             <Button
               type="button"
               size="sm"
-              className="bg-teal-500 hover:bg-teal-600"
+              className="bg-[#115e59] hover:bg-[#0d4a46]"
               onClick={handleUpdatePermanentAddress}
               disabled={saving}
             >

@@ -119,7 +119,7 @@ const ActivityLogPage: React.FC = () => {
     <div>
       {loading && <Loading />}
       <div className="h-[50px] flex items-center justify-end px-[20px]">
-        <Button className="flex items-center gap-[5px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400">
+        <Button className="flex items-center gap-[5px] bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400">
           <IoMdDownload className="h-[20px] w-[20px]" /> Download
         </Button>
       </div>

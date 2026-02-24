@@ -200,7 +200,7 @@ const AddCompany: React.FC = () => {
                   setModelOpen(false);
                 }
               }}
-              className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400"
+              className="bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400"
             >
               Next
             </Button>
@@ -361,7 +361,7 @@ const AddCompany: React.FC = () => {
           <CardFooter className="flex justify-end px-6 py-4 border-t">
             <Button
               onClick={handleAddCompany}
-              className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px]"
+              className="bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400 flex items-center gap-[10px]"
               disabled={addcompanyLoading}
             >
               {

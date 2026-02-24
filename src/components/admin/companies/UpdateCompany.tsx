@@ -294,7 +294,7 @@ const UpdateCompany = (props: any) => {
                 onClick={handleUpdateCompany}
                 icon={<Check size={18} />}
                 disabled={!companyName || !email || iseditcompany}
-                className="bg-teal-500 hover:bg-teal-600"
+                className="bg-[#115e59] hover:bg-[#0d4a46]"
               >
                 {iseditcompany && <CircularProgress size={20} />}
                 Update

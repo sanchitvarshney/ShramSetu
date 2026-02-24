@@ -690,7 +690,7 @@ const JobAddPage = () => {
               <CardFooter className="flex justify-end px-0 pt-4">
                 <Button
                   type="submit"
-                  className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400"
+                  className="bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400"
                   disabled={loading}
                 >
                   {loading ? 'Creating...' : 'Submit'}

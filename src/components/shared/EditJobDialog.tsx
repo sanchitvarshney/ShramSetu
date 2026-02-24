@@ -646,7 +646,7 @@ const EditJobDialog = ({
               >
                 Cancel
               </Button>
-              <Button disabled={isUpdateLoading} type="submit" className="bg-teal-500 hover:bg-teal-600">
+              <Button disabled={isUpdateLoading} type="submit" className="bg-[#115e59] hover:bg-[#0d4a46]">
                 Save Changes
               </Button>
             </DialogFooter>

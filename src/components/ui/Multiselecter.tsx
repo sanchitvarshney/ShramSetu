@@ -171,7 +171,7 @@ export const MultipleSelect = React.forwardRef<
                     return (
                       <Badge
                         key={value}
-                        className={`bg-teal-500 shadow-sm rounded-full hover:bg-teal-400 py-[5px] px-[10px] text-slate-600 text-[15px] ${cn(
+                        className={`bg-[#115e59] shadow-sm rounded-full hover:bg-[#0d4a46] py-[5px] px-[10px] text-slate-600 text-[15px] ${cn(
                           isAnimating ? "animate-bounce" : "",
                           multiSelectVariants({ variant })
                         )}`}
@@ -266,7 +266,7 @@ export const MultipleSelect = React.forwardRef<
                       className={cn(
                         "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                         selectedValues?.length === options?.length
-                          ? "bg-teal-500 text-primary-foreground border-teal-500"
+                          ? "bg-[#115e59] text-primary-foreground border-[#115e59]"
                           : "opacity-50 [&_svg]:invisible"
                       )}
                     >
@@ -286,7 +286,7 @@ export const MultipleSelect = React.forwardRef<
                           className={cn(
                             "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                             isSelected
-                              ? "bg-teal-500 text-white border-teal-500"
+                              ? "bg-[#115e59] text-white border-[#115e59]"
                               : "opacity-50 [&_svg]:invisible"
                           )}
                         >

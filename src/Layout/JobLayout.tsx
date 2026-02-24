@@ -16,7 +16,7 @@ const JobLayout: React.FC<Props> = ({ children }) => {
             to="/job/job-create"
             className={({ isActive }) =>
               `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
-                isActive && 'bg-teal-500 text-white'
+                isActive && 'bg-[#115e59] text-white'
               }`
             }
           >
@@ -29,7 +29,7 @@ const JobLayout: React.FC<Props> = ({ children }) => {
             to="/job/job-list"
             className={({ isActive }) =>
               `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
-                isActive && 'bg-teal-500 text-white'
+                isActive && 'bg-[#115e59] text-white'
               }`
             }
           >
@@ -42,7 +42,7 @@ const JobLayout: React.FC<Props> = ({ children }) => {
             to="/job/job-applications"
             className={({ isActive }) =>
               `px-[10px] py-[8px] text-slate-600 rounded-lg font-[500] flex items-center gap-[10px] ${
-                isActive && 'bg-teal-500 text-white'
+                isActive && 'bg-[#115e59] text-white'
               }`
             }
           >

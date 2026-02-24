@@ -57,7 +57,7 @@ const InvitationCard: React.FC = () => {
                 className="p-3 border-0 shadow-none resize-none focus-visible:ring-0"
               />
               <div className="flex items-center p-3 pt-0">
-                <Button type="submit" size="sm" className="ml-auto gap-1.5 bg-teal-500 hover:bg-teal-600 px-[20px]">
+                <Button type="submit" size="sm" className="ml-auto gap-1.5 bg-[#115e59] hover:bg-[#0d4a46] px-[20px]">
                   Reply
                   <CornerDownLeft className="size-3.5" />
                 </Button>

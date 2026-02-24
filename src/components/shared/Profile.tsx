@@ -239,7 +239,7 @@ const SingleItem = ({
                 <div className="flex items-center p-2 flex-col gap-2 w-[200px] bg-white text-black">
                   <p className="font-semibold">{label} is not verified</p>
                   <Button
-                    className="w-full h-[27px] bg-teal-500 hover:bg-teal-600 shadow-neutral-400"
+                    className="w-full h-[27px] bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400"
                     onClick={onVerify} // Trigger OTP modal
                   >
                     Verify

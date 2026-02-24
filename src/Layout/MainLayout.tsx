@@ -237,8 +237,8 @@ const MainLayout: React.FC<Props> = ({ children }) => {
             </div>
           </SidebarContent>
         </Sidebar>
-        <div className="border-t-[10px] border-[#04b0a8] h-[70px] flex shadow shadow-neutral-300 fixed top-0 left-0 right-0 z-[30] bg-white">
-          <div className="bg-[#04b0a8] w-[300px] h-[50px] flex justify-end">
+        <div className="border-t-[10px] border-[#104b43] h-[70px] flex shadow shadow-neutral-300 fixed top-0 left-0 right-0 z-[30] bg-white">
+          <div className="bg-[#104b43] w-[300px] h-[50px] flex justify-end">
             <img
               src="/lightlogov2.svg"
               alt="Brand logo"
@@ -247,7 +247,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
           </div>
           <header className="z-30 flex justify-between bg-[#fff] min-h-[50px] w-full pr-[20px]">
             <div className="flex">
-              <img src="/navcurve.jpg" alt="" className="h-[50px]" />
+              <img src="/navcurve2.png" alt="" className="h-[50px]" />
             </div>
             <div className="flex items-center gap-[20px]">
               <div>
@@ -281,7 +281,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                   onClick={() => setNotification(true)}
                 >
                   <BellRing className="h-[20px] w-[20px] text-slate-600" />
-                  {/* <Badge className="bg-teal-600 hover:bg-teal-600 h-[15px] w-[15px] rounded-full p-0 flex justify-center items-center absolute top-[-1px] right-[2px]">
+                  {/* <Badge className="bg-[#115e59] hover:bg-[#0d4a46] h-[15px] w-[15px] rounded-full p-0 flex justify-center items-center absolute top-[-1px] right-[2px]">
                     0
                   </Badge> */}
                 </div>
@@ -296,18 +296,17 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     <Avatar className=" w-[20px] h-[20px]">
                       <AvatarImage src={'/profile.png'} alt="" />
                     </Avatar>
-                 <div className="flex flex-col items-center justify-center ml-2 w-full">
-  <span className="text-[12px] font-bold text-[#000]">
-    {data?.firstName?.toUpperCase() ?? ''}
-  </span>
-  <p className="text-[10px] font-[600] text-[#000]">
-    {data?.type === 'admin' ? 'Admin' : 'Client'}
-  </p>
-</div>
+                    <div className="flex flex-col items-center justify-center ml-2 w-full">
+                      <span className="text-[12px] font-bold text-[#000]">
+                        {data?.firstName?.toUpperCase() ?? ''}
+                      </span>
+                      <p className="text-[10px] font-[600] text-[#000]">
+                        {data?.type === 'admin' ? 'Admin' : 'Client'}
+                      </p>
+                    </div>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                 
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => navigate('/profile')}
@@ -336,7 +335,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
             <CustomTooltip message="Menubar" side="right">
               <Button
                 onClick={() => setOpen(true)}
-                className="p-0 min-h-[50px] min-w-[50px] rounded-full bg-[#04b0a8] text-white shadow shadow-neutral-300 hover:bg-ehite flex justify-end"
+                className="p-0 min-h-[50px] min-w-[50px] rounded-full bg-[#104b43] text-white shadow shadow-neutral-300 hover:bg-ehite flex justify-end"
               >
                 <FaChevronRight className="mr-[5px] " />
               </Button>

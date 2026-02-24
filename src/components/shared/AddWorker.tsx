@@ -189,7 +189,7 @@ const AddWorker = () => {
                   onChange={handlePhotoChange}
                   className="hidden"
                 />
-                <button className="bg-teal-500 text-white rounded-md px-4 py-2 mt-2 hover:bg-teal-600 transition">
+                <button className="bg-[#115e59] text-white rounded-md px-4 py-2 mt-2 hover:bg-[#0d4a46] transition">
                   <label
                       htmlFor="profile-upload"
                       className="cursor-pointer text-white text-lg font-bold"
@@ -318,7 +318,7 @@ const AddWorker = () => {
           </CardContent>
           <CardFooter className="p-0 px-[20px] flex justify-end items-center border-t h-[50px]">
             <Button
-              className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-[10px]"
+              className="bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400 flex items-center gap-[10px]"
               onClick={handleSubmit}
               disabled={adduserloading}
             >

@@ -183,7 +183,7 @@ const AddClient = (props: any) => {
                   <Button
                     onClick={handleCreateClient}
                     icon={<Check size={18} />}
-                    className="bg-teal-500 hover:bg-teal-600"
+                    className="bg-[#115e59] hover:bg-[#0d4a46]"
                   >
                     Create Client
                   </Button>

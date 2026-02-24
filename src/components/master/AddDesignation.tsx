@@ -77,7 +77,7 @@ const AddDesignation: React.FC = () => {
         <Button
           onClick={handleSubmit}
           disabled={addDesignationLoading || !name.trim()}
-          className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400 flex items-center gap-2"
+          className="bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400 flex items-center gap-2"
         >
           {addDesignationLoading ? (
             <CircularProgress size={20} />

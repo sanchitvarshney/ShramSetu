@@ -38,7 +38,7 @@ const AppPasswordDialog = ({ open, hide }: PropTypes) => {
             Cancel
           </Button>
             
-            <Button icon={<Save size={19} /> }className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400">Save</Button>
+            <Button icon={<Save size={19} /> }className="bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400">Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

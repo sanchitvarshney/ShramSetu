@@ -114,7 +114,7 @@ const EmployeeData: React.FC = () => {
               <TbFilterSearch />
               Filters
             </p>
-            <Badge className="bg-teal-700 rounded-full hover:bg-teal-600">
+            <Badge className="bg-[#115e59] rounded-full hover:bg-[#0d4a46]">
               {(Array.isArray(filterData) ? filterData : filterData?.result ?? [])?.length} Records
             </Badge>
           </div>
@@ -151,7 +151,7 @@ const EmployeeData: React.FC = () => {
                   <Button
                     type="button"
                     size="sm"
-                    className="bg-teal-700 hover:bg-teal-600 text-white"
+                    className="bg-[#115e59] hover:bg-[#0d4a46] text-white"
                     onClick={handleSubmit}
                   >
                     Apply
@@ -231,7 +231,7 @@ const EmployeeData: React.FC = () => {
                 className="bg-white"
               />
               <Button
-                className="bg-teal-700 shadow-sm hover:bg-teal-600 shadow-neutral-500"
+                className="bg-[#115e59] shadow-sm hover:bg-[#0d4a46] shadow-neutral-500"
                 onClick={handleSubmit}
               >
                 Fetch

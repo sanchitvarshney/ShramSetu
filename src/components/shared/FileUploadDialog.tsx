@@ -164,7 +164,7 @@ export function FileUploadDialog({ onClose }: FileUploadDialogProps) {
                 disabled={!files || files.length === 0}
                 onClick={validateHandler}
                 icon={<Upload size={18} />}
-                className="w-full bg-teal-500 hover:bg-teal-600"
+                className="w-full bg-[#115e59] hover:bg-[#0d4a46]"
               >
                 Upload
               </Button>
@@ -191,7 +191,7 @@ export function FileUploadDialog({ onClose }: FileUploadDialogProps) {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-teal-500 hover:bg-teal-600"
+              className="bg-[#115e59] hover:bg-[#0d4a46]"
               onClick={submitConfirm}
             >
               <Check size={18} className="mr-2" />

@@ -261,7 +261,7 @@ const ListWorker: React.FC = () => {
        
           <Button
             type="submit"
-            className="shadow bg-teal-500 hover:bg-teal-600 shadow-slate-500 w-[120px] gap-2 h-8"
+            className="shadow bg-[#115e59] hover:bg-[#0d4a46] shadow-slate-500 w-[120px] gap-2 h-8"
             onClick={() => handleStatusChange(status)}
           >
            <SearchOutlined />
@@ -279,7 +279,7 @@ const ListWorker: React.FC = () => {
           </Button>
     
              <Button
-            className="shadow bg-teal-500 hover:bg-teal-600 shadow-slate-500 w-[120px] gap-2 h-8"
+            className="shadow bg-[#115e59] hover:bg-[#0d4a46] shadow-slate-500 w-[120px] gap-2 h-8"
           onClick={() => navigate('/employee-list')}
         >
        <FilterListAltIcon />

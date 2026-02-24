@@ -304,7 +304,7 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="mt-2 bg-teal-500 hover:bg-teal-600 text-white border-0"
+                    className="mt-2 bg-[#115e59] hover:bg-[#0d4a46] text-white border-0"
                     asChild
                   >
                     <label
@@ -703,7 +703,7 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={saving}
-            className="bg-teal-500 hover:bg-teal-600 shadow-neutral-400"
+            className="bg-[#115e59] hover:bg-[#0d4a46] shadow-neutral-400"
           >
             {saving ? 'Saving...' : 'Save'}
           </Button>
