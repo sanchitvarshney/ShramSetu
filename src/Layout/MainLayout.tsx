@@ -74,7 +74,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
   }, [companies]);
 
   useEffect(() => {
-    // Persist selected company to local storage
+    
     localStorage.setItem('companySelect', selectedCompany);
   }, [selectedCompany]);
 

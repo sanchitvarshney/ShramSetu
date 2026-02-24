@@ -16,7 +16,8 @@ const Protected: React.FC<ProtectedProps> = ({
   authentication = true,
 }) => {
   const { token, setToken } = useToken();
-  const authStatus = !!token;
+  //@ts-ignore
+  const authStatus = !!token || localStorage.getItem('loggedInUser')?.token as any;
   const navigate = useNavigate();
   const location = useLocation();
   const authToken = useSelector((state: RootState) => state.auth?.token);
@@ -33,7 +34,7 @@ const Protected: React.FC<ProtectedProps> = ({
     } else if (!authentication && authStatus) {
       navigate('/');
     }
-  }, [authStatus, authentication, navigate]);
+  }, [authStatus, authentication]);
 
   // Redirect client users from admin-only routes (central config)
   useEffect(() => {
