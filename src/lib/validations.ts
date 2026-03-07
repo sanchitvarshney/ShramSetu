@@ -268,14 +268,16 @@ export const jobFormSchema = z
   });
 export type JobFormData = z.infer<typeof jobFormSchema>;
 
-/** Contractor form (add / update) */
+/** Contractor form (add / update) – matches API: name, panNo, email, mobile */
 export const contractorSchema = z.object({
   name: z.string().min(1, 'Contractor name is required').max(200, 'Name is too long').transform((s) => s.trim()),
-  contactPerson: z.string().max(200).optional().transform((s) => (s == null || s === '' ? undefined : s.trim())),
-  mobile: z.string().min(1, 'Mobile is required').max(20).transform((s) => s.trim()),
+  panNo: panSchema,
   email: emailSchema,
-  address: z.string().max(500).optional().transform((s) => (s == null || s === '' ? undefined : s.trim())),
-  companyName: z.string().max(200).optional().transform((s) => (s == null || s === '' ? undefined : s.trim())),
+  mobile: z
+    .string()
+    .min(1, 'Mobile is required')
+    .regex(/^[0-9]{10}$/, 'Mobile must be exactly 10 digits')
+    .transform((s) => s.trim()),
 });
 export type ContractorFormData = z.infer<typeof contractorSchema>;
 

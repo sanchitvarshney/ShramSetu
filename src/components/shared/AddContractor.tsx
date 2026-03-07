@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,18 +11,10 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { inputStyle } from '@/style/CustomStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
-import { addContractor, fetchContractors, searchCompanies } from '@/features/admin/adminPageSlice';
+import { addContractor, fetchContractors } from '@/features/admin/adminPageSlice';
 import { toast } from '@/components/ui/use-toast';
 import { CircularProgress } from '@mui/material';
 import { validateForm, contractorSchema } from '@/lib/validations';
@@ -33,29 +25,18 @@ import { APP_ROUTES } from '@/config/appRoutes';
 const AddContractor: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const { addContractorLoading, companies } = useSelector((state: RootState) => state.adminPage);
+  const { addContractorLoading } = useSelector((state: RootState) => state.adminPage);
   const [name, setName] = useState('');
-  const [contactPerson, setContactPerson] = useState('');
+  const [panNo, setPanNo] = useState('');
   const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
-  const [selectedCompanyId, setSelectedCompanyId] = useState('');
-
-  useEffect(() => {
-    dispatch(searchCompanies());
-  }, [dispatch]);
-
-  const selectedCompanyName =
-    companies?.find((c: { companyID: string; name: string }) => c.companyID === selectedCompanyId)?.name ?? '';
 
   const handleSubmit = () => {
     const validation = validateForm(contractorSchema, {
       name: name.trim(),
-      contactPerson: contactPerson.trim() || undefined,
+      panNo: panNo.trim().toUpperCase(),
       mobile: mobile.trim(),
       email: email.trim(),
-      address: address.trim() || undefined,
-      companyName: selectedCompanyId ? selectedCompanyName : undefined,
     });
     if (!validation.success) {
       toast({
@@ -69,20 +50,16 @@ const AddContractor: React.FC = () => {
     dispatch(
       addContractor({
         name: data.name,
-        contactPerson: data.contactPerson,
+        panNo: data.panNo,
         mobile: data.mobile,
         email: data.email,
-        address: data.address,
-        companyName: data.companyName,
       }),
     ).then((res: any) => {
       if (res?.payload?.success) {
         setName('');
-        setContactPerson('');
+        setPanNo('');
         setMobile('');
         setEmail('');
-        setAddress('');
-        setSelectedCompanyId('');
         dispatch(fetchContractors());
         navigate(APP_ROUTES.CONTRACTOR_LIST.path);
       }
@@ -91,7 +68,8 @@ const AddContractor: React.FC = () => {
 
   const isFormValid =
     name.trim() &&
-    mobile.trim() &&
+    panNo.trim() &&
+    mobile.trim().length === 10 &&
     email.trim();
 
   return (
@@ -102,7 +80,7 @@ const AddContractor: React.FC = () => {
           Add Contractor
         </CardTitle>
         <CardDescription>
-          Add a new contractor. Fill in the details below.
+          Add a new contractor. Name, PAN, email and 10-digit mobile are required.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-4">
@@ -117,22 +95,23 @@ const AddContractor: React.FC = () => {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="contactPerson">Contact person</Label>
+          <Label htmlFor="panNo">PAN No *</Label>
           <Input
-            id="contactPerson"
+            id="panNo"
             className={inputStyle}
-            value={contactPerson}
-            onChange={(e) => setContactPerson(e.target.value)}
-            placeholder="Contact person name"
+            value={panNo}
+            onChange={(e) => setPanNo(e.target.value.toUpperCase())}
+            placeholder="e.g. ABCDE1234F"
+            maxLength={10}
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="mobile">Mobile *</Label>
+          <Label htmlFor="mobile">Mobile (10 digits) *</Label>
           <Input
             id="mobile"
             className={inputStyle}
             value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
+            onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
             placeholder="10-digit mobile"
           />
         </div>
@@ -146,32 +125,6 @@ const AddContractor: React.FC = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="email@example.com"
           />
-        </div>
-        <div className="grid gap-2 col-span-2">
-          <Label htmlFor="address">Address</Label>
-          <Textarea
-            id="address"
-            className={inputStyle}
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="Full address"
-            rows={3}
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="company">Company</Label>
-          <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
-            <SelectTrigger id="company" className={inputStyle}>
-              <SelectValue placeholder="Select company" />
-            </SelectTrigger>
-            <SelectContent>
-              {(companies ?? []).map((c: { companyID: string; name: string }) => (
-                <SelectItem key={c.companyID} value={c.companyID}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </CardContent>
       <CardFooter className="flex justify-end gap-2 px-6 py-4 border-t">

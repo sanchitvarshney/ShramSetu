@@ -244,12 +244,10 @@ interface PincodeResponse {
 export interface Contractor {
   contractorID: string;
   name: string;
-  contactPerson?: string;
-  mobile: string;
+  panNo: string;
   email: string;
-  address?: string;
-  companyName?: string;
-  createdAt?: string;
+  mobile: string;
+  activeStatus?: string;
 }
 
 interface ContractorListResponse {
@@ -931,7 +929,7 @@ export const fetchContractors = createAsyncThunk<ContractorListResponse, void>(
   'adminPage/fetchContractors',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<ContractorListResponse>('/contractor/list');
+      const response = await orshAxios.get<ContractorListResponse>('/contractor/all');
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch contractors');
@@ -941,11 +939,9 @@ export const fetchContractors = createAsyncThunk<ContractorListResponse, void>(
 
 export interface AddContractorPayload {
   name: string;
-  contactPerson?: string;
-  mobile: string;
+  panNo: string;
   email: string;
-  address?: string;
-  companyName?: string;
+  mobile: string;
 }
 
 export const addContractor = createAsyncThunk<
@@ -979,6 +975,7 @@ export const addContractor = createAsyncThunk<
 
 export interface UpdateContractorPayload extends AddContractorPayload {
   contractorID: string;
+  activeStatus?: string;
 }
 
 export const updateContractor = createAsyncThunk<
@@ -988,7 +985,7 @@ export const updateContractor = createAsyncThunk<
   'adminPage/updateContractor',
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.put('/contractor/update', payload);
+      const response = await orshAxios.put('/contractor/edit', payload);
       const data = response.data;
       if (!data?.success) {
         toast({

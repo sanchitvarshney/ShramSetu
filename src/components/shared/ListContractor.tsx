@@ -67,11 +67,15 @@ const ListContractor: React.FC = () => {
 
   const columnDefs: ColDef[] = [
     { headerName: 'Name', field: 'name', flex: 1 },
-    { headerName: 'Contact Person', field: 'contactPerson', flex: 1, valueFormatter: (p) => p.value ?? '—' },
+    { headerName: 'PAN No', field: 'panNo', flex: 1 },
     { headerName: 'Mobile', field: 'mobile', flex: 1 },
     { headerName: 'Email', field: 'email', flex: 1 },
-    { headerName: 'Address', field: 'address', flex: 1, valueFormatter: (p) => p.value ?? '—' },
-    { headerName: 'Company', field: 'companyName', flex: 1, valueFormatter: (p) => p.value ?? '—' },
+    {
+      headerName: 'Status',
+      field: 'activeStatus',
+      flex: 1,
+      valueFormatter: (p) => (p.value === 'A' ? 'Active' : p.value === 'INA' ? 'Inactive' : p.value ?? '—'),
+    },
     {
       headerName: 'Actions',
       field: 'contractorID',

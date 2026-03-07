@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { inputStyle } from '@/style/CustomStyles';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
@@ -25,29 +31,25 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
   const dispatch = useDispatch<AppDispatch>();
   const { addContractorLoading } = useSelector((state: RootState) => state.adminPage);
   const [name, setName] = useState(contractor.name ?? '');
-  const [contactPerson, setContactPerson] = useState(contractor.contactPerson ?? '');
+  const [panNo, setPanNo] = useState(contractor.panNo ?? '');
   const [mobile, setMobile] = useState(contractor.mobile ?? '');
   const [email, setEmail] = useState(contractor.email ?? '');
-  const [address, setAddress] = useState(contractor.address ?? '');
-  const [companyName, setCompanyName] = useState(contractor.companyName ?? '');
+  const [activeStatus, setActiveStatus] = useState(contractor.activeStatus ?? 'A');
 
   useEffect(() => {
     setName(contractor.name ?? '');
-    setContactPerson(contractor.contactPerson ?? '');
+    setPanNo(contractor.panNo ?? '');
     setMobile(contractor.mobile ?? '');
     setEmail(contractor.email ?? '');
-    setAddress(contractor.address ?? '');
-    setCompanyName(contractor.companyName ?? '');
+    setActiveStatus(contractor.activeStatus ?? 'A');
   }, [contractor]);
 
   const handleSubmit = () => {
     const validation = validateForm(contractorSchema, {
       name: name.trim(),
-      contactPerson: contactPerson.trim() || undefined,
+      panNo: panNo.trim().toUpperCase(),
       mobile: mobile.trim(),
       email: email.trim(),
-      address: address.trim() || undefined,
-      companyName: companyName.trim() || undefined,
     });
     if (!validation.success) {
       toast({
@@ -62,11 +64,10 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
       updateContractor({
         contractorID: contractor.contractorID,
         name: data.name,
-        contactPerson: data.contactPerson,
+        panNo: data.panNo,
         mobile: data.mobile,
         email: data.email,
-        address: data.address,
-        companyName: data.companyName,
+        activeStatus: activeStatus,
       }),
     ).then((res: any) => {
       if (res?.payload?.success) {
@@ -77,7 +78,8 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
 
   const isFormValid =
     name.trim() &&
-    mobile.trim() &&
+    panNo.trim() &&
+    mobile.trim().length === 10 &&
     email.trim();
 
   return (
@@ -93,22 +95,23 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="edit-contactPerson">Contact person</Label>
+        <Label htmlFor="edit-panNo">PAN No *</Label>
         <Input
-          id="edit-contactPerson"
+          id="edit-panNo"
           className={inputStyle}
-          value={contactPerson}
-          onChange={(e) => setContactPerson(e.target.value)}
-          placeholder="Contact person"
+          value={panNo}
+          onChange={(e) => setPanNo(e.target.value.toUpperCase())}
+          placeholder="ABCDE1234F"
+          maxLength={10}
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="edit-mobile">Mobile *</Label>
+        <Label htmlFor="edit-mobile">Mobile (10 digits) *</Label>
         <Input
           id="edit-mobile"
           className={inputStyle}
           value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
+          onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
           placeholder="Mobile"
         />
       </div>
@@ -124,25 +127,16 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="edit-address">Address</Label>
-        <Textarea
-          id="edit-address"
-          className={inputStyle}
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="Address"
-          rows={3}
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="edit-companyName">Company name</Label>
-        <Input
-          id="edit-companyName"
-          className={inputStyle}
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          placeholder="Company name"
-        />
+        <Label htmlFor="edit-status">Status</Label>
+        <Select value={activeStatus} onValueChange={setActiveStatus}>
+          <SelectTrigger id="edit-status" className={inputStyle}>
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="A">Active</SelectItem>
+            <SelectItem value="INA">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex justify-end gap-2 pt-4">
         <Button variant="outline" onClick={onCancel}>
