@@ -25,8 +25,13 @@ function doLogout(message?: string) {
   window.location.href = '/login';
 }
 
-// Endpoints that do not require auth token (e.g. login)
-const PUBLIC_PATHS = ['/login/signin', 'login/signin'];
+// Endpoints that do not require auth token (e.g. login, forgot/reset password)
+const PUBLIC_PATHS = [
+  '/login/signin',
+  'login/signin',
+  'login/forgot-password',
+  'login/reset-password',
+];
 
 function isPublicUrl(url?: string): boolean {
   if (!url) return false;

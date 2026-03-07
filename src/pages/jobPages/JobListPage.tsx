@@ -13,7 +13,6 @@ import {
   fetchJobs,
 } from '@/features/admin/adminPageSlice';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
-import { getLoggedInUserType } from '@/lib/routeAccess';
 import { AlertDialogPopup } from '@/components/shared/AlertDialogPopup';
 import EditJobDialog from '@/components/shared/EditJobDialog';
 import { useForm } from 'react-hook-form';
@@ -68,8 +67,7 @@ const JobListPage = () => {
     if (department.length === 0 || designation.length === 0) {
       dispatch(fetchDepartments());
       dispatch(fetchDesignations());
-      const userType = getLoggedInUserType() ?? 'admin';
-      dispatch(searchCompanies(userType));
+      dispatch(searchCompanies());
     }
   }, [isEditDialogOpen]);
   const handleFetchJobs = () => {
@@ -80,8 +78,7 @@ const JobListPage = () => {
   };
 
   useEffect(() => {
-    const userType = getLoggedInUserType() ?? 'admin';
-    dispatch(searchCompanies(userType));
+    dispatch(searchCompanies());
   }, [dispatch]);
 
   useEffect(() => {

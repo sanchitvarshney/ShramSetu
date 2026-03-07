@@ -67,6 +67,65 @@ export const login = createAsyncThunk<LoginResponse, LoginCredentials>(
   },
 );
 
+/** Forgot password: send reset link/OTP to email or phone */
+export const forgotPassword = createAsyncThunk<
+  { success: boolean; message: string },
+  { userName: string }
+>('auth/forgotPassword', async ({ userName }, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post('login/forgot-password', {
+      userName: userName.trim(),
+    });
+    const data = response.data;
+    if (!data?.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: data?.message || 'Failed to send reset link',
+      });
+      return rejectWithValue(data?.message || 'Failed');
+    }
+    toast({ title: 'Success', description: data.message || 'Check your email for reset instructions.' });
+    return { success: true, message: data.message };
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+      'Failed to send reset link';
+    toast({ variant: 'destructive', title: 'Error', description: msg });
+    return rejectWithValue(msg);
+  }
+});
+
+/** Reset password with token from email link */
+export const resetPassword = createAsyncThunk<
+  { success: boolean; message: string },
+  { token: string; newPassword: string }
+>('auth/resetPassword', async ({ token, newPassword }, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post('login/reset-password', {
+      token,
+      newPassword,
+    });
+    const data = response.data;
+    if (!data?.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: data?.message || 'Failed to reset password',
+      });
+      return rejectWithValue(data?.message || 'Failed');
+    }
+    toast({ title: 'Success', description: data.message || 'Password reset successfully.' });
+    return { success: true, message: data.message };
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+      'Failed to reset password';
+    toast({ variant: 'destructive', title: 'Error', description: msg });
+    return rejectWithValue(msg);
+  }
+});
+
 // Create the slice
 const authSlice = createSlice({
   name: 'auth',
@@ -107,6 +166,24 @@ const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string; // Ensure payload is a string
+      })
+      .addCase(forgotPassword.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(forgotPassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(forgotPassword.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(resetPassword.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(resetPassword.rejected, (state) => {
+        state.loading = false;
       });
   },
 });

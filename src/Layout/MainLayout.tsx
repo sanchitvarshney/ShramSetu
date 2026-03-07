@@ -15,13 +15,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomTooltip from '@/components/reusable/CustomTooltip';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import {
   Sidebar,
   SidebarContent,
@@ -44,6 +38,8 @@ import { getLoggedInUserType } from '@/lib/routeAccess';
 import { BsBuildingUp } from 'react-icons/bs';
 import { GrUserWorker } from 'react-icons/gr';
 import { TbLayoutGridFilled } from 'react-icons/tb';
+import { HiOutlineUserGroup } from 'react-icons/hi';
+import { Bell } from 'lucide-react';
 
 interface Props {
   children: React.ReactNode;
@@ -62,11 +58,10 @@ const MainLayout: React.FC<Props> = ({ children }) => {
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   let user = localStorage.getItem('loggedInUser') ?? 'null';
   const data = JSON.parse(user);
-  const userType = getLoggedInUserType() ?? 'admin';
 
   useEffect(() => {
-    dispatch(searchCompanies(userType));
-  }, [dispatch, userType]);
+    dispatch(searchCompanies());
+  }, []);
 
   useEffect(() => {
     if (companies?.length > 0) {
@@ -149,6 +144,15 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     Worker
                   </NavLink>
 
+                  <NavLink
+                    to="/contractor/list"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <HiOutlineUserGroup className="w-6 h-6" />
+                    Contractor
+                  </NavLink>
+
                   {getLoggedInUserType() === 'admin' && (
                     <NavLink
                       to={'/department/list'}
@@ -183,6 +187,14 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                   >
                     <Mail className="w-5 h-5" />
                     Invitation
+                  </NavLink>
+                  <NavLink
+                    to="/push-notification"
+                    className={NavlinkStyle}
+                    onClick={() => setOpen(false)}
+                  >
+                    <Bell className="w-5 h-5" />
+                    Notification
                   </NavLink>
                 </nav>
               </aside>
@@ -253,7 +265,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
               <img src="/navcurve2.png" alt="" className="h-[50px]" />
             </div>
             <div className="flex items-center gap-[20px]">
-              <div>
+              {/* <div>
                 <Select
                   value={selectedCompany}
                   onValueChange={setSelectedCompany}
@@ -272,7 +284,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
 
               {/* <div className="download">
                 <DownloadIndecator />

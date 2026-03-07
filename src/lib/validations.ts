@@ -215,6 +215,25 @@ export const changePasswordSchema = z
   });
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
+/** Forgot password: email or phone (userName) */
+export const forgotPasswordSchema = z.object({
+  userName: z.string().min(1, 'Email or phone is required'),
+});
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+/** Reset password (from email link): token + new password */
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Reset link is invalid or expired'),
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, 'Confirm password is required'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
 /** Job form (Add/Edit) */
 export const jobFormSchema = z
   .object({
@@ -248,6 +267,17 @@ export const jobFormSchema = z
     path: ['maxSalary'],
   });
 export type JobFormData = z.infer<typeof jobFormSchema>;
+
+/** Contractor form (add / update) */
+export const contractorSchema = z.object({
+  name: z.string().min(1, 'Contractor name is required').max(200, 'Name is too long').transform((s) => s.trim()),
+  contactPerson: z.string().max(200).optional().transform((s) => (s == null || s === '' ? undefined : s.trim())),
+  mobile: z.string().min(1, 'Mobile is required').max(20).transform((s) => s.trim()),
+  email: emailSchema,
+  address: z.string().max(500).optional().transform((s) => (s == null || s === '' ? undefined : s.trim())),
+  companyName: z.string().max(200).optional().transform((s) => (s == null || s === '' ? undefined : s.trim())),
+});
+export type ContractorFormData = z.infer<typeof contractorSchema>;
 
 /** Master: Department / Designation name */
 export const addDepartmentSchema = z.object({

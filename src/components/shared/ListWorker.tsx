@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { columnDefs } from '@/table/ListWorkerTable';
 import { DatePicker, Space } from 'antd';
@@ -14,14 +14,16 @@ import {
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import WorkerDetails from '@/components/shared/WorkerDetails';
+import ShareWorkersDialog, { type SelectedWorkerItem } from '@/components/shared/ShareWorkersDialog';
 import Loading from '@/components/reusable/Loading';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { SearchOutlined } from '@mui/icons-material';
-import { Download } from 'lucide-react';
+import { Download, Send } from 'lucide-react';
 import FilterListAltIcon from '@mui/icons-material/FilterListAlt';
 import { FileUploadDialog } from './FileUploadDialog';
 import { useNavigate } from 'react-router-dom';
+import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
 
 const { RangePicker } = DatePicker;
 
@@ -108,8 +110,22 @@ function workerToExcelRow(worker: any): Record<string, string | number | undefin
 }
 
 
+function getWorkerId(row: any): string {
+  return row?.employeeID ?? row?.empId ?? row?.empCode ?? '';
+}
+
+function toSelectedWorkerItem(row: any): SelectedWorkerItem {
+  return {
+    empCode: getWorkerId(row),
+    mobile: row?.empMobile ?? row?.mobile ?? '',
+  };
+}
+
 const ListWorker: React.FC = () => {
-    const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedWorkers, setSelectedWorkers] = useState<SelectedWorkerItem[]>([]);
+  const gridRef = useRef<AgGridReactType>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { workers, loading, loadingworkerlist } = useSelector(
@@ -277,8 +293,28 @@ const ListWorker: React.FC = () => {
             <Download className="h-4 w-4" />
             Download Excel
           </Button>
-    
-             <Button
+          <Button
+            type="button"
+            className="shadow bg-[#115e59] hover:bg-[#0d4a46] shadow-slate-500 gap-2 h-8"
+            onClick={() => {
+              const selected = gridRef.current?.api?.getSelectedRows() ?? [];
+              const items = selected.map(toSelectedWorkerItem).filter((w) => w.empCode);
+              if (items.length === 0) {
+                toast({
+                  variant: 'destructive',
+                  title: 'No selection',
+                  description: 'Please select one or more workers.',
+                });
+                return;
+              }
+              setSelectedWorkers(items);
+              setShareDialogOpen(true);
+            }}
+          >
+            <Send className="h-4 w-4" />
+            Send
+          </Button>
+          <Button
             className="shadow bg-[#115e59] hover:bg-[#0d4a46] shadow-slate-500 w-[120px] gap-2 h-8"
           onClick={() => navigate('/employee-list')}
         >
@@ -290,9 +326,12 @@ const ListWorker: React.FC = () => {
 
           <div className="ag-theme-quartz h-full">
             <AgGridReact
+              ref={gridRef}
               rowData={workers}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
+              rowSelection="multiple"
+              suppressRowClickSelection={true}
               pagination={true}
               context={{ toggleShowDetails }}
               suppressCellFocus={true}
@@ -323,8 +362,17 @@ const ListWorker: React.FC = () => {
         )}
       </div>
         {isDialogOpen && (
-        <FileUploadDialog onClose={() => setDialogOpen(false)} />
-      )}
+          <FileUploadDialog onClose={() => setDialogOpen(false)} />
+        )}
+        <ShareWorkersDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          selectedWorkers={selectedWorkers}
+          onSuccess={() => {
+            gridRef.current?.api?.deselectAll();
+            setSelectedWorkers([]);
+          }}
+        />
     </div>
   );
 };

@@ -2,6 +2,8 @@ import './App.scss';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import MainLayout from './Layout/MainLayout';
 import Loading from './components/reusable/Loading';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -14,6 +16,7 @@ import InvitationPage from './pages/invitation/InvitationPage';
 import WhatsAppInvitationPage from './components/shared/WhatsAppInvitationPage';
 import MailInvitationPage from './components/shared/MailInvitationPage';
 import MessageInvitationPage from './components/shared/MessageInvitationPage';
+import PushNotificationPage from './pages/invitation/PushNotificationPage';
 import Protected from '@/components/Protected';
 import { Toaster } from '@/components/ui/toaster';
 import EmpUpdate from '@/components/ui/EmpUpdate';
@@ -37,12 +40,16 @@ import ListCompany from './components/shared/ListCompany';
 import AddCompany from './components/shared/AddCompany';
 import AddWorker from './components/shared/AddWorker';
 import ListWorker from './components/shared/ListWorker';
+import AddBranch from './components/shared/AddBranch';
 import WorkerLayout from './Layout/WorkerLayout';
 import AddDepartment from './components/master/AddDepartment';
 import MasterLayout from './Layout/MasterLayout';
 import AddDesignation from './components/master/AddDesignation';
 import ListDesignations from './components/master/ListDesignations';
 import ListDepartments from './components/master/ListDepartments';
+import ListContractor from './components/shared/ListContractor';
+import AddContractor from './components/shared/AddContractor';
+import ContractorLayout from './Layout/ContractorLayout';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -141,7 +148,7 @@ const router = createBrowserRouter([
       </Protected>
     ),
   },
-   {
+  {
     path: '/workers/list',
     element: (
       <Protected authentication>
@@ -149,6 +156,42 @@ const router = createBrowserRouter([
           <WorkerLayout>
             <ListWorker />
           </WorkerLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
+    path: '/branch/add',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <WorkerLayout>
+            <AddBranch />
+          </WorkerLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
+    path: '/contractor/list',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <ContractorLayout>
+            <ListContractor />
+          </ContractorLayout>
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
+    path: '/contractor/add',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <ContractorLayout>
+            <AddContractor />
+          </ContractorLayout>
         </MainLayout>
       </Protected>
     ),
@@ -262,6 +305,16 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: '/push-notification',
+    element: (
+      <Protected authentication>
+        <MainLayout>
+          <PushNotificationPage />
+        </MainLayout>
+      </Protected>
+    ),
+  },
+  {
     path: '/employee-update/:id',
     element: (
       <Protected authentication>
@@ -327,9 +380,15 @@ const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: 
-      <Login />
-  
+    element: <Login />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
   {
     path: '/loading',

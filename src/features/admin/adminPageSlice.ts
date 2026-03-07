@@ -241,6 +241,23 @@ interface PincodeResponse {
   data: PinCode[] | null;
 }
 
+export interface Contractor {
+  contractorID: string;
+  name: string;
+  contactPerson?: string;
+  mobile: string;
+  email: string;
+  address?: string;
+  companyName?: string;
+  createdAt?: string;
+}
+
+interface ContractorListResponse {
+  success: boolean;
+  message?: string;
+  data: Contractor[] | null;
+}
+
 interface AdminPageState {
   companies: Company[] | null;
   department: Department[] | null;
@@ -261,6 +278,9 @@ interface AdminPageState {
   workerInfo: [] | null;
   subIndustry: SubIndustry[] | null;
   companyInfo: BranchDetail[] | null;
+  contractors: Contractor[] | null;
+  contractorLoading: boolean;
+  addContractorLoading: boolean;
   loading: boolean;
   error: string | null;
   isFetchingJobsLoading: boolean;
@@ -294,6 +314,9 @@ const initialState: AdminPageState = {
   subIndustry: [],
   corPincode: [],
   perPincode: [],
+  contractors: null,
+  contractorLoading: false,
+  addContractorLoading: false,
   loading: false,
   error: null,
   isFetchingJobsLoading: false,
@@ -835,6 +858,158 @@ export const createJob = createAsyncThunk<CreateJobResponse, CreateJobPayload>(
     }
   },
 );
+/** Send WhatsApp invitation: selected workers (empCode + mobile arrays) + company, address, contact */
+export interface ShareWorkersPayload {
+  empCode: string[];
+  mobile: string[];
+  company: string;
+  address: string;
+  contact: string;
+}
+
+export const shareWorkers = createAsyncThunk<
+  { success: boolean; message: string },
+  ShareWorkersPayload
+>(
+  'adminPage/shareWorkers',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post('/invitations/send-whatsapp', payload);
+      const data = response.data;
+      if (!data?.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: data?.message || 'Failed to send.',
+        });
+        return rejectWithValue(data?.message || 'Failed');
+      }
+      toast({ title: 'Success', description: data.message || 'Sent successfully.' });
+      return { success: true, message: data.message };
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Failed to send';
+      toast({ variant: 'destructive', title: 'Error', description: msg });
+      return rejectWithValue(msg);
+    }
+  },
+);
+
+/** Push notification: title + message */
+export const sendNotification = createAsyncThunk<
+  { success: boolean; message: string },
+  { title: string; message: string }
+>(
+  'adminPage/sendNotification',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post('/invitations/send-notification', payload);
+      const data = response.data;
+      if (!data?.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: data?.message || 'Failed to send notification.',
+        });
+        return rejectWithValue(data?.message || 'Failed');
+      }
+      toast({ title: 'Success', description: data.message || 'Notification sent.' });
+      return { success: true, message: data.message };
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Failed to send notification';
+      toast({ variant: 'destructive', title: 'Error', description: msg });
+      return rejectWithValue(msg);
+    }
+  },
+);
+
+/** Contractors: list, add, update */
+export const fetchContractors = createAsyncThunk<ContractorListResponse, void>(
+  'adminPage/fetchContractors',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<ContractorListResponse>('/contractor/list');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch contractors');
+    }
+  },
+);
+
+export interface AddContractorPayload {
+  name: string;
+  contactPerson?: string;
+  mobile: string;
+  email: string;
+  address?: string;
+  companyName?: string;
+}
+
+export const addContractor = createAsyncThunk<
+  { success: boolean; message: string; data?: Contractor },
+  AddContractorPayload
+>(
+  'adminPage/addContractor',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post('/contractor/add', payload);
+      const data = response.data;
+      if (!data?.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: data?.message || 'Failed to add contractor',
+        });
+        return rejectWithValue(data?.message || 'Failed');
+      }
+      toast({ title: 'Success', description: data.message || 'Contractor added.' });
+      return data;
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Failed to add contractor';
+      toast({ variant: 'destructive', title: 'Error', description: msg });
+      return rejectWithValue(msg);
+    }
+  },
+);
+
+export interface UpdateContractorPayload extends AddContractorPayload {
+  contractorID: string;
+}
+
+export const updateContractor = createAsyncThunk<
+  { success: boolean; message: string; data?: Contractor },
+  UpdateContractorPayload
+>(
+  'adminPage/updateContractor',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.put('/contractor/update', payload);
+      const data = response.data;
+      if (!data?.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: data?.message || 'Failed to update contractor',
+        });
+        return rejectWithValue(data?.message || 'Failed');
+      }
+      toast({ title: 'Success', description: data.message || 'Contractor updated.' });
+      return data;
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Failed to update contractor';
+      toast({ variant: 'destructive', title: 'Error', description: msg });
+      return rejectWithValue(msg);
+    }
+  },
+);
+
 export const bulkUpload = createAsyncThunk<void, File, { rejectValue: string }>(
   'adminPage/bulkUpload',
   async (file: File, { rejectWithValue }) => {
@@ -1074,6 +1249,53 @@ const adminPageSlice = createSlice({
       .addCase(createJob.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(shareWorkers.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(shareWorkers.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(shareWorkers.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(sendNotification.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(sendNotification.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(sendNotification.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchContractors.pending, (state) => {
+        state.contractorLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchContractors.fulfilled, (state, action) => {
+        state.contractorLoading = false;
+        state.contractors = action.payload.data ?? null;
+      })
+      .addCase(fetchContractors.rejected, (state) => {
+        state.contractorLoading = false;
+      })
+      .addCase(addContractor.pending, (state) => {
+        state.addContractorLoading = true;
+      })
+      .addCase(addContractor.fulfilled, (state) => {
+        state.addContractorLoading = false;
+      })
+      .addCase(addContractor.rejected, (state) => {
+        state.addContractorLoading = false;
+      })
+      .addCase(updateContractor.pending, (state) => {
+        state.addContractorLoading = true;
+      })
+      .addCase(updateContractor.fulfilled, (state) => {
+        state.addContractorLoading = false;
+      })
+      .addCase(updateContractor.rejected, (state) => {
+        state.addContractorLoading = false;
       })
       .addCase(addCompany.pending, (state) => {
         state.addcompanyLoading = true;

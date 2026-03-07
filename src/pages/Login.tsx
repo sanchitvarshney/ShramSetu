@@ -117,14 +117,14 @@ const Login: React.FC = () => {
                   />
                 </div>
               </div>
-              {/* <div className="flex items-center mt-[-20px]">
+              <div className="flex items-center mt-[4px]">
                 <Link
-                  to="#"
+                  to="/forgot-password"
                   className="inline-block ml-auto text-xs underline text-slate-600 text-[12px]"
                 >
                   Forgot password?
                 </Link>
-              </div> */}
+              </div>
               <Button
                 type="submit"
                 className="w-full bg-[#115e59] hover:bg-[#0d4a46]"

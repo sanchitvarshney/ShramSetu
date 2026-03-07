@@ -1,32 +1,23 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-
-// import { IoLibrary } from 'react-icons/io5';
-import { APP_ROUTES, Worker_SIDEBAR_ORDER } from '@/config/appRoutes';
+import { APP_ROUTES, Contractor_SIDEBAR_ORDER } from '@/config/appRoutes';
 import { IoList, IoPersonAddOutline } from 'react-icons/io5';
-import { HiOutlineOfficeBuilding } from 'react-icons/hi';
-import { getLoggedInUserType } from '@/lib/routeAccess';
 
 interface Props {
   children: React.ReactNode;
 }
 
 const SIDEBAR_ICONS: Record<string, React.ReactNode> = {
-  WORKERS_LIST: <IoList className="h-[20px] w-[20px]" />,
-  WORKERS_CREATE: <IoPersonAddOutline className="h-[20px] w-[20px]" />,
-  ADD_BRANCH: <HiOutlineOfficeBuilding className="h-[20px] w-[20px]" />,
+  CONTRACTOR_LIST: <IoList className="h-[20px] w-[20px]" />,
+  CONTRACTOR_CREATE: <IoPersonAddOutline className="h-[20px] w-[20px]" />,
 };
 
-const WorkerLayout: React.FC<Props> = ({ children }) => {
-  const isClient = getLoggedInUserType() === 'client';
-
+const ContractorLayout: React.FC<Props> = ({ children }) => {
   return (
     <div className="h-[calc(100vh-70px)] w-[calc(100vw-20px)] grid grid-cols-[300px_1fr]">
       <div className="w-full border p-[10px] ">
         <nav className="w-full flex flex-col gap-[5px]">
-          {Worker_SIDEBAR_ORDER.map((key) => {
-            // Add Branch: only show to client, not to admin
-            if (key === 'ADD_BRANCH' && !isClient) return null;
+          {Contractor_SIDEBAR_ORDER.map((key) => {
             const route = APP_ROUTES[key];
             if (!route?.inAdminSidebar) return null;
             const icon = SIDEBAR_ICONS[key];
@@ -52,4 +43,4 @@ const WorkerLayout: React.FC<Props> = ({ children }) => {
   );
 };
 
-export default WorkerLayout;
+export default ContractorLayout;

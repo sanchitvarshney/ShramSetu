@@ -83,6 +83,24 @@ export const APP_ROUTES: Record<string, RouteDefinition> = {
     access: 'both',
     inAdminSidebar: true,
   },
+  ADD_BRANCH: {
+    path: '/branch/add',
+    label: 'Add Branch',
+    access: 'both',
+    inAdminSidebar: true,
+  },
+  CONTRACTOR_LIST: {
+    path: '/contractor/list',
+    label: 'Contractor List',
+    access: 'both',
+    inAdminSidebar: true,
+  },
+  CONTRACTOR_CREATE: {
+    path: '/contractor/add',
+    label: 'Add Contractor',
+    access: 'both',
+    inAdminSidebar: true,
+  },
   DEPARTMENT_LIST: {
     path: '/department/list',
     label: 'Department List',
@@ -136,6 +154,11 @@ export const APP_ROUTES: Record<string, RouteDefinition> = {
     label: 'Invitation (Message)',
     access: 'both',
   },
+  INVITATION_PUSH: {
+    path: '/push-notification',
+    label: 'Notification',
+    access: 'both',
+  },
 
   // ——— Job ———
   JOB_CREATE: {
@@ -174,12 +197,15 @@ export const ADMIN_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
 
 ];
 export const Worker_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
-    'WORKERS_LIST',
+  'WORKERS_LIST',
   'WORKERS_CREATE',
- 
-
-
+  'ADD_BRANCH',
 ];
+export const Contractor_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
+  'CONTRACTOR_LIST',
+  'CONTRACTOR_CREATE',
+];
+
 export const Master_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
    'DEPARTMENT_LIST',
   'DEPARTMENT_CREATE',

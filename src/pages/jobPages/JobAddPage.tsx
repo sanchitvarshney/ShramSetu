@@ -38,7 +38,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
-import { getLoggedInUserType } from '@/lib/routeAccess';
 import {
   getCompanyBranchOptions,
   createJob,
@@ -85,8 +84,7 @@ const JobAddPage = () => {
   const selectedBranchId = form.watch('branch');
 
   useEffect(() => {
-    const userType = getLoggedInUserType() ?? 'admin';
-    dispatch(searchCompanies(userType));
+    dispatch(searchCompanies());
     dispatch(fetchDepartments());
     dispatch(fetchDesignations());
   }, [dispatch]);

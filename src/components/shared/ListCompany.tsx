@@ -3,7 +3,6 @@ import { AgGridReact } from 'ag-grid-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
-import { getLoggedInUserType } from '@/lib/routeAccess';
 import { ColDef } from 'ag-grid-community';
 import Loading from '@/components/reusable/Loading';
 import {
@@ -46,8 +45,7 @@ const ListCompany = () => {
   );
 
   useEffect(() => {
-    const type =   getLoggedInUserType() ?? 'admin';
-    dispatch(searchCompanies(type));
+    dispatch(searchCompanies());
   }, []);
 
   const actionCellRenderer = (params: any) => {

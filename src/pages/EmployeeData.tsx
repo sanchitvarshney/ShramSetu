@@ -19,7 +19,6 @@ import WorkerDetails from '@/components/shared/WorkerDetails';
 import Loading from '@/components/reusable/Loading';
 import { advancedFilter } from '@/features/homePage/homePageSlice';
 import { searchCompanies } from '@/features/admin/adminPageSlice';
-import { getLoggedInUserType } from '@/lib/routeAccess';
 
 const EmployeeData: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -42,8 +41,7 @@ const EmployeeData: React.FC = () => {
 
 
   useEffect(() => {
-    const userType = getLoggedInUserType() ?? 'admin';
-    dispatch(searchCompanies(userType));
+    dispatch(searchCompanies());
   }, [dispatch]);
 
   const defaultColDef = useMemo(

@@ -18,6 +18,17 @@ const actionCellRenderer = (params: any) => {
 
 export const columnDefs: ColDef[] = [
   {
+    headerName: '',
+    field: 'employeeID',
+    width: 50,
+    maxWidth: 50,
+    checkboxSelection: true,
+    headerCheckboxSelection: true,
+    suppressMenu: true,
+    sortable: false,
+    filter: false,
+  },
+  {
     headerName: 'Full Name',
     field: 'firstName',
     sortable: true,

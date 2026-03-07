@@ -120,7 +120,7 @@ const HomePage: React.FC = () => {
           <Card
             key={card.title}
             className={`${card.bg} ${card.border} border shadow-sm hover:shadow-md transition-shadow`}
-            bodyStyle={{ padding: '1rem 1.25rem' }}
+            styles={{ body: { padding: '1rem 1.25rem' } }}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -140,7 +140,7 @@ const HomePage: React.FC = () => {
       <Card
         title="Monthly Applications (Last 3 Months)"
         className="shadow-sm min-w-0 overflow-hidden"
-        bodyStyle={{ padding: '1.25rem' }}
+        styles={{ body: { padding: '1.25rem' } }}
       >
         <div className="min-w-0 w-full overflow-hidden" style={{ height: chartHeight }}>
           {chartData.length > 0 ? (
