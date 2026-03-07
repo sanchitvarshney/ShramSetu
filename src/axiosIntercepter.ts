@@ -31,6 +31,8 @@ const PUBLIC_PATHS = [
   'login/signin',
   'login/forgot-password',
   'login/reset-password',
+  '/sendOtp',
+  '/changePassword',
 ];
 
 function isPublicUrl(url?: string): boolean {

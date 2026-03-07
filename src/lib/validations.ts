@@ -221,6 +221,31 @@ export const forgotPasswordSchema = z.object({
 });
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
+/** OTP: 4–8 digits (adjust length as per backend) */
+export const otpSchema = z
+  .string()
+  .min(4, 'OTP must be at least 4 digits')
+  .max(8, 'OTP must be at most 8 digits')
+  .regex(/^\d+$/, 'OTP must contain only digits');
+
+/** Forgot password: new password + confirm (after OTP) */
+export const forgotPasswordNewPasswordSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, 'Password must be 8–16 characters')
+      .max(16, 'Password must be 8–16 characters')
+      .regex(/[A-Z]/, 'At least one uppercase letter')
+      .regex(/\d/, 'At least one number')
+      .regex(/[^A-Za-z0-9]/, 'At least one special character'),
+    confirmPassword: z.string().min(1, 'Confirm password is required'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'New password and confirm password do not match',
+    path: ['confirmPassword'],
+  });
+export type ForgotPasswordNewPasswordFormData = z.infer<typeof forgotPasswordNewPasswordSchema>;
+
 /** Reset password (from email link): token + new password */
 export const resetPasswordSchema = z
   .object({

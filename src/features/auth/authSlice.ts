@@ -96,6 +96,68 @@ export const forgotPassword = createAsyncThunk<
   }
 });
 
+/** Send OTP for forgot password (admin or client) */
+export const sendOtp = createAsyncThunk<
+  { success: boolean; message: string },
+  { type: 'admin' | 'client'; userName: string }
+>('auth/sendOtp', async ({ type, userName }, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post('/login/sendOtp', {
+      type,
+      email: userName.trim(),
+    });
+    const data = response.data;
+    if (!data?.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: data?.message || 'Failed to send OTP',
+      });
+      return rejectWithValue(data?.message || 'Failed');
+    }
+    toast({ title: 'Success', description: data.message || 'OTP sent to your email.' });
+    return { success: true, message: data.message };
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+      'Failed to send OTP';
+    toast({ variant: 'destructive', title: 'Error', description: msg });
+    return rejectWithValue(msg);
+  }
+});
+
+/** Change password after OTP verification (forgot password flow) */
+export const changePasswordForgot = createAsyncThunk<
+  { success: boolean; message: string },
+  { type: 'admin' | 'client'; userName: string; otp: string; newPassword: string }
+>('auth/changePasswordForgot', async ({ type, userName, otp, newPassword }, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post('/login/changePassword', {
+      type,
+      email: userName.trim(),
+      otp: otp.trim(),
+      newPassword,
+    });
+    const data = response.data;
+    if (!data?.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: data?.message || 'Failed to change password',
+      });
+      return rejectWithValue(data?.message || 'Failed');
+    }
+    toast({ title: 'Success', description: data.message || 'Password changed successfully.' });
+    return { success: true, message: data.message };
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+      'Failed to change password';
+    toast({ variant: 'destructive', title: 'Error', description: msg });
+    return rejectWithValue(msg);
+  }
+});
+
 /** Reset password with token from email link */
 export const resetPassword = createAsyncThunk<
   { success: boolean; message: string },
@@ -174,6 +236,24 @@ const authSlice = createSlice({
         state.loading = false;
       })
       .addCase(forgotPassword.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(sendOtp.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(sendOtp.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(sendOtp.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(changePasswordForgot.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(changePasswordForgot.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(changePasswordForgot.rejected, (state) => {
         state.loading = false;
       })
       .addCase(resetPassword.pending, (state) => {
