@@ -104,6 +104,13 @@ function applicantToResumeData(d: ApplicantDetail): ResumeData {
   if (pan) personalRows.push({ label: 'PAN', value: pan });
   if (bloodGroup) personalRows.push({ label: 'Blood Group', value: bloodGroup });
   if (hobbies) personalRows.push({ label: 'Hobbies', value: hobbies });
+  const photoRaw = d.empPhoto ?? (d as any).empPhoto;
+  const photoUrl =
+    Array.isArray(photoRaw) && photoRaw.length > 0
+      ? String(photoRaw[0]).trim()
+      : typeof photoRaw === 'string' && photoRaw.trim()
+        ? photoRaw.trim()
+        : undefined;
   return {
     name,
     email: d.empEmail ?? '',
@@ -115,11 +122,80 @@ function applicantToResumeData(d: ApplicantDetail): ResumeData {
     employment,
     education,
     personalRows,
+    photoUrl: photoUrl || undefined,
   };
 }
 
-function buildResumeHtml(d: ApplicantDetail): { fullHtml: string; bodyContent: string } {
-  return buildResumeHtmlShared(applicantToResumeData(d));
+function buildResumeHtml(d: ApplicantDetail, photoUrlOverride?: string): { fullHtml: string; bodyContent: string } {
+  const data = applicantToResumeData(d);
+  return buildResumeHtmlShared(photoUrlOverride != null ? { ...data, photoUrl: photoUrlOverride } : data);
+}
+
+/** Resolve image URL to base64 so PDF export can render it (avoids CORS/taint). */
+async function resolvePhotoToBase64(url: string): Promise<string | undefined> {
+  const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+
+  try {
+    const res = await fetch(fullUrl, { mode: 'cors', credentials: 'include' });
+    if (!res.ok) throw new Error('Fetch failed');
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    // Fallback: load via Image and draw to canvas (works for same-origin or CORS-enabled)
+    try {
+      return await new Promise<string | undefined>((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve(undefined);
+              return;
+            }
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+          } catch {
+            resolve(undefined);
+          }
+        };
+        img.onerror = () => resolve(undefined);
+        img.src = fullUrl;
+      });
+    } catch {
+      return undefined;
+    }
+  }
+}
+
+/** Wait for all images inside element to load (so html2canvas can capture them). */
+function waitForImages(el: HTMLElement, timeoutMs = 3000): Promise<any> {
+  const imgs = el.querySelectorAll('img');
+  if (imgs.length === 0) return Promise.resolve();
+  return Promise.race([
+    Promise.all(
+      Array.from(imgs).map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete && img.naturalWidth > 0) {
+              resolve();
+              return;
+            }
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          })
+      )
+    ),
+    new Promise<void>((r) => setTimeout(r, timeoutMs)),
+  ]);
 }
 
 interface ApplicantDetailsDialogProps {
@@ -150,10 +226,18 @@ export default function ApplicantDetailsDialog({
   const handleDownload = useCallback(async () => {
     if (!applicationDetails) return;
     const baseName = (applicationDetails.empName ?? applicationDetails.empEmail ?? 'details').replace(/[^a-zA-Z0-9.-]/g, '_');
-    const { fullHtml, bodyContent } = buildResumeHtml(applicationDetails);
+    const data = applicantToResumeData(applicationDetails);
+    const photoUrl = data.photoUrl;
+    const isDataUrl = photoUrl && photoUrl.startsWith('data:');
+    const photoForPdf =
+      photoUrl && !isDataUrl
+        ? await resolvePhotoToBase64(photoUrl)
+        : photoUrl;
+    const { fullHtml, bodyContent } = buildResumeHtml(applicationDetails, photoForPdf);
 
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;background:#fff;';
+    wrap.style.cssText =
+      'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;background:#fff;overflow:visible;';
     wrap.innerHTML = bodyContent;
     document.body.appendChild(wrap);
 
@@ -164,14 +248,19 @@ export default function ApplicantDetailsDialog({
       return;
     }
 
-    await new Promise((r) => setTimeout(r, 100));
+    el.style.width = '210mm';
+
+    await waitForImages(el);
+    await new Promise((r) => setTimeout(r, 400));
 
     try {
       const canvas = await html2canvas(el, {
         scale: 2,
         useCORS: true,
+        allowTaint: false,
         logging: false,
         backgroundColor: '#ffffff',
+        imageTimeout: 0,
       });
       wrap.remove();
 

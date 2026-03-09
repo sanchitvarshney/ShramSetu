@@ -1,13 +1,12 @@
-
-
 export function fmt(v: unknown): string {
   if (v === undefined || v === null || v === '') return '';
   if (Array.isArray(v)) return v.filter(Boolean).join(', ');
   return String(v).trim();
 }
 
+/** Section heading in a light grey bar (matches reference CV) */
 export function sectionTitle(title: string): string {
-  return `<div style="margin-top:20px;margin-bottom:10px;"><h2 style="font-size:11px;font-weight:700;margin:0;padding-bottom:6px;color:#1e293b;text-transform:uppercase;letter-spacing:0.1em;border-bottom:2px solid #1e293b;">${title}</h2></div>`;
+  return `<div style="margin-top:16px;margin-bottom:8px;background:#cbd5e1;padding:10px 20px;display:flex;align-items:center;min-height:36px;box-sizing:border-box;"><h2 style="font-size:13px;font-weight:700;margin:0;padding:0;color:#0f172a;text-transform:uppercase;letter-spacing:0.05em;line-height:1;vertical-align:middle;">${title}</h2></div>`;
 }
 
 export function convertMarital(m: string): string {
@@ -33,7 +32,7 @@ export function buildAddressLines(
   city: string,
   state: string,
   country: string,
-  pincode: string
+  pincode: string,
 ): string[] {
   const parts1 = [houseNo, colony, city].filter(Boolean);
   const line1 = parts1.join(', ');
@@ -71,69 +70,115 @@ export interface ResumeData {
   employment: ResumeEmploymentItem[];
   education: ResumeEducationItem[];
   personalRows: { label: string; value: string }[];
+  /** Profile photo URL (shown top-right in CV layout) */
+  photoUrl?: string;
 }
 
 const DEFAULT_CAREER_OBJECTIVE =
   'To build career in a growing organization, where I can get the opportunities to prove my abilities by accepting challenges, fulfilling the organizational goal and climb the career ladder through continuous learning and commitment.';
 
+/** Format date string for CV experience (e.g. "Jan 2024", "Jan 2026") */
+function formatCvDate(s: string): string {
+  if (!s || typeof s !== 'string') return '';
+  const trimmed = String(s).trim();
+  if (!trimmed) return '';
+  const d = new Date(trimmed);
+  if (isNaN(d.getTime())) return trimmed;
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
 
-export function buildResumeHtml(data: ResumeData): { bodyContent: string; fullHtml: string } {
+export function buildResumeHtml(data: ResumeData): {
+  bodyContent: string;
+  fullHtml: string;
+} {
   const {
     name,
     email,
     mobile,
-    designation,
-    department,
+
     addressBlock,
     careerObjective,
     employment,
     education,
     personalRows,
+    photoUrl,
   } = data;
 
   const sections: string[] = [];
 
+  // Top: CURRICULUM VITAE centered, bold, underlined
   sections.push(`
-    <div style="height:4px;background:#1e293b;margin:-28px -32px 20px -32px;"></div>
-    <div style="margin-top:20px;">
-      <p style="font-size:22px;font-weight:700;margin:0 0 4px 0;color:#0f172a;letter-spacing:0.02em;">${name}</p>
-      ${designation || department ? `<p style="font-size:12px;margin:0 0 6px 0;color:#475569;">${[designation, department].filter(Boolean).join(' · ')}</p>` : ''}
-      <p style="font-size:11px;margin:0 0 2px 0;color:#334155;">${mobile ? `Phone: ${mobile}` : ''}${mobile && email ? ' &nbsp;|&nbsp; ' : ''}${email ? `Email: ${email}` : ''}</p>
-      ${addressBlock ? `<div style="margin-top:6px;">${addressBlock}</div>` : ''}
+    <div style="text-align:center;margin-bottom:14px;">
+      <p style="font-size:16px;font-weight:700;margin:0;color:#0f172a;letter-spacing:0.08em;text-decoration:underline;">CURRICULUM VITAE</p>
     </div>
-    <div style="height:18px;"></div>
+  `);
+  // Row: left = name, address, Mob No, Email Id (labels bold, email as link); right = photo
+  const emailLink = email
+    ? `<a href="mailto:${email}" style="color:#334155;text-decoration:underline;">${email}</a>`
+    : '';
+  const photoHtml = photoUrl
+    ? `<div style="flex-shrink:0;margin-left:20px;"><img src="${photoUrl}" alt="Photo" style="width:100px;height:120px;object-fit:cover;border:1px solid #cbd5e1;display:block;" /></div>`
+    : '';
+  sections.push(`
+    <div style="display:flex;align-items:flex-start;margin-bottom:18px;">
+      <div style="flex:1;min-width:0;">
+        <p style="font-size:20px;font-weight:700;margin:0 0 8px 0;color:#0f172a;">${name}</p>
+        ${addressBlock ? `<div style="font-size:11px;margin:0 0 6px 0;color:#334155;line-height:1.5;">${addressBlock}</div>` : ''}
+        <p style="font-size:11px;margin:0;color:#334155;">${mobile ? `<strong>Mob No:</strong> ${mobile}` : ''}${mobile && email ? ' &nbsp; &nbsp; ' : ''}${email ? `<strong>Email Id:</strong> ${emailLink}` : ''}</p>
+      </div>
+      ${photoHtml}
+    </div>
+    <div style="height:4px;"></div>
   `);
 
   const summary = careerObjective || DEFAULT_CAREER_OBJECTIVE;
   sections.push(`
-    ${sectionTitle('Professional Summary')}
+    ${sectionTitle('CAREER OBJECTIVE')}
     <p style="margin:0;font-size:12px;line-height:1.55;color:#334155;">${summary}</p>
     <div style="height:4px;"></div>
   `);
 
   if (employment.length > 0) {
-    sections.push(sectionTitle('Work Experience'));
+    sections.push(sectionTitle('EXPERIENCE'));
     employment.forEach((item) => {
-      const duration = [fmt(item.joining), item.relieving ? fmt(item.relieving) : 'Present'].filter(Boolean).join(' – ');
+      const startStr = formatCvDate(item.joining);
+      const endStr = item.relieving ? formatCvDate(item.relieving) : 'Present';
+      const dateRange = [startStr, endStr].filter(Boolean).join(' | ');
       sections.push(`
-        <div style="margin-bottom:10px;">
-          <p style="font-size:13px;font-weight:700;margin:0 0 2px 0;color:#0f172a;">${fmt(item.companyName)}</p>
-          ${item.role ? `<p style="font-size:12px;margin:0 0 2px 0;color:#475569;">${fmt(item.role)}</p>` : ''}
-          <p style="font-size:11px;margin:0;color:#64748b;">${duration}${item.industry ? ` · ${fmt(item.industry)}` : ''}</p>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:12px;">
+          <span style="font-size:12px;font-weight:600;color:#0f172a;">${fmt(item.companyName)}</span>
+          <span style="font-size:11px;color:#475569;flex-shrink:0;">${dateRange}</span>
         </div>
+        ${item.role ? `<p style="font-size:11px;margin:0 0 4px 0;color:#475569;">${fmt(item.role)}</p>` : ''}
       `);
     });
     sections.push('');
   }
 
   if (education.length > 0) {
-    sections.push(sectionTitle('Education'));
+    sections.push(sectionTitle('EDUCATION'));
     education.forEach((edu) => {
-      const rightPart = [edu.stream, edu.university, edu.endYear].filter(Boolean).join(' · ');
+      const rightPart = [fmt(edu.stream), fmt(edu.university), fmt(edu.endYear)]
+        .filter(Boolean)
+        .join(' | ');
       sections.push(`
-        <div style="margin-bottom:8px;">
-          <p style="font-size:13px;font-weight:600;margin:0 0 2px 0;color:#0f172a;">${fmt(edu.degree)}</p>
-          ${rightPart ? `<p style="font-size:12px;margin:0;color:#475569;">${rightPart}</p>` : ''}
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:12px;">
+          <span style="font-size:12px;color:#334155;">${fmt(edu.degree)}</span>
+          <span style="font-size:11px;color:#475569;flex-shrink:0;">${rightPart || '—'}</span>
         </div>
       `);
     });
@@ -141,30 +186,44 @@ export function buildResumeHtml(data: ResumeData): { bodyContent: string; fullHt
   }
 
   if (personalRows.length > 0) {
-    sections.push(sectionTitle('Personal Details'));
-    sections.push('<table style="width:100%;border-collapse:collapse;font-size:12px;">');
+    sections.push(sectionTitle('PERSONAL DETAILS'));
+    sections.push(
+      '<table style="width:100%;border-collapse:collapse;font-size:12px;">',
+    );
     for (let i = 0; i < personalRows.length; i += 2) {
       const left = personalRows[i];
       const right = personalRows[i + 1];
+      const leftLabel = left.label === 'Gender' ? 'Sex' : left.label;
+      const rightLabel =
+        right && right.label === 'Gender' ? 'Sex' : (right?.label ?? '');
       sections.push('<tr>');
-      sections.push(`<td style="padding:2px 16px 2px 0;color:#64748b;font-weight:600;width:28%;">${left.label}</td><td style="padding:2px 0;color:#334155;">${left.value}</td>`);
-      sections.push(right ? `<td style="padding:2px 16px 2px 0;color:#64748b;font-weight:600;width:28%;">${right.label}</td><td style="padding:2px 0;color:#334155;">${right.value}</td>` : '<td></td><td></td>');
+      sections.push(
+        `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${leftLabel}</td><td style="padding:3px 0;color:#334155;">${left.value}</td>`,
+      );
+      sections.push(
+        right
+          ? `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${rightLabel}</td><td style="padding:3px 0;color:#334155;">${right.value}</td>`
+          : '<td></td><td></td>',
+      );
       sections.push('</tr>');
     }
     sections.push('</table>');
     sections.push('<div style="height:8px;"></div>');
   }
 
-  sections.push(sectionTitle('Declaration'));
+  sections.push(sectionTitle('DECLARATION'));
   sections.push(`
-    <p style="margin:0;font-size:12px;line-height:1.5;color:#334155;">I hereby declare that the information furnished above is true and correct to the best of my knowledge.</p>
-    <p style="margin:12px 0 0 0;font-size:12px;color:#334155;">Date: _________________ &nbsp; Place: _________________</p>
+    <p style="margin:0;font-size:12px;line-height:1.5;color:#334155;">I solemnly declare that all the above information is correct to the best of my knowledge and belief.</p>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:12px;color:#334155;">
+      <span>Date ..........</span>
+      <span>Place ..........</span>
+    </div>
   `);
 
   const bodyInner = sections.join('\n');
   const wrapperStyle =
-    "font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;max-width:210mm;margin:0;padding:28px 32px;color:#334155;line-height:1.45;background:#fff;box-sizing:border-box;font-size:13px;";
+    "font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;width:210mm;max-width:210mm;margin:0;padding:28px 32px;color:#334155;line-height:1.45;background:#fff;box-sizing:border-box;font-size:13px;";
   const bodyContent = `<div style="${wrapperStyle}">${bodyInner}</div>`;
-  const fullHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>${name} - Resume</title><style>body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;padding:28px 32px;color:#334155;background:#fff;max-width:210mm;}</style></head><body>${bodyInner}</body></html>`;
+  const fullHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>${name} - Curriculum Vitae</title><style>body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;padding:28px 32px;color:#334155;background:#fff;max-width:210mm;}</style></head><body>${bodyInner}</body></html>`;
   return { bodyContent, fullHtml };
 }

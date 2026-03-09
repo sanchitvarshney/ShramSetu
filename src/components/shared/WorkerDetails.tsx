@@ -171,6 +171,13 @@ function workerToResumeData(w: any): ResumeData {
   if (bloodGroup)
     personalRows.push({ label: 'Blood Group', value: bloodGroup });
   if (hobbies) personalRows.push({ label: 'Hobbies', value: hobbies });
+  const photoRaw = w?.empPhoto;
+  const photoUrl =
+    Array.isArray(photoRaw) && photoRaw.length > 0
+      ? String(photoRaw[0]).trim()
+      : typeof photoRaw === 'string' && photoRaw.trim()
+        ? photoRaw.trim()
+        : undefined;
   return {
     name,
     email: w?.empEmail ?? '',
@@ -182,14 +189,82 @@ function workerToResumeData(w: any): ResumeData {
     employment,
     education,
     personalRows,
+    photoUrl: photoUrl || undefined,
   };
 }
 
-function buildWorkerResumeHtml(w: any): {
-  bodyContent: string;
-  fullHtml: string;
-} {
-  return buildResumeHtml(workerToResumeData(w));
+function buildWorkerResumeHtml(
+  w: any,
+  photoUrlOverride?: string,
+): { bodyContent: string; fullHtml: string } {
+  const data = workerToResumeData(w);
+  return buildResumeHtml(
+    photoUrlOverride != null ? { ...data, photoUrl: photoUrlOverride } : data,
+  );
+}
+
+async function resolvePhotoToBase64(url: string): Promise<string | undefined> {
+  const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+
+  try {
+    const res = await fetch(fullUrl, { mode: 'cors', credentials: 'include' });
+    if (!res.ok) throw new Error('Fetch failed');
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    try {
+      return await new Promise<string | undefined>((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve(undefined);
+              return;
+            }
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+          } catch {
+            resolve(undefined);
+          }
+        };
+        img.onerror = () => resolve(undefined);
+        img.src = fullUrl;
+      });
+    } catch {
+      return undefined;
+    }
+  }
+}
+
+function waitForImages(el: HTMLElement, timeoutMs = 3000): Promise<any> {
+  const imgs = el.querySelectorAll('img');
+  if (imgs.length === 0) return Promise.resolve();
+  return Promise.race([
+    Promise.all(
+      Array.from(imgs).map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete && img.naturalWidth > 0) {
+              resolve();
+              return;
+            }
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+          })
+      )
+    ),
+    new Promise<void>((r) => setTimeout(r, timeoutMs)),
+  ]);
 }
 
 const WorkerDetails: React.FC<WorkerDetailsProps> = ({
@@ -210,11 +285,18 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
       [worker?.empFirstName, worker?.empLastName].filter(Boolean).join('-') ||
       'worker';
     const safeName = baseName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const { bodyContent, fullHtml } = buildWorkerResumeHtml(worker);
+    const data = workerToResumeData(worker);
+    const photoUrl = data.photoUrl;
+    const isDataUrl = photoUrl && photoUrl.startsWith('data:');
+    const photoForPdf =
+      photoUrl && !isDataUrl
+        ? await resolvePhotoToBase64(photoUrl)
+        : photoUrl;
+    const { bodyContent, fullHtml } = buildWorkerResumeHtml(worker, photoForPdf);
 
     const wrap = document.createElement('div');
     wrap.style.cssText =
-      'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;background:#fff;';
+      'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;background:#fff;overflow:visible;';
     wrap.innerHTML = bodyContent;
     document.body.appendChild(wrap);
 
@@ -225,14 +307,19 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
       return;
     }
 
-    await new Promise((r) => setTimeout(r, 100));
+    el.style.width = '210mm';
+
+    await waitForImages(el);
+    await new Promise((r) => setTimeout(r, 400));
 
     try {
       const canvas = await html2canvas(el, {
         scale: 2,
         useCORS: true,
+        allowTaint: false,
         logging: false,
         backgroundColor: '#ffffff',
+        imageTimeout: 0,
       });
       wrap.remove();
 
@@ -316,6 +403,19 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
                 </div>
                 {worker && <EmployementDetails details={worker} />}
                 {worker && <EducationDetailsFlat details={worker} />}
+                {/* Resume preview (CV style) - matches download PDF */}
+                <div className="rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm">
+                  <h3 className="text-base font-semibold text-slate-600">Resume preview</h3>
+                  <p className="text-xs text-slate-500 mt-0.5 mb-3">
+                    This is how the resume will look when you download the PDF.
+                  </p>
+                  <div
+                    className="resume-preview max-w-[700px] mx-auto bg-white rounded-lg border border-slate-200/80 shadow-sm p-6 text-left"
+                    dangerouslySetInnerHTML={{
+                      __html: buildWorkerResumeHtml(worker).bodyContent ?? '',
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ) : null}
