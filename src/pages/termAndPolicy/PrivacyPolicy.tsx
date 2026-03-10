@@ -5,7 +5,7 @@ const PrivacyPolicy = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4 text-teal-600">PRIVACY POLICY</h1>
-          <p className="text-slate-500 text-sm">Effective Date: [To be updated]</p>
+          <p className="text-slate-500 text-sm">Effective Date: 19th January 2026</p>
         </div>
 
         {/* Introduction */}
@@ -812,8 +812,8 @@ const PrivacyPolicy = () => {
             <div className="bg-neutral-50 border border-neutral-200 p-4 rounded-lg mt-4 shadow-sm">
               <p className="font-semibold mb-2 text-teal-600">MsCorpres Manufacturer and Refurbisher Pvt. Ltd.</p>
               <p className="mb-1 text-slate-600">Registered Address – B-88, B Block, Sector 83, NOIDA, Uttar Pradesh- 201305</p>
-              <p className="mb-1 text-slate-600">Email – [To be updated]</p>
-              <p className="text-slate-600">Platform Link – [To be updated]</p>
+              <p className="mb-1 text-slate-600">Email – marketing@mscorpres.in</p>
+              <p className="text-slate-600">Platform Link – https://www.mscmr.com/</p>
             </div>
           </div>
         </section>
@@ -844,8 +844,8 @@ const PrivacyPolicy = () => {
           <h2 className="text-2xl font-semibold mb-4 text-teal-600">27. Details of Grievance Redressal Officer:</h2>
           <div className="text-slate-600 leading-relaxed space-y-4">
             <div className="bg-neutral-50 border border-neutral-200 p-4 rounded-lg mt-4 shadow-sm">
-              <p className="mb-1 text-slate-600">Name: [To be updated]</p>
-              <p className="text-slate-600">Email: [To be updated]</p>
+              <p className="mb-1 text-slate-600">Name: Vaibhav Pasrija</p>
+              <p className="text-slate-600">Email: vaibhav.pasrija@mscorpres.in</p>
             </div>
           </div>
         </section>
@@ -863,8 +863,8 @@ const PrivacyPolicy = () => {
                 prescribed in Annexure-2 through the following channels:
               </p>
               <div className="bg-neutral-50 border border-neutral-200 p-4 rounded-lg mt-2">
-                <p className="mb-1 text-slate-600">Name: [To be updated]</p>
-                <p className="text-slate-600">Email: [To be updated]</p>
+                <p className="mb-1 text-slate-600">Name: Vaibhav Pasrija</p>
+                <p className="text-slate-600">Email: vaibhav.pasrija@mscorpres.in</p>
               </div>
             </div>
 
