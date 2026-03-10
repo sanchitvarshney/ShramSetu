@@ -36,6 +36,10 @@ export const columnDefs: ColDef[] = [
     flex: 1,
     minWidth: 20,
     cellRenderer: actionCellRenderer,
+      filterValueGetter: (params: any) => {
+    return `${params.data.empFirstName || ''} ${params.data.empLastName || ''}`;
+
+  },
   },
  
   {

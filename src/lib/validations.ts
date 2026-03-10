@@ -293,16 +293,34 @@ export const jobFormSchema = z
   });
 export type JobFormData = z.infer<typeof jobFormSchema>;
 
-/** Contractor form (add / update) – matches API: name, panNo, email, mobile */
+/** Contact mobile: 10 digits, required */
+const contactMobileSchema = z
+  .string()
+  .min(1, 'Contact mobile is required')
+  .regex(/^[0-9]{10}$/, 'Contact mobile must be exactly 10 digits')
+  .transform((s) => s.trim());
+
+/** GST: 15-char Indian GSTIN, required */
+const gstRequiredSchema = z
+  .string()
+  .min(1, 'GST is required')
+  .regex(/^\d{2}[A-Z]{5}\d{4}[A-Z][A-Z0-9][A-Z0-9][A-Z0-9]$/i, 'Invalid GST format (e.g. 27AABCU9603R1ZM)')
+  .transform((s) => s.trim().toUpperCase());
+
+/** Contractor form (add / update) – all fields mandatory including contactName, contactMobile, gst, address */
 export const contractorSchema = z.object({
   name: z.string().min(1, 'Contractor name is required').max(200, 'Name is too long').transform((s) => s.trim()),
   panNo: panSchema,
   email: emailSchema,
   mobile: z
     .string()
-    .min(1, 'Mobile is required')
-    .regex(/^[0-9]{10}$/, 'Mobile must be exactly 10 digits')
+    .min(1, 'Contractor mobile is required')
+    .regex(/^[0-9]{10}$/, 'Contractor mobile must be exactly 10 digits')
     .transform((s) => s.trim()),
+  contactMobile: contactMobileSchema,
+  contactName: z.string().min(1, 'Contact name is required').max(200, 'Name is too long').transform((s) => s.trim()),
+  gst: gstRequiredSchema,
+  address: z.string().min(1, 'Address is required').max(500, 'Address is too long').transform((s) => s.trim()),
 });
 export type ContractorFormData = z.infer<typeof contractorSchema>;
 

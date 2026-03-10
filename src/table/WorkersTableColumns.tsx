@@ -13,6 +13,9 @@ export const columnDefs: ColDef[] = [
         </span>
       );
     },
+      filterValueGetter: (params: any) => {
+    return `${params.data.empFirstName || ''} ${params.data.empLastName || ''}`;
+  },
   },
   { headerName: 'Phone', field: 'mobile', sortable: true, filter: true },
   {

@@ -32,15 +32,23 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
   const { addContractorLoading } = useSelector((state: RootState) => state.adminPage);
   const [name, setName] = useState(contractor.name ?? '');
   const [panNo, setPanNo] = useState(contractor.panNo ?? '');
-  const [mobile, setMobile] = useState(contractor.mobile ?? '');
+  const [mobile, setMobile] = useState(() => String(contractor.mobile ?? ''));
+  const [contactMobile, setContactMobile] = useState(() => String(contractor.contactMobile ?? contractor.mobile2 ?? ''));
+  const [contactName, setContactName] = useState(() => String(contractor.contactName ?? contractor.mobile2Name ?? ''));
   const [email, setEmail] = useState(contractor.email ?? '');
+  const [gst, setGst] = useState(contractor.gst ?? '');
+  const [address, setAddress] = useState(contractor.address ?? '');
   const [activeStatus, setActiveStatus] = useState(contractor.activeStatus ?? 'A');
 
   useEffect(() => {
     setName(contractor.name ?? '');
     setPanNo(contractor.panNo ?? '');
-    setMobile(contractor.mobile ?? '');
+    setMobile(String(contractor.mobile ?? ''));
+    setContactMobile(String(contractor.contactMobile ?? contractor.mobile2 ?? ''));
+    setContactName(String(contractor.contactName ?? contractor.mobile2Name ?? ''));
     setEmail(contractor.email ?? '');
+    setGst(contractor.gst ?? '');
+    setAddress(contractor.address ?? '');
     setActiveStatus(contractor.activeStatus ?? 'A');
   }, [contractor]);
 
@@ -48,8 +56,12 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
     const validation = validateForm(contractorSchema, {
       name: name.trim(),
       panNo: panNo.trim().toUpperCase(),
-      mobile: mobile.trim(),
+      mobile: String(mobile ?? '').trim(),
+      contactMobile: String(contactMobile ?? '').trim(),
+      contactName: String(contactName ?? '').trim(),
       email: email.trim(),
+      gst: gst.trim().toUpperCase(),
+      address: address.trim(),
     });
     if (!validation.success) {
       toast({
@@ -67,6 +79,10 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
         panNo: data.panNo,
         mobile: data.mobile,
         email: data.email,
+        contactMobile: data?.contactMobile ?? "",
+        contactName: data?.contactName ?? "",
+        gst: data.gst,
+        address: data.address,
         activeStatus: activeStatus,
       }),
     ).then((res: any) => {
@@ -79,8 +95,12 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
   const isFormValid =
     name.trim() &&
     panNo.trim() &&
-    mobile.trim().length === 10 &&
-    email.trim();
+    String(mobile ?? '').trim().length === 10 &&
+    String(contactMobile ?? '').trim().length === 10 &&
+    String(contactName ?? '').trim() &&
+    email.trim() &&
+    gst.trim().length === 15 &&
+    address.trim();
 
   return (
     <div className="grid gap-4 py-4">
@@ -95,6 +115,36 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
         />
       </div>
       <div className="grid gap-2">
+        <Label htmlFor="edit-mobile">Contractor Mobile (10 digits) *</Label>
+        <Input
+          id="edit-mobile"
+          className={inputStyle}
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          placeholder="10-digit mobile"
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="edit-contactName">Contact name *</Label>
+        <Input
+          id="edit-contactName"
+          className={inputStyle}
+          value={contactName}
+          onChange={(e) => setContactName(e.target.value)}
+          placeholder="Contact name"
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="edit-contactMobile">Contact Mobile (10 digits) *</Label>
+        <Input
+          id="edit-contactMobile"
+          className={inputStyle}
+          value={contactMobile}
+          onChange={(e) => setContactMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+          placeholder="10-digit contact mobile"
+        />
+      </div>
+           <div className="grid gap-2">
         <Label htmlFor="edit-panNo">PAN No *</Label>
         <Input
           id="edit-panNo"
@@ -106,16 +156,6 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="edit-mobile">Mobile (10 digits) *</Label>
-        <Input
-          id="edit-mobile"
-          className={inputStyle}
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
-          placeholder="Mobile"
-        />
-      </div>
-      <div className="grid gap-2">
         <Label htmlFor="edit-email">Email *</Label>
         <Input
           id="edit-email"
@@ -124,6 +164,27 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="edit-gst">GST *</Label>
+        <Input
+          id="edit-gst"
+          className={inputStyle}
+          value={gst}
+          onChange={(e) => setGst(e.target.value.toUpperCase())}
+          placeholder="e.g. 27AABCU9603R1ZM"
+          maxLength={15}
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="edit-address">Address *</Label>
+        <Input
+          id="edit-address"
+          className={inputStyle}
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+       
         />
       </div>
       <div className="grid gap-2">

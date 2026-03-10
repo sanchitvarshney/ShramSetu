@@ -247,6 +247,14 @@ export interface Contractor {
   panNo: string;
   email: string;
   mobile: string;
+  contactMobile?: string;
+  contactName?: string;
+  /** @deprecated use contactMobile - kept for API backward compatibility */
+  mobile2?: string;
+  /** @deprecated use contactName - kept for API backward compatibility */
+  mobile2Name?: string;
+  gst?: string;
+  address?: string;
   activeStatus?: string;
 }
 
@@ -942,6 +950,10 @@ export interface AddContractorPayload {
   panNo: string;
   email: string;
   mobile: string;
+  contactMobile: string;
+  contactName: string;
+  gst: string;
+  address: string;
 }
 
 export const addContractor = createAsyncThunk<

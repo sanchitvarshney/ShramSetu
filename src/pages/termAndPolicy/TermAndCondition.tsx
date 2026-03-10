@@ -5,7 +5,7 @@ const TermAndCondition = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4 text-teal-600">TERMS OF USE</h1>
-          <p className="text-slate-500 text-sm">Effective date: [To be updated]</p>
+          <p className="text-slate-500 text-sm">Effective date: 19th January 2026</p>
         </div>
 
         {/* Introduction */}
@@ -612,8 +612,8 @@ const TermAndCondition = () => {
             <div className="bg-neutral-50 border border-neutral-200 p-4 rounded-lg mt-4 shadow-sm">
               <p className="font-semibold mb-2 text-teal-600">MsCorpres Manufacturer and Refurbisher Pvt. Ltd.</p>
               <p className="mb-1 text-slate-600">Registered Address – B-88, B Block, Sector 83, NOIDA, Uttar Pradesh- 201305</p>
-              <p className="mb-1 text-slate-600">Email – [To be updated]</p>
-              <p className="text-slate-600">Platform Link – [To be updated]</p>
+              <p className="mb-1 text-slate-600">Email – marketing@mscorpres.in</p>
+              <p className="text-slate-600">Platform Link – https://www.mscmr.com/</p>
             </div>
           </div>
         </section>

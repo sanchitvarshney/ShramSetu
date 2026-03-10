@@ -132,7 +132,7 @@ function workerToResumeData(w: any): ResumeData {
         role:
           typeof item.role === 'object' && item.role != null
             ? (item.role.text ?? item.role.value ?? '')
-            : (item.role ?? item.empDesignation ?? ''),
+            : (item.role ?? item.designationName ?? ''),
         joining: item.empJoiningDate ?? item.joiningDate ?? item.joining ?? '',
         relieving:
           item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '',
@@ -1358,7 +1358,7 @@ const EmployementDetails = ({ details }: any) => {
                 <DetailRow>
                   <SingleDetail
                     label="Role"
-                    value={emp?.empDesignation ?? '--'}
+                    value={emp?.designationName ?? '--'}
                   />
                   {emp?.empJoiningDate && emp?.empRelievingDate && (
                     <SingleDetail
