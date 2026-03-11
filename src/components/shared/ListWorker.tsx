@@ -115,9 +115,11 @@ function getWorkerId(row: any): string {
 }
 
 function toSelectedWorkerItem(row: any): SelectedWorkerItem {
+  const name = `${row?.empFirstName ?? ''} ${row?.empLastName ?? ''}`.trim() || (row?.empName ?? '');
   return {
     empCode: getWorkerId(row),
     mobile: row?.empMobile ?? row?.mobile ?? '',
+    name: name || '--',
   };
 }
 

@@ -882,24 +882,37 @@ export const createJob = createAsyncThunk<CreateJobResponse, CreateJobPayload>(
     }
   },
 );
-/** Send WhatsApp invitation: selected workers (empCode + mobile arrays) + company, address, contact */
+/** Send WhatsApp invitation: selected workers (empCode + mobile + name arrays) + job, address, contact + date & time */
 export interface ShareWorkersPayload {
   empCode: string[];
   mobile: string[];
+  empName: string[];
   jobId: string;
   address: string;
   contact: string;
+  date: string;
+  time: string;
+}
+
+/** API response for send-whatsapp */
+export interface ShareWorkersResponse {
+  success: boolean;
+  message: string;
+  total: number;
+  sent: number;
+  failed: number;
+  failedUsers?: Array<{ empCode: string; mobile: string; error: string }>;
 }
 
 export const shareWorkers = createAsyncThunk<
-  { success: boolean; message: string },
+  ShareWorkersResponse,
   ShareWorkersPayload
 >(
   'adminPage/shareWorkers',
   async (payload, { rejectWithValue }) => {
     try {
       const response = await orshAxios.post('/invitations/send-whatsapp', payload);
-      const data = response.data;
+      const data = response.data as ShareWorkersResponse;
       if (!data?.success) {
         toast({
           variant: 'destructive',
@@ -908,8 +921,14 @@ export const shareWorkers = createAsyncThunk<
         });
         return rejectWithValue(data?.message || 'Failed');
       }
-      toast({ title: 'Success', description: data.message || 'Sent successfully.' });
-      return { success: true, message: data.message };
+      return {
+        success: data.success,
+        message: data.message ?? 'WhatsApp sending completed',
+        total: data.total ?? 0,
+        sent: data.sent ?? 0,
+        failed: data.failed ?? 0,
+        failedUsers: data.failedUsers ?? [],
+      };
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||

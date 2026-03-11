@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DatePicker, TimePicker } from 'antd';
+import type { Dayjs } from 'dayjs';
 import { AppDispatch, RootState } from '@/store';
 import { getJobsList, shareWorkers } from '@/features/admin/adminPageSlice';
 import { inputStyle } from '@/style/CustomStyles';
@@ -27,6 +29,19 @@ import { toast } from '@/components/ui/use-toast';
 export interface SelectedWorkerItem {
   empCode: string;
   mobile: string;
+  name: string;
+}
+
+/** Parse WhatsApp API error string (JSON) to a short readable message. */
+function parseWhatsAppError(errorStr: string): string {
+  if (!errorStr?.trim()) return 'Unknown error';
+  try {
+    const parsed = JSON.parse(errorStr);
+    const msg = parsed?.error?.message ?? parsed?.error?.error_data?.details ?? parsed?.message;
+    return typeof msg === 'string' ? msg : errorStr;
+  } catch {
+    return errorStr.length > 80 ? errorStr.slice(0, 80) + '…' : errorStr;
+  }
 }
 
 /** Ensure mobile has country code 91 (India). Prepends 91 if not present. */
@@ -61,6 +76,8 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
   const [jobId, setJobId] = useState<any>('');
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  const [selectedTime, setSelectedTime] = useState<Dayjs | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -68,6 +85,8 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
       setJobId('');
       setContact('');
       setAddress('');
+      setSelectedDate(null);
+      setSelectedTime(null);
     }
   }, [open]);
 
@@ -75,6 +94,14 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
     if (!jobId.trim()) return;
     if (!contact.trim()) return;
     if (!address.trim()) return;
+    if (!selectedDate) {
+      toast({ variant: 'destructive', title: 'Select date', description: 'Please select a date.' });
+      return;
+    }
+    if (!selectedTime) {
+      toast({ variant: 'destructive', title: 'Select time', description: 'Please select a time.' });
+      return;
+    }
     const workersWithMobile = selectedWorkers.filter(
       (w) => w.empCode && (w.mobile ?? '').trim() !== '',
     );
@@ -82,6 +109,7 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
     const mobile = workersWithMobile.map((w) =>
       normalizeMobileWith91(w.mobile ?? ''),
     );
+    const name = workersWithMobile.map((w) => (w.name ?? '').trim() || '--');
     if (empCode.length === 0) {
       toast({
         variant: 'destructive',
@@ -92,18 +120,62 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
       return;
     }
 
+    const dateStr = selectedDate.format('DD-MM-YYYY');
+    const timeStr = selectedTime.format('HH:mm');
+
     const result = await dispatch(
       shareWorkers({
         empCode,
         mobile,
+        empName: name,
         jobId: jobId.trim(),
         address: address.trim(),
         contact: contact.trim(),
+        date: dateStr,
+        time: timeStr,
       }),
     );
+
     if (shareWorkers.fulfilled.match(result)) {
-      onOpenChange(false);
-      onSuccess?.();
+      const res = result.payload as {
+        success: boolean;
+        message: string;
+        total: number;
+        sent: number;
+        failed: number;
+        failedUsers?: Array<{ empCode: string; mobile: string; error: string }>;
+      };
+      const { sent, failed, failedUsers = [] } = res;
+
+      // No failures: { success: true, sent: 1, failed: 0, failedUsers: [] }
+      if (sent > 0 && failed === 0) {
+        toast({
+          title: 'Success',
+          description: res.message || `Sent to ${sent} worker(s).`,
+        });
+        onOpenChange(false);
+        onSuccess?.();
+      } else if (sent > 0 && failed > 0) {
+        const failedSummary = failedUsers
+          .map((u) => `${u.empCode}: ${parseWhatsAppError(u.error)}`)
+          .join('; ');
+        toast({
+          variant: 'destructive',
+          title: 'Partially sent',
+          description: `Sent: ${sent}, Failed: ${failed}. ${failedSummary || res.message}`,
+        });
+        onOpenChange(false);
+        onSuccess?.();
+      } else if (failed > 0) {
+        const failedSummary = failedUsers
+          .map((u) => `${u.empCode}: ${parseWhatsAppError(u.error)}`)
+          .join('; ');
+        toast({
+          variant: 'destructive',
+          title: 'Send failed',
+          description: failedSummary || res.message || 'No messages could be sent.',
+        });
+      }
     }
   };
 
@@ -111,6 +183,8 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
     jobId.trim() !== '' &&
     contact.trim() !== '' &&
     address.trim() !== '' &&
+    selectedDate !== null &&
+    selectedTime !== null &&
     selectedWorkers.length > 0;
 
   return (
@@ -160,6 +234,24 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Enter address"
               rows={3}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label>Date</Label>
+            <DatePicker
+              value={selectedDate}
+              onChange={(date) => setSelectedDate(date)}
+              className="w-full"
+              format="DD-MM-YYYY"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label>Time</Label>
+            <TimePicker
+              value={selectedTime}
+              onChange={(time) => setSelectedTime(time)}
+              className="w-full"
+              format="HH:mm"
             />
           </div>
         </div>
