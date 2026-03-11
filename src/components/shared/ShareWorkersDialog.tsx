@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AppDispatch, RootState } from '@/store';
-import { searchCompanies, shareWorkers } from '@/features/admin/adminPageSlice';
+import { getJobsList, shareWorkers } from '@/features/admin/adminPageSlice';
 import { inputStyle } from '@/style/CustomStyles';
 import { CircularProgress } from '@mui/material';
 import { toast } from '@/components/ui/use-toast';
@@ -31,7 +31,10 @@ export interface SelectedWorkerItem {
 
 /** Ensure mobile has country code 91 (India). Prepends 91 if not present. */
 function normalizeMobileWith91(mobile: string): string {
-  const s = (mobile ?? '').trim().replace(/^\+/, '').replace(/^\s+|\s+$/g, '');
+  const s = (mobile ?? '')
+    .trim()
+    .replace(/^\+/, '')
+    .replace(/^\s+|\s+$/g, '');
   if (!s) return s;
   const digits = s.replace(/\D/g, '');
   if (digits.startsWith('91')) return digits;
@@ -52,37 +55,39 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
   onSuccess,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { companies, loading } = useSelector((state: RootState) => state.adminPage);
-  const [companyId, setCompanyId] = useState('');
+  const { jobsList, loadingJob } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
+  const [jobId, setJobId] = useState<any>('');
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
 
   useEffect(() => {
     if (open) {
-      dispatch(searchCompanies());
-      setCompanyId('');
+      dispatch(getJobsList());
+      setJobId('');
       setContact('');
       setAddress('');
     }
-  }, [open, dispatch]);
+  }, [open]);
 
   const handleShare = async () => {
-    if (!companyId.trim()) return;
+    if (!jobId.trim()) return;
     if (!contact.trim()) return;
     if (!address.trim()) return;
-    const companyName =
-      companies?.find((c: { companyID: string; name: string }) => c.companyID === companyId)?.name ?? companyId;
-    // Only include workers that have both empCode and non-empty mobile (remove empty mobile from both arrays)
     const workersWithMobile = selectedWorkers.filter(
-      (w) => w.empCode && (w.mobile ?? '').trim() !== ''
+      (w) => w.empCode && (w.mobile ?? '').trim() !== '',
     );
     const empCode = workersWithMobile.map((w) => w.empCode);
-    const mobile = workersWithMobile.map((w) => normalizeMobileWith91(w.mobile ?? ''));
+    const mobile = workersWithMobile.map((w) =>
+      normalizeMobileWith91(w.mobile ?? ''),
+    );
     if (empCode.length === 0) {
       toast({
         variant: 'destructive',
         title: 'No valid workers',
-        description: 'Selected workers have no mobile number. Add mobile and try again.',
+        description:
+          'Selected workers have no mobile number. Add mobile and try again.',
       });
       return;
     }
@@ -91,7 +96,7 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
       shareWorkers({
         empCode,
         mobile,
-        company: companyName,
+        jobId: jobId.trim(),
         address: address.trim(),
         contact: contact.trim(),
       }),
@@ -103,7 +108,7 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
   };
 
   const canShare =
-    companyId.trim() !== '' &&
+    jobId.trim() !== '' &&
     contact.trim() !== '' &&
     address.trim() !== '' &&
     selectedWorkers.length > 0;
@@ -116,20 +121,23 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <p className="text-sm text-muted-foreground">
-            {selectedWorkers.length} worker(s) selected. Fill details and click Share.
+            {selectedWorkers.length} worker(s) selected. Fill details and click
+            Share.
           </p>
           <div className="grid gap-2">
-            <Label htmlFor="share-company">Company</Label>
-            <Select value={companyId} onValueChange={setCompanyId}>
+            <Label htmlFor="share-company">Job</Label>
+            <Select value={jobId} onValueChange={setJobId}>
               <SelectTrigger id="share-company" className={inputStyle}>
-                <SelectValue placeholder="Select company" />
+                <SelectValue placeholder="Select Job" />
               </SelectTrigger>
               <SelectContent>
-                {(companies ?? []).map((c: { companyID: string; name: string }) => (
-                  <SelectItem key={c.companyID} value={c.companyID}>
-                    {c.name}
-                  </SelectItem>
-                ))}
+                {(jobsList ?? []).map(
+                  (c: { designationName: string; departmentName: string; uniqueID: string }) => (
+                    <SelectItem key={c.departmentName} value={c.uniqueID}>
+                      {c.departmentName} - {c.designationName}
+                    </SelectItem>
+                  ),
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -162,9 +170,11 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
           <Button
             className="bg-[#115e59] hover:bg-[#0d4a46]"
             onClick={handleShare}
-            disabled={!canShare || loading}
+            disabled={!canShare || loadingJob}
           >
-            {loading && <CircularProgress size={16} sx={{ color: 'white', mr: 1 }} />}
+            {loadingJob && (
+              <CircularProgress size={16} sx={{ color: 'white', mr: 1 }} />
+            )}
             Share
           </Button>
         </DialogFooter>

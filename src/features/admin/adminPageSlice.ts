@@ -297,7 +297,9 @@ interface AdminPageState {
   addDesignationLoading: boolean;
   isaddbranch: boolean;
   isbranchUpdate: boolean;
-  loadingworkerlist: boolean
+  loadingworkerlist: boolean;
+  loadingJob: boolean;
+  jobsList: any[] | null;
 }
 
 const initialState: AdminPageState = {
@@ -333,7 +335,9 @@ const initialState: AdminPageState = {
   addDesignationLoading: false,
   isaddbranch: false,
   isbranchUpdate: false,
-  loadingworkerlist: false
+  loadingworkerlist: false,
+  loadingJob: false,
+  jobsList: [],
 };
 
 
@@ -378,6 +382,20 @@ export const searchCompanies = createAsyncThunk<
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch companies');
+    }
+  },
+);
+
+export const getJobsList = createAsyncThunk<any, void>(
+  'adminPage/get/job',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.get<any>(
+        `/invitations/gets/jobs`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch jobs');
     }
   },
 );
@@ -868,7 +886,7 @@ export const createJob = createAsyncThunk<CreateJobResponse, CreateJobPayload>(
 export interface ShareWorkersPayload {
   empCode: string[];
   mobile: string[];
-  company: string;
+  jobId: string;
   address: string;
   contact: string;
 }
@@ -1329,6 +1347,19 @@ const adminPageSlice = createSlice({
       })
       .addCase(searchCompanies.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload as string;
+      })
+       .addCase(getJobsList.pending, (state) => {
+        state.loadingJob = true;
+        state.error = null;
+      })
+      .addCase(getJobsList.fulfilled, (state, action) => {
+        state.loadingJob = false;
+        state.error = null;
+        state.jobsList = action.payload.data;
+      })
+      .addCase(getJobsList.rejected, (state, action) => {
+        state.loadingJob = false;
         state.error = action.payload as string;
       })
       .addCase(fetchDepartments.pending, (state) => {
