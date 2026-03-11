@@ -94,7 +94,7 @@ const HomePage: React.FC = () => {
       style: {
         lineWidth: 2,
         fill: '#104b43',
-        stroke: '#fff',
+        stroke: '#104b43',
       },
     },
 
