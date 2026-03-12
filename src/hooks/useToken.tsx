@@ -46,12 +46,11 @@ export default function useToken(): UseToken {
         loggedInUser.token = userToken.token || null;
         localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
       }
-      // Always update state so logout (token: null) clears in-memory token
-      setToken(userToken.token);
     } catch (error) {
       console.error("Failed to save token to localStorage", error);
-      setToken(userToken.token);
     }
+    // Always update in-memory token (e.g. so logout clears state even if localStorage was already cleared)
+    setToken(userToken.token);
   };
 
   return {

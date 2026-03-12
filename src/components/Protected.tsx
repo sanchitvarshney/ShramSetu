@@ -17,10 +17,13 @@ const Protected: React.FC<ProtectedProps> = ({
 }) => {
   const { token, setToken } = useToken();
   const hasUserInStorage = hasLoggedInUserInStorage();
-  const authStatus = !!token || hasUserInStorage;
+  const authUser = useSelector((state: RootState) => state.auth?.user);
+  // Require Redux user so logout (which clears authUser synchronously) takes effect
+  // immediately; otherwise stale token in context can keep authStatus true after logout
+  const authStatus =
+    !!authUser && (!!token || hasUserInStorage);
   const navigate = useNavigate();
   const location = useLocation();
-  const authUser = useSelector((state: RootState) => state.auth?.user);
 
   useEffect(() => {
     if (authUser?.token) {

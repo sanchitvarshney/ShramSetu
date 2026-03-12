@@ -18,6 +18,7 @@ import MailInvitationPage from './components/shared/MailInvitationPage';
 import MessageInvitationPage from './components/shared/MessageInvitationPage';
 import PushNotificationPage from './pages/invitation/PushNotificationPage';
 import Protected from '@/components/Protected';
+import NoInternetOverlay from '@/components/NoInternetOverlay';
 import { Toaster } from '@/components/ui/toaster';
 import EmpUpdate from '@/components/ui/EmpUpdate';
 import CompanyInfo from '@/components/ui/companyInfo';
@@ -405,7 +406,7 @@ const router = createBrowserRouter([
 ]);
 function App() {
   return (
-    <>
+    <NoInternetOverlay>
       <ErrorBoundary
         fallbackRender={FallBackUI}
         onError={(error, info) => {
@@ -415,7 +416,7 @@ function App() {
         <RouterProvider router={router} />
         <Toaster />
       </ErrorBoundary>
-    </>
+    </NoInternetOverlay>
   );
 }
 
