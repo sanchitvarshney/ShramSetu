@@ -2,7 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
-import { fetchContractors, type Contractor } from '@/features/admin/adminPageSlice';
+import {
+  fetchContractors,
+  type Contractor,
+} from '@/features/admin/adminPageSlice';
 import { ColDef } from 'ag-grid-community';
 import Loading from '@/components/reusable/Loading';
 import {
@@ -15,7 +18,8 @@ import UpdateContractorForm from '@/components/shared/UpdateContractorForm';
 
 const ListContractor: React.FC = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null);
+  const [selectedContractor, setSelectedContractor] =
+    useState<Contractor | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const { contractors, contractorLoading } = useSelector(
     (state: RootState) => state.adminPage,
@@ -66,20 +70,46 @@ const ListContractor: React.FC = () => {
   };
 
   const columnDefs: ColDef[] = [
+    {
+      headerName: '#',
+      field: 'text',
+      flex: 1,
+      valueGetter: 'node.rowIndex + 1',
+    },
     { headerName: 'Contractor Name', field: 'name', flex: 1, minWidth: 200 },
-    { headerName: 'Contractor Mobile', field: 'mobile', flex: 1,minWidth: 200 },
-    { headerName: 'Contract Name', field: 'contactName', flex: 1, minWidth: 200 },
-    { headerName: 'Contract Mobile', field: 'contactMobile', flex: 1, minWidth: 200 },
+    {
+      headerName: 'Contractor Mobile',
+      field: 'mobile',
+      flex: 1,
+      minWidth: 200,
+    },
+    {
+      headerName: 'Contract Name',
+      field: 'contactName',
+      flex: 1,
+      minWidth: 200,
+    },
+    {
+      headerName: 'Contract Mobile',
+      field: 'contactMobile',
+      flex: 1,
+      minWidth: 200,
+    },
     { headerName: 'PAN No', field: 'panNo', flex: 1, minWidth: 200 },
-  { headerName: 'GST No', field: 'gstNo', flex: 1, minWidth: 200 },
+    { headerName: 'GST No', field: 'gstNo', flex: 1, minWidth: 200 },
     { headerName: 'Email', field: 'email', flex: 1, minWidth: 200 },
     { headerName: 'Address', field: 'address', flex: 1, minWidth: 200 },
     {
       headerName: 'Status',
       field: 'activeStatus',
       flex: 1,
-       minWidth: 200,
-      valueFormatter: (p) => (p.value === 'A' ? 'Active' : p.value === 'INA' ? 'Inactive' : p.value ?? '—'),
+      minWidth: 200,
+      valueFormatter: (p) =>
+        p.value === 'A'
+          ? 'Active'
+          : p.value === 'INA'
+            ? 'Inactive'
+            : (p.value ?? '—'),
     },
     {
       headerName: 'Actions',

@@ -57,6 +57,7 @@ export const getJobApplicationsColumnDefs = (
   onView: (app: any) => void,
   isUpdating: boolean,
 ): ColDef<any>[] => [
+  { headerName: '#', field: 'text', maxWidth: 60, valueGetter: 'node.rowIndex + 1' },
   {
     headerName: 'Applicant Name',
     field: 'empName',

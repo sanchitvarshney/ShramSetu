@@ -23,7 +23,7 @@ export const columnDefs: ColDef[] = [
   {
     headerName: 'Index',
     valueGetter: 'node.rowIndex + 1',
-    width: 80,
+    width: 60,
     filter: false,
   },
   {

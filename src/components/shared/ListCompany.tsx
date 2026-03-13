@@ -13,12 +13,11 @@ import {
 } from '@/components/ui/sheet';
 import { CompanyInfoContent } from '@/components/ui/companyInfo';
 
-
-
 const ListCompany = () => {
-    const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
-
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(
+    null,
+  );
 
   const handleCompanyClick = (companyId: string) => {
     setSelectedCompanyId(companyId);
@@ -33,15 +32,13 @@ const ListCompany = () => {
   const { companies, loading } = useSelector(
     (state: RootState) => state.adminPage,
   );
-  
-
 
   const defaultColDef = useMemo(
     () => ({
       filter: 'agTextColumnFilter',
       floatingFilter: true,
     }),
-    [], 
+    [],
   );
 
   useEffect(() => {
@@ -67,6 +64,12 @@ const ListCompany = () => {
 
   const columnDefs: ColDef[] = [
     {
+      headerName: '#',
+      field: 'text',
+      flex: 1,
+      valueGetter: 'node.rowIndex + 1',
+    },
+    {
       headerName: 'Company Name',
       field: 'name',
       cellRenderer: actionCellRenderer,
@@ -79,7 +82,7 @@ const ListCompany = () => {
     { headerName: 'Email', field: 'email' },
     { headerName: 'Mobile', field: 'mobile' },
     { headerName: 'Website', field: 'website' },
- 
+
     {
       headerName: 'Active Status',
       field: 'activeStatus',
@@ -108,7 +111,7 @@ const ListCompany = () => {
             <SheetTitle>Company details</SheetTitle>
           </SheetHeader>
           {selectedCompanyId && (
-            <CompanyInfoContent companyId={selectedCompanyId} embedded  />
+            <CompanyInfoContent companyId={selectedCompanyId} embedded />
           )}
         </SheetContent>
       </Sheet>

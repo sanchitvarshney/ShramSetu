@@ -92,7 +92,7 @@ const ActivityLogPage: React.FC = () => {
       headerClass: 'custom-header',
       valueGetter: indexCellRenderer,
       filter: false,
-      maxWidth: 50,
+      maxWidth: 60,
     },
     {
       headerName: 'Inserted By',

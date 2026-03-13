@@ -14,7 +14,9 @@ import {
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import WorkerDetails from '@/components/shared/WorkerDetails';
-import ShareWorkersDialog, { type SelectedWorkerItem } from '@/components/shared/ShareWorkersDialog';
+import ShareWorkersDialog, {
+  type SelectedWorkerItem,
+} from '@/components/shared/ShareWorkersDialog';
 import Loading from '@/components/reusable/Loading';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
@@ -29,9 +31,13 @@ const { RangePicker } = DatePicker;
 
 const baseUrl = import.meta.env.VITE_REACT_APP_API_BASE_URL ?? '';
 
-
-function normalizeWorkerDetailsFromApi(api: WorkerDetailsApiResponse | { data?: WorkerDetailsApiResponse }): any {
-  const raw = (api as any).data && typeof (api as any).data === 'object' ? (api as any).data : api;
+function normalizeWorkerDetailsFromApi(
+  api: WorkerDetailsApiResponse | { data?: WorkerDetailsApiResponse },
+): any {
+  const raw =
+    (api as any).data && typeof (api as any).data === 'object'
+      ? (api as any).data
+      : api;
   const basic = raw.basicDetails ?? {};
   const personal = raw.personalDetails ?? {};
   const photoRaw = basic.empPhoto ?? (raw as any).empPhoto;
@@ -42,7 +48,9 @@ function normalizeWorkerDetailsFromApi(api: WorkerDetailsApiResponse | { data?: 
     }
     if (typeof photoRaw === 'string' && photoRaw.trim()) {
       const path = photoRaw.trim();
-      return path.startsWith('http') ? path : `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+      return path.startsWith('http')
+        ? path
+        : `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
     }
     return undefined;
   })();
@@ -63,14 +71,19 @@ function normalizeWorkerDetailsFromApi(api: WorkerDetailsApiResponse | { data?: 
     empEmail: basic.empEmail ?? '',
     empMobile: basic.empPhone ?? '',
     adhaar: basic.adhaar ?? '',
-    designation : basic.designationName ?? '',
-    department : basic.departmentName ?? '',
+    designation: basic.designationName ?? '',
+    department: basic.departmentName ?? '',
     empPhoto,
     empDOB: personal.dob ?? '',
     empGender: personal.gender ?? '',
     empMaritalStatus: personal.empMaritalStatus ?? '',
     empHobbies: personal.empHobbies ?? '',
-    empPanNo: basic.panNo ?? basic.empPanNo ?? personal.panNo ?? personal.empPanNo ?? '',
+    empPanNo:
+      basic.panNo ??
+      basic.empPanNo ??
+      personal.panNo ??
+      personal.empPanNo ??
+      '',
     present_houseNo: personal.present_houseNo ?? '',
     present_colony: personal.present_colony ?? '',
     present_city: personal.present_city ?? '',
@@ -90,9 +103,9 @@ function normalizeWorkerDetailsFromApi(api: WorkerDetailsApiResponse | { data?: 
   };
 }
 
-
-
-function workerToExcelRow(worker: any): Record<string, string | number | undefined> {
+function workerToExcelRow(
+  worker: any,
+): Record<string, string | number | undefined> {
   return {
     'Employee ID': worker.employeeID ?? worker.empId ?? '',
     'First Name': worker.empFirstName ?? worker.firstName ?? '',
@@ -109,13 +122,14 @@ function workerToExcelRow(worker: any): Record<string, string | number | undefin
   };
 }
 
-
 function getWorkerId(row: any): string {
   return row?.employeeID ?? row?.empId ?? row?.empCode ?? '';
 }
 
 function toSelectedWorkerItem(row: any): SelectedWorkerItem {
-  const name = `${row?.empFirstName ?? ''} ${row?.empLastName ?? ''}`.trim() || (row?.empName ?? '');
+  const name =
+    `${row?.empFirstName ?? ''} ${row?.empLastName ?? ''}`.trim() ||
+    (row?.empName ?? '');
   return {
     empCode: getWorkerId(row),
     mobile: row?.empMobile ?? row?.mobile ?? '',
@@ -126,7 +140,9 @@ function toSelectedWorkerItem(row: any): SelectedWorkerItem {
 const ListWorker: React.FC = () => {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [selectedWorkers, setSelectedWorkers] = useState<SelectedWorkerItem[]>([]);
+  const [selectedWorkers, setSelectedWorkers] = useState<SelectedWorkerItem[]>(
+    [],
+  );
   const gridRef = useRef<AgGridReactType>(null);
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -142,7 +158,10 @@ const ListWorker: React.FC = () => {
   const [endDateRange, setEndDate] = useState<string>('');
 
   const detailsKey = selectedEmpId
-    ? (selectedEmpId.employeeID ?? selectedEmpId.empId ?? selectedEmpId.empCode ?? selectedEmpId)
+    ? (selectedEmpId.employeeID ??
+      selectedEmpId.empId ??
+      selectedEmpId.empCode ??
+      selectedEmpId)
     : null;
 
   useEffect(() => {
@@ -154,7 +173,7 @@ const ListWorker: React.FC = () => {
     setDetailsLoading(true);
     dispatch(fetchWorkerDetailsByKey(detailsKey))
       .unwrap()
-      .then((data:any) => {
+      .then((data: any) => {
         setWorkerDetails(normalizeWorkerDetailsFromApi(data));
       })
       .catch(() => {
@@ -186,14 +205,13 @@ const ListWorker: React.FC = () => {
     }
   };
 
-
   useEffect(() => {
-     dispatch(
+    dispatch(
       //@ts-ignore
-        fetchWorkers({}),
-      );
-  }, [])
-  
+      fetchWorkers({}),
+    );
+  }, []);
+
   const handleStatusChange = (value: any) => {
     setStatus(value);
     dispatch(
@@ -268,7 +286,7 @@ const ListWorker: React.FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-75px)] p-4">
-      { (loading || loadingworkerlist) && <Loading />}
+      {(loading || loadingworkerlist) && <Loading />}
       <div className="mb-4">
         <Space direction="vertical" size={12} className="flex-row">
           <RangePicker
@@ -276,13 +294,13 @@ const ListWorker: React.FC = () => {
             format="DD-MM-YYYY"
             className="w-full"
           />
-       
+
           <Button
             type="submit"
             className="shadow bg-[#115e59] hover:bg-[#0d4a46] shadow-slate-500 w-[120px] gap-2 h-8"
             onClick={() => handleStatusChange(status)}
           >
-           <SearchOutlined />
+            <SearchOutlined />
             Search
           </Button>
           <Button
@@ -300,7 +318,9 @@ const ListWorker: React.FC = () => {
             className="shadow bg-[#115e59] hover:bg-[#0d4a46] shadow-slate-500 gap-2 h-8"
             onClick={() => {
               const selected = gridRef.current?.api?.getSelectedRows() ?? [];
-              const items = selected.map(toSelectedWorkerItem).filter((w) => w.empCode);
+              const items = selected
+                .map(toSelectedWorkerItem)
+                .filter((w) => w.empCode);
               if (items.length === 0) {
                 toast({
                   variant: 'destructive',
@@ -318,28 +338,27 @@ const ListWorker: React.FC = () => {
           </Button>
           <Button
             className="shadow bg-[#115e59] hover:bg-[#0d4a46] shadow-slate-500 w-[120px] gap-2 h-8"
-          onClick={() => navigate('/employee-list')}
-        >
-       <FilterListAltIcon />
-          Filter
-        </Button>
+            onClick={() => navigate('/employee-list')}
+          >
+            <FilterListAltIcon />
+            Filter
+          </Button>
         </Space>
       </div>
 
-          <div className="ag-theme-quartz h-full">
-            <AgGridReact
-              ref={gridRef}
-              rowData={workers}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              rowSelection="multiple"
-              suppressRowClickSelection={true}
-              pagination={true}
-              context={{ toggleShowDetails }}
-              suppressCellFocus={true}
-            />
-        
-     
+      <div className="ag-theme-quartz h-full">
+        <AgGridReact
+          ref={gridRef}
+          rowData={workers}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          rowSelection="multiple"
+          suppressRowClickSelection={true}
+          pagination={true}
+          context={{ toggleShowDetails }}
+          suppressCellFocus={true}
+        />
+
         {selectedEmpId && (
           <WorkerDetails
             showEdit
@@ -355,7 +374,9 @@ const ListWorker: React.FC = () => {
               if (detailsKey) {
                 dispatch(fetchWorkerDetailsByKey(detailsKey))
                   .unwrap()
-                  .then((data:any) => setWorkerDetails(normalizeWorkerDetailsFromApi(data)));
+                  .then((data: any) =>
+                    setWorkerDetails(normalizeWorkerDetailsFromApi(data)),
+                  );
               }
             }}
             detailsLoading={detailsLoading}
@@ -363,18 +384,18 @@ const ListWorker: React.FC = () => {
           />
         )}
       </div>
-        {isDialogOpen && (
-          <FileUploadDialog onClose={() => setDialogOpen(false)} />
-        )}
-        <ShareWorkersDialog
-          open={shareDialogOpen}
-          onOpenChange={setShareDialogOpen}
-          selectedWorkers={selectedWorkers}
-          onSuccess={() => {
-            gridRef.current?.api?.deselectAll();
-            setSelectedWorkers([]);
-          }}
-        />
+      {isDialogOpen && (
+        <FileUploadDialog onClose={() => setDialogOpen(false)} />
+      )}
+      <ShareWorkersDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        selectedWorkers={selectedWorkers}
+        onSuccess={() => {
+          gridRef.current?.api?.deselectAll();
+          setSelectedWorkers([]);
+        }}
+      />
     </div>
   );
 };

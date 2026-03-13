@@ -2,7 +2,7 @@ import { ColDef } from 'ag-grid-community';
 
 const actionCellRenderer = (params: any) => {
   const { toggleShowDetails } = params.context;
-  
+
   return (
     <div className="flex">
       <button
@@ -10,13 +10,14 @@ const actionCellRenderer = (params: any) => {
         className="text-teal-500 hover:text-teal-600"
         aria-label="Show Name"
       >
-        {params.data.empFirstName + ' ' + params.data.empLastName  || '--'}
+        {params.data.empFirstName + ' ' + params.data.empLastName || '--'}
       </button>
     </div>
   );
 };
 
 export const columnDefs: ColDef[] = [
+  { headerName: '#', field: 'text', maxWidth: 60, valueGetter: 'node.rowIndex + 1' },
   {
     headerName: '',
     field: 'employeeID',
@@ -36,12 +37,11 @@ export const columnDefs: ColDef[] = [
     flex: 1,
     minWidth: 20,
     cellRenderer: actionCellRenderer,
-      filterValueGetter: (params: any) => {
-    return `${params.data.empFirstName || ''} ${params.data.empLastName || ''}`;
+    filterValueGetter: (params: any) => {
+      return `${params.data.empFirstName || ''} ${params.data.empLastName || ''}`;
+    },
+  },
 
-  },
-  },
- 
   {
     headerName: 'Phone',
     field: 'empMobile',
@@ -57,9 +57,32 @@ export const columnDefs: ColDef[] = [
     flex: 1,
   },
   { headerName: 'DOB', field: 'empDOB', sortable: true, filter: true, flex: 1 },
-  { headerName: 'Gender', field: 'empGender', sortable: true, filter: true, flex: 1 },
-   { headerName: 'Aadhar', field: 'adhaar', sortable: true, filter: true, flex: 1 },
-    { headerName: 'BloodGroup', field: 'bloodGroup', sortable: true, filter: true, flex: 1 },
-  { headerName: 'InsertedAt', field: 'empInsertedAt', sortable: true, filter: true, flex: 1 },
+  {
+    headerName: 'Gender',
+    field: 'empGender',
+    sortable: true,
+    filter: true,
+    flex: 1,
+  },
+  {
+    headerName: 'Aadhar',
+    field: 'adhaar',
+    sortable: true,
+    filter: true,
+    flex: 1,
+  },
+  {
+    headerName: 'BloodGroup',
+    field: 'bloodGroup',
+    sortable: true,
+    filter: true,
+    flex: 1,
+  },
+  {
+    headerName: 'InsertedAt',
+    field: 'empInsertedAt',
+    sortable: true,
+    filter: true,
+    flex: 1,
+  },
 ];
-

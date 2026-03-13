@@ -1,6 +1,7 @@
 import { ColDef } from 'ag-grid-community';
 
 export const columnDefs: ColDef[] = [
+  { headerName: '#', field: 'text', maxWidth: 60, valueGetter: 'node.rowIndex + 1' },
   {
     headerName: 'Full Name',
     field: 'firstName',
@@ -13,9 +14,9 @@ export const columnDefs: ColDef[] = [
         </span>
       );
     },
-      filterValueGetter: (params: any) => {
-    return `${params.data.empFirstName || ''} ${params.data.empLastName || ''}`;
-  },
+    filterValueGetter: (params: any) => {
+      return `${params.data.empFirstName || ''} ${params.data.empLastName || ''}`;
+    },
   },
   { headerName: 'Phone', field: 'mobile', sortable: true, filter: true },
   {

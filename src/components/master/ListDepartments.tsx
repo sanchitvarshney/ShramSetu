@@ -8,7 +8,9 @@ import Loading from '@/components/reusable/Loading';
 
 const ListDepartments: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { department, loading } = useSelector((state: RootState) => state.adminPage);
+  const { department, loading } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
 
   const defaultColDef = useMemo(
     () => ({
@@ -23,9 +25,13 @@ const ListDepartments: React.FC = () => {
   }, [dispatch]);
 
   const columnDefs: ColDef[] = [
-     { headerName: '#', field: 'text', flex: 1, valueGetter: 'node.rowIndex + 1' },
+    {
+      headerName: '#',
+      field: 'text',
+      flex: 1,
+      valueGetter: 'node.rowIndex + 1',
+    },
     { headerName: 'Department Name', field: 'text', flex: 1 },
-
   ];
 
   return (

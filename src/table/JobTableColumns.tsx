@@ -28,6 +28,7 @@ export const jobColumnDefs = (
   onEdit?: (job: JobRowData) => void,
   onDelete?: (jobId: string) => void,
 ): ColDef[] => [
+  { headerName: '#', field: 'text', maxWidth: 60, valueGetter: 'node.rowIndex + 1' },
   {
     headerName: 'Job Title',
     field: 'jobTitle',
