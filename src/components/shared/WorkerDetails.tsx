@@ -939,7 +939,7 @@ const BasicDetailsFlat = ({
               details?.empMaritalStatus === 'M'
                 ? 'Married'
                 : details?.empMaritalStatus === 'U' ||
-                    details?.empMaritalStatus === 'Um'
+                    details?.empMaritalStatus === 'UM'
                   ? 'Unmarried'
                   : details?.empMaritalStatus
             }

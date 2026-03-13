@@ -66,7 +66,7 @@ const ListCompany = () => {
     {
       headerName: '#',
       field: 'text',
-      flex: 1,
+      maxWidth: 60,
       valueGetter: 'node.rowIndex + 1',
     },
     {
