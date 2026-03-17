@@ -9,7 +9,7 @@ export const columnDefs: ColDef[] = [
     filter: true,
     cellRenderer: (params: any) => {
       return (
-        <span className="text-blue-500 cursor-pointer">
+        <span className="text-teal-500 cursor-pointer">
           {params.data.firstName + ' ' + params.data.lastName}
         </span>
       );

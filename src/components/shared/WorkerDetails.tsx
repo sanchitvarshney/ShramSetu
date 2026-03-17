@@ -53,6 +53,7 @@ import {
   convertGender,
   type ResumeData,
 } from '@/lib/resumeHtml';
+import { orshAxios } from '@/axiosIntercepter';
 
 interface WorkerDetailsProps {
   worker: any;
@@ -203,43 +204,58 @@ function buildWorkerResumeHtml(
   );
 }
 
+/** API path: backend fetches image from S3 and returns it (avoids CORS). Change if your API uses a different path. */
+const WORKER_PHOTO_PROXY_PATH = '/worker/photo-proxy';
+
+/** Small transparent PNG placeholder when photo cannot be loaded (e.g. CORS). */
+const PLACEHOLDER_PHOTO_DATAURL =
+  'data:image/svg+xml;base64,' +
+  btoa(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="120" viewBox="0 0 100 120"><rect width="100" height="120" fill="#e2e8f0"/><text x="50" y="65" text-anchor="middle" fill="#64748b" font-size="11" font-family="sans-serif">No photo</text></svg>',
+  );
+
+function blobToDataURL(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Fetch image from URL and return as base64 data URL.
+ * 1) Tries backend API (GET /worker/photo-proxy?url=...) so server can fetch S3 image without CORS.
+ * 2) Then direct fetch; 3) then CORS proxy. Returns undefined on failure so PDF still generates.
+ */
 async function resolvePhotoToBase64(url: string): Promise<string | undefined> {
-  const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+  // 1) Call your API with the image URL – backend fetches from S3 and returns the image
+  try {
+    const { data } = await orshAxios.get<Blob>(WORKER_PHOTO_PROXY_PATH, {
+      params: { url },
+      responseType: 'blob',
+    });
+    if (data && data.size > 0) {
+      return await blobToDataURL(data);
+    }
+  } catch {
+    // API not implemented or failed – fallback to direct fetch / CORS proxy
+  }
+
+  // 2) Direct fetch (works if S3 has CORS headers)
+  const toBase64 = async (imageUrl: string): Promise<string> => {
+    const response = await fetch(imageUrl, { mode: 'cors' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return blobToDataURL(await response.blob());
+  };
 
   try {
-    const res = await fetch(fullUrl, { mode: 'cors', credentials: 'include' });
-    if (!res.ok) throw new Error('Fetch failed');
-    const blob = await res.blob();
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    return await toBase64(url);
   } catch {
+    // 3) CORS proxy fallback
     try {
-      return await new Promise<string | undefined>((resolve) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              resolve(undefined);
-              return;
-            }
-            ctx.drawImage(img, 0, 0);
-            resolve(canvas.toDataURL('image/png'));
-          } catch {
-            resolve(undefined);
-          }
-        };
-        img.onerror = () => resolve(undefined);
-        img.src = fullUrl;
-      });
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      return await toBase64(proxyUrl);
     } catch {
       return undefined;
     }
@@ -287,11 +303,12 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
     const safeName = baseName.replace(/[^a-zA-Z0-9.-]/g, '_');
     const data = workerToResumeData(worker);
     const photoUrl = data.photoUrl;
+
     const isDataUrl = photoUrl && photoUrl.startsWith('data:');
     const photoForPdf =
       photoUrl && !isDataUrl
-        ? await resolvePhotoToBase64(photoUrl)
-        : photoUrl;
+        ? (await resolvePhotoToBase64(photoUrl)) ?? PLACEHOLDER_PHOTO_DATAURL
+        : photoUrl ?? undefined;
     const { bodyContent, fullHtml } = buildWorkerResumeHtml(worker, photoForPdf);
 
     const wrap = document.createElement('div');

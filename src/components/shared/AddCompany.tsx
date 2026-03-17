@@ -147,9 +147,7 @@ const AddCompany: React.FC = () => {
                     <React.Fragment key={data.companyID}>
                       <li className="font-[500] hover:bg-slate-200 rounded-md px-[10px] py-[5px]">
                         {data.name}
-                        <p className="text-[13px] font-[400]">
-                          Lorem ipsum dolor sit amet...
-                        </p>
+                    
                       </li>
                       <Separator className="bg-white" />
                     </React.Fragment>
@@ -167,9 +165,7 @@ const AddCompany: React.FC = () => {
                           <React.Fragment key={data.companyID}>
                             <li className="font-[500] hover:bg-slate-200 rounded-md px-[10px] py-[5px]">
                               {data.name}
-                              <p className="text-[13px] font-[400]">
-                                Lorem ipsum dolor sit amet...
-                              </p>
+                       
                             </li>
                             <Separator className="bg-white" />
                           </React.Fragment>

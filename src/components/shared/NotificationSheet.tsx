@@ -32,6 +32,7 @@ const NotificationSheet: React.FC<Props> = ({ uiState }) => {
     <Sidebar open={notification} onOpenChange={setNotification}>
       <SidebarContent
         side={'right'}
+        title="Notifications"
         className="min-w-[450px] h-auto rounded-xl bg-neutral-200 border-0  shadow shadow-stone-400 p-0 overflow-hidden top-[10px] bottom-[10px] right-[10px]"
       >
         <SidebarHeader className="flex flex-row items-center justify-between bg-white h-[50px]  px-[10px] shadow">
