@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import {
@@ -26,6 +26,7 @@ import {
   convertGender,
   type ResumeData,
 } from '@/lib/resumeHtml';
+import { getWorkerImageAsBase64 } from '@/lib/workerImage';
 
 function applicantToResumeData(d: ApplicantDetail): ResumeData {
   const name = d.empName ?? d.applicantName ?? 'Applicant';
@@ -131,6 +132,13 @@ function buildResumeHtml(d: ApplicantDetail, photoUrlOverride?: string): { fullH
   return buildResumeHtmlShared(photoUrlOverride != null ? { ...data, photoUrl: photoUrlOverride } : data);
 }
 
+/** Placeholder when no photo is available for PDF. */
+const PLACEHOLDER_PHOTO_DATAURL =
+  'data:image/svg+xml;base64,' +
+  btoa(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="120" viewBox="0 0 100 120"><rect width="100" height="120" fill="#e2e8f0"/><text x="50" y="65" text-anchor="middle" fill="#64748b" font-size="11" font-family="sans-serif">No photo</text></svg>',
+  );
+
 /** Resolve image URL to base64 so PDF export can render it (avoids CORS/taint). */
 async function resolvePhotoToBase64(url: string): Promise<string | undefined> {
   const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
@@ -213,6 +221,7 @@ export default function ApplicantDetailsDialog({
   const { applicationDetails, applicationDetailsLoading } = useSelector(
     (state: RootState) => state.jobApplications,
   );
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   useEffect(() => {
     if (open && appliedKey) {
@@ -225,14 +234,25 @@ export default function ApplicantDetailsDialog({
 
   const handleDownload = useCallback(async () => {
     if (!applicationDetails) return;
+    setDownloadLoading(true);
     const baseName = (applicationDetails.empName ?? applicationDetails.empEmail ?? 'details').replace(/[^a-zA-Z0-9.-]/g, '_');
     const data = applicantToResumeData(applicationDetails);
     const photoUrl = data.photoUrl;
-    const isDataUrl = photoUrl && photoUrl.startsWith('data:');
-    const photoForPdf =
-      photoUrl && !isDataUrl
-        ? await resolvePhotoToBase64(photoUrl)
-        : photoUrl;
+
+    const empCode =
+      applicationDetails.empCode ??
+      applicationDetails.key ??
+      (applicationDetails as any).employeeID;
+    let photoForPdf: string | undefined =
+      empCode ? await getWorkerImageAsBase64(empCode) : undefined;
+
+    if (photoForPdf == null) {
+      const isDataUrl = photoUrl && photoUrl.startsWith('data:');
+      photoForPdf =
+        photoUrl && !isDataUrl
+          ? (await resolvePhotoToBase64(photoUrl)) ?? PLACEHOLDER_PHOTO_DATAURL
+          : photoUrl ?? PLACEHOLDER_PHOTO_DATAURL;
+    }
     const { fullHtml, bodyContent } = buildResumeHtml(applicationDetails, photoForPdf);
 
     const wrap = document.createElement('div');
@@ -288,6 +308,8 @@ export default function ApplicantDetailsDialog({
       wrap.remove();
       console.error('PDF generation failed:', err);
       fallbackDownloadHtml(fullHtml, baseName);
+    } finally {
+      setDownloadLoading(false);
     }
   }, [applicationDetails]);
 
@@ -338,8 +360,19 @@ export default function ApplicantDetailsDialog({
             Close
           </Button>
           {d && (
-            <Button onClick={handleDownload} variant="default">
-              Download Resume
+            <Button
+              onClick={handleDownload}
+              variant="default"
+              disabled={downloadLoading}
+            >
+              {downloadLoading ? (
+                <>
+                  <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2" />
+                  Preparing PDF...
+                </>
+              ) : (
+                'Download Resume'
+              )}
             </Button>
           )}
         </DialogFooter>

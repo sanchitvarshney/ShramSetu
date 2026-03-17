@@ -54,6 +54,7 @@ import {
   type ResumeData,
 } from '@/lib/resumeHtml';
 import { orshAxios } from '@/axiosIntercepter';
+import { getWorkerImageAsBase64 } from '@/lib/workerImage';
 
 interface WorkerDetailsProps {
   worker: any;
@@ -294,9 +295,11 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   const employeeId = getEmployeeId(worker);
   const isAdmin = getLoggedInUserType() === 'admin';
   const canEdit = Boolean(showEdit && isAdmin && employeeId);
+  const [downloadResumeLoading, setDownloadResumeLoading] = useState(false);
 
   const handleDownloadResume = useCallback(async () => {
     if (!worker) return;
+    setDownloadResumeLoading(true);
     const baseName =
       [worker?.empFirstName, worker?.empLastName].filter(Boolean).join('-') ||
       'worker';
@@ -304,11 +307,17 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
     const data = workerToResumeData(worker);
     const photoUrl = data.photoUrl;
 
-    const isDataUrl = photoUrl && photoUrl.startsWith('data:');
-    const photoForPdf =
-      photoUrl && !isDataUrl
-        ? (await resolvePhotoToBase64(photoUrl)) ?? PLACEHOLDER_PHOTO_DATAURL
-        : photoUrl ?? undefined;
+    const empCode = employeeId ?? worker?.empCode ?? worker?.employeeID ?? worker?.empId ?? worker?.uid;
+    let photoForPdf: string | undefined =
+      empCode ? await getWorkerImageAsBase64(empCode) : undefined;
+
+    if (photoForPdf == null) {
+      const isDataUrl = photoUrl && photoUrl.startsWith('data:');
+      photoForPdf =
+        photoUrl && !isDataUrl
+          ? (await resolvePhotoToBase64(photoUrl)) ?? PLACEHOLDER_PHOTO_DATAURL
+          : photoUrl ?? PLACEHOLDER_PHOTO_DATAURL;
+    }
     const { bodyContent, fullHtml } = buildWorkerResumeHtml(worker, photoForPdf);
 
     const wrap = document.createElement('div');
@@ -364,8 +373,10 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
       wrap.remove();
       console.error('PDF generation failed:', err);
       fallbackDownloadHtml(fullHtml, safeName);
+    } finally {
+      setDownloadResumeLoading(false);
     }
-  }, [worker]);
+  }, [worker, employeeId]);
 
   function fallbackDownloadHtml(html: string, baseName: string) {
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
@@ -439,8 +450,19 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
 
           {!detailsLoading && worker && (
             <div className="flex-shrink-0 border-t border-slate-200/80 px-6 py-4 bg-white flex justify-end">
-              <Button onClick={handleDownloadResume} variant="default">
-                Download Resume
+              <Button
+                onClick={handleDownloadResume}
+                variant="default"
+                disabled={downloadResumeLoading}
+              >
+                {downloadResumeLoading ? (
+                  <>
+                    <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2" />
+                    Preparing PDF...
+                  </>
+                ) : (
+                  'Download Resume'
+                )}
               </Button>
             </div>
           )}
