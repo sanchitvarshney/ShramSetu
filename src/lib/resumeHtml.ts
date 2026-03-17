@@ -193,9 +193,9 @@ export function buildResumeHtml(data: ResumeData): {
     for (let i = 0; i < personalRows.length; i += 2) {
       const left = personalRows[i];
       const right = personalRows[i + 1];
-      const leftLabel = left.label === 'Gender' ? 'Sex' : left.label;
+      const leftLabel = left.label === 'Gender' ? 'Gender' : left.label;
       const rightLabel =
-        right && right.label === 'Gender' ? 'Sex' : (right?.label ?? '');
+        right && right.label === 'Gender' ? 'Gender' : (right?.label ?? '');
       sections.push('<tr>');
       sections.push(
         `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${leftLabel}</td><td style="padding:3px 0;color:#334155;">${left.value}</td>`,
