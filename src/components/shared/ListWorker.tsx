@@ -71,6 +71,7 @@ function normalizeWorkerDetailsFromApi(
     empEmail: basic.empEmail ?? '',
     empMobile: basic.empPhone ?? '',
     adhaar: basic.adhaar ?? '',
+    empBloodGroup: basic.empBloodGroup ?? '',
     designation: basic.designationName ?? '',
     department: basic.departmentName ?? '',
     empPhoto,

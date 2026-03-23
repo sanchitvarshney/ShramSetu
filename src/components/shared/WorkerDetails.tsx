@@ -89,42 +89,12 @@ function workerToResumeData(w: any): ResumeData {
     cleanAddrPart(w?.present_country),
     cleanAddrPart(w?.present_pincode),
   );
-  const permaLines = buildAddressLines(
-    cleanAddrPart(w?.perma_houseNo),
-    cleanAddrPart(w?.perma_colony),
-    cleanAddrPart(w?.perma_city),
-    cleanAddrPart(w?.perma_state),
-    cleanAddrPart(w?.perma_country),
-    cleanAddrPart(w?.perma_pincode),
-  );
-  const hasPresent = presentLines.length > 0;
-  const hasPerma = permaLines.length > 0;
-  const sameAddress =
-    hasPresent && hasPerma && presentLines.join(' ') === permaLines.join(' ');
-  const showPerma = hasPerma && !sameAddress;
+
   let addressBlock = '';
-  if (hasPresent) {
-    addressBlock += presentLines
-      .map(
-        (l) =>
-          `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
-      )
-      .join('');
-    if (showPerma) {
-      addressBlock += `<p style="font-size:10px;margin:4px 0 1px 0;color:#64748b;font-weight:600;">Permanent:</p>`;
-      addressBlock += permaLines
-        .map(
-          (l) =>
-            `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
-        )
-        .join('');
-    }
-  } else if (hasPerma) {
-    addressBlock += permaLines
-      .map(
-        (l) =>
-          `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
-      )
+
+  if (presentLines.length > 0) {
+    addressBlock = presentLines
+      .map((l) => `<div style="margin:0 0 2px 0;color:#475569;">${l}</div>`)
       .join('');
   }
   const employmentList = w?.companyInfo ?? [];
@@ -146,7 +116,12 @@ function workerToResumeData(w: any): ResumeData {
     ? educationList.map((edu: any) => ({
         degree: edu.employeeDegree ?? edu.degree ?? '',
         stream: edu.employeeStream ?? edu.stream ?? '',
-        university: edu.employeeUniversity ?? edu.university ?? edu.institution ?? edu.school ?? '',
+        university:
+          edu.employeeUniversity ??
+          edu.university ??
+          edu.institution ??
+          edu.school ??
+          '',
         endYear: edu.endYear ?? edu.year ?? '',
       }))
     : [];
@@ -277,8 +252,8 @@ function waitForImages(el: HTMLElement, timeoutMs = 3000): Promise<any> {
             }
             img.onload = () => resolve();
             img.onerror = () => resolve();
-          })
-      )
+          }),
+      ),
     ),
     new Promise<void>((r) => setTimeout(r, timeoutMs)),
   ]);
@@ -307,18 +282,28 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
     const data = workerToResumeData(worker);
     const photoUrl = data.photoUrl;
 
-    const empCode = employeeId ?? worker?.empCode ?? worker?.employeeID ?? worker?.empId ?? worker?.uid;
-    let photoForPdf: string | undefined =
-      empCode ? await getWorkerImageAsBase64(empCode) : undefined;
+    const empCode =
+      employeeId ??
+      worker?.empCode ??
+      worker?.employeeID ??
+      worker?.empId ??
+      worker?.uid;
+    let photoForPdf: string | undefined = empCode
+      ? await getWorkerImageAsBase64(empCode)
+      : undefined;
 
     if (photoForPdf == null) {
       const isDataUrl = photoUrl && photoUrl.startsWith('data:');
       photoForPdf =
         photoUrl && !isDataUrl
-          ? (await resolvePhotoToBase64(photoUrl)) ?? PLACEHOLDER_PHOTO_DATAURL
-          : photoUrl ?? PLACEHOLDER_PHOTO_DATAURL;
+          ? ((await resolvePhotoToBase64(photoUrl)) ??
+            PLACEHOLDER_PHOTO_DATAURL)
+          : (photoUrl ?? PLACEHOLDER_PHOTO_DATAURL);
     }
-    const { bodyContent, fullHtml } = buildWorkerResumeHtml(worker, photoForPdf);
+    const { bodyContent, fullHtml } = buildWorkerResumeHtml(
+      worker,
+      photoForPdf,
+    );
 
     const wrap = document.createElement('div');
     wrap.style.cssText =
@@ -431,7 +416,6 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
                 </div>
                 {worker && <EmployementDetails details={worker} />}
                 {worker && <EducationDetailsFlat details={worker} />}
-            
               </div>
             </div>
           ) : null}
@@ -598,7 +582,9 @@ const BasicDetailsFlat = ({
     });
     setEmpPhotoFile(file);
     try {
-      await dispatch(updateWorkerProfile({ empId: employeeId, image: file })).unwrap();
+      await dispatch(
+        updateWorkerProfile({ empId: employeeId, image: file }),
+      ).unwrap();
       onSuccess?.();
     } catch {
       // toast in slice
@@ -838,7 +824,9 @@ const BasicDetailsFlat = ({
                     className={inputStyle}
                     value={empPanNo}
                     onChange={(e) => {
-                      const v = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                      const v = e.target.value
+                        .replace(/[^A-Za-z0-9]/g, '')
+                        .toUpperCase();
                       if (v.length <= 10) setEmpPanNo(v);
                     }}
                     placeholder="e.g. ABCDE1234F"
@@ -1361,7 +1349,6 @@ const EmployementDetails = ({ details }: any) => {
         <CardTitle className="text-base font-semibold text-slate-800">
           Employments
         </CardTitle>
-  
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-3">
@@ -1437,14 +1424,29 @@ const EducationDetailsFlat = ({ details }: { details: any }) => {
                 </DetailRow>
                 <SingleDetail
                   label="School / University"
-                  value={edu?.employeeUniversity ?? edu?.university ?? edu?.institution ?? edu?.school ?? '--'}
+                  value={
+                    edu?.employeeUniversity ??
+                    edu?.university ??
+                    edu?.institution ??
+                    edu?.school ??
+                    '--'
+                  }
                 />
                 <DetailRow>
-                  <SingleDetail label="Board / Type" value={edu?.educationType ?? '--'} />
-                  <SingleDetail label="Percentage" value={edu?.percentage ?? '--'} />
+                  <SingleDetail
+                    label="Board / Type"
+                    value={edu?.educationType ?? '--'}
+                  />
+                  <SingleDetail
+                    label="Percentage"
+                    value={edu?.percentage ?? '--'}
+                  />
                 </DetailRow>
                 <DetailRow>
-                  <SingleDetail label="Start Year" value={edu?.startYear ?? '--'} />
+                  <SingleDetail
+                    label="Start Year"
+                    value={edu?.startYear ?? '--'}
+                  />
                   <SingleDetail label="End Year" value={edu?.endYear ?? '--'} />
                 </DetailRow>
               </div>

@@ -6,7 +6,38 @@ export function fmt(v: unknown): string {
 
 /** Section heading in a light grey bar (matches reference CV) */
 export function sectionTitle(title: string): string {
-  return `<div style="margin-top:16px;margin-bottom:8px;background:#cbd5e1;padding:10px 20px;display:flex;align-items:center;min-height:36px;box-sizing:border-box;"><h2 style="font-size:13px;font-weight:700;margin:0;padding:0;color:#0f172a;text-transform:uppercase;letter-spacing:0.05em;line-height:1;vertical-align:middle;">${title}</h2></div>`;
+  return `
+    <div style="
+      width:100%;
+      margin:16px 0 8px 0;
+      page-break-inside:avoid;
+      break-inside:avoid;
+      box-sizing:border-box;
+    ">
+      <table style="
+        width:100%;
+        border-collapse:collapse;
+        table-layout:fixed;
+        background:#cbd5e1;
+      ">
+        <tr>
+          <td style="
+            padding:10px 14px;
+            font-size:19px;
+            font-weight:700;
+            color:#0f172a;
+            text-transform:uppercase;
+            letter-spacing:0.04em;
+            line-height:24px;
+            vertical-align:middle;
+            white-space:normal;
+            overflow-wrap:break-word;
+            word-break:break-word;
+          ">${title}</td>
+        </tr>
+      </table>
+    </div>
+  `;
 }
 
 export function convertMarital(m: string): string {
@@ -122,33 +153,79 @@ export function buildResumeHtml(data: ResumeData): {
 
   // Top: CURRICULUM VITAE centered, bold, underlined
   sections.push(`
-    <div style="text-align:center;margin-bottom:14px;">
-      <p style="font-size:16px;font-weight:700;margin:0;color:#0f172a;letter-spacing:0.08em;text-decoration:underline;">CURRICULUM VITAE</p>
-    </div>
+<div style="text-align:center; margin-bottom:14px;">
+  <p style="
+    font-size:24px;
+    font-weight:bold;
+    margin:0 auto;
+    color:#0f172a;
+    letter-spacing:0.06em;
+    display:block;
+    width:fit-content;
+    border-bottom:1px solid #0f172a;
+    padding-bottom:6px;
+    white-space:nowrap;
+  ">
+    CURRICULUM VITAE
+  </p>
+</div>
   `);
   // Row: left = name, address, Mob No, Email Id (labels bold, email as link); right = photo
   const emailLink = email
-    ? `<a href="mailto:${email}" style="color:#334155;text-decoration:underline;">${email}</a>`
+    ? `<a href="mailto:${email}" style="color:#0f172a;text-decoration:underline;">${email}</a>`
     : '';
   const photoHtml = photoUrl
     ? `<div style="flex-shrink:0;margin-left:20px;"><img src="${photoUrl}" alt="Photo" style="width:100px;height:120px;object-fit:cover;border:1px solid #cbd5e1;display:block;" /></div>`
     : '';
+
+  const cleanAddress = addressBlock
+    ?.replace(/font-size:\s*\d+px;?/g, '')
+    ?.replace(/<p/g, '<div')
+    ?.replace(/<\/p>/g, '</div>');
   sections.push(`
-    <div style="display:flex;align-items:flex-start;margin-bottom:18px;">
-      <div style="flex:1;min-width:0;">
-        <p style="font-size:20px;font-weight:700;margin:0 0 8px 0;color:#0f172a;">${name}</p>
-        ${addressBlock ? `<div style="font-size:11px;margin:0 0 6px 0;color:#334155;line-height:1.5;">${addressBlock}</div>` : ''}
-        <p style="font-size:11px;margin:0;color:#334155;">${mobile ? `<strong>Mob No:</strong> ${mobile}` : ''}${mobile && email ? ' &nbsp; &nbsp; ' : ''}${email ? `<strong>Email Id:</strong> ${emailLink}` : ''}</p>
-      </div>
-      ${photoHtml}
-    </div>
-    <div style="height:4px;"></div>
+  <div style="display:flex;align-items:flex-start;margin-bottom:18px;">
+  <div style="flex:1;min-width:0;">
+    
+    <p style="font-size:20px;font-weight:700;margin:0 0 8px 0;color:#0f172a;">
+      ${name}
+    </p>
+
+    ${
+      cleanAddress
+        ? `<div style="font-size:16px;margin:0 0 6px 0;color:#0f172a; line-height:1.4; min-width:60%; max-width:60%;">
+             ${cleanAddress}
+           </div>`
+        : ''
+    }
+
+    ${
+      mobile
+        ? `<p style="font-size:15px;margin:0;color:#0f172a;">
+             <strong>Mob No:</strong> ${mobile}
+           </p>`
+        : ''
+    }
+
+    ${
+      email
+        ? `<p style="font-size:15px;margin:0;color:#0f172a;">
+             <strong>Email Id:</strong> ${emailLink}
+           </p>`
+        : ''
+    }
+
+  </div>
+
+  ${photoHtml}
+</div>
+
+<div style="height:4px;"></div>
   `);
 
   const summary = careerObjective || DEFAULT_CAREER_OBJECTIVE;
   sections.push(`
     ${sectionTitle('CAREER OBJECTIVE')}
-    <p style="margin:0;font-size:12px;line-height:1.55;color:#334155;">${summary}</p>
+    <p style="margin:0;font-size:18px;line-height:1.55;color:#0f172a;">${summary}</p>
     <div style="height:4px;"></div>
   `);
 
@@ -177,7 +254,7 @@ export function buildResumeHtml(data: ResumeData): {
         .join(' | ');
       sections.push(`
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:12px;">
-          <span style="font-size:12px;color:#334155;">${fmt(edu.degree)}</span>
+          <span style="font-size:12px;color:#0f172a;">${fmt(edu.degree)}</span>
           <span style="font-size:11px;color:#475569;flex-shrink:0;">${rightPart || '—'}</span>
         </div>
       `);
@@ -198,11 +275,11 @@ export function buildResumeHtml(data: ResumeData): {
         right && right.label === 'Gender' ? 'Gender' : (right?.label ?? '');
       sections.push('<tr>');
       sections.push(
-        `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${leftLabel}</td><td style="padding:3px 0;color:#334155;">${left.value}</td>`,
+        `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${leftLabel}</td><td style="padding:3px 0;color:#0f172a;">${left.value}</td>`,
       );
       sections.push(
         right
-          ? `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${rightLabel}</td><td style="padding:3px 0;color:#334155;">${right.value}</td>`
+          ? `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${rightLabel}</td><td style="padding:3px 0;color:#0f172a;">${right.value}</td>`
           : '<td></td><td></td>',
       );
       sections.push('</tr>');
@@ -213,8 +290,8 @@ export function buildResumeHtml(data: ResumeData): {
 
   sections.push(sectionTitle('DECLARATION'));
   sections.push(`
-    <p style="margin:0;font-size:12px;line-height:1.5;color:#334155;">I solemnly declare that all the above information is correct to the best of my knowledge and belief.</p>
-    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:12px;color:#334155;">
+    <p style="margin:0;font-size:12px;line-height:1.5;color:#0f172a;">I solemnly declare that all the above information is correct to the best of my knowledge and belief.</p>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:12px;color:#0f172a;">
       <span>Date ..........</span>
       <span>Place ..........</span>
     </div>
@@ -222,8 +299,8 @@ export function buildResumeHtml(data: ResumeData): {
 
   const bodyInner = sections.join('\n');
   const wrapperStyle =
-    "font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;width:210mm;max-width:210mm;margin:0;padding:28px 32px;color:#334155;line-height:1.45;background:#fff;box-sizing:border-box;font-size:13px;";
+    "font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;width:210mm;max-width:210mm;margin:0;padding:28px 32px;color:#0f172a;line-height:1.45;background:#fff;box-sizing:border-box;font-size:13px;";
   const bodyContent = `<div style="${wrapperStyle}">${bodyInner}</div>`;
-  const fullHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>${name} - Curriculum Vitae</title><style>body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;padding:28px 32px;color:#334155;background:#fff;max-width:210mm;}</style></head><body>${bodyInner}</body></html>`;
+  const fullHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>${name} - Curriculum Vitae</title><style>body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;padding:28px 32px;color:#0f172a;background:#fff;max-width:210mm;}</style></head><body>${bodyInner}</body></html>`;
   return { bodyContent, fullHtml };
 }

@@ -73,7 +73,7 @@ export const columnDefs: ColDef[] = [
   },
   {
     headerName: 'BloodGroup',
-    field: 'bloodGroup',
+    field: 'empBloodGroup',
     sortable: true,
     filter: true,
     flex: 1,
