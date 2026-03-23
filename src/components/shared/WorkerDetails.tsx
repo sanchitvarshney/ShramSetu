@@ -431,19 +431,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
                 </div>
                 {worker && <EmployementDetails details={worker} />}
                 {worker && <EducationDetailsFlat details={worker} />}
-                {/* Resume preview (CV style) - matches download PDF */}
-                <div className="rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm">
-                  <h3 className="text-base font-semibold text-slate-600">Resume preview</h3>
-                  <p className="text-xs text-slate-500 mt-0.5 mb-3">
-                    This is how the resume will look when you download the PDF.
-                  </p>
-                  <div
-                    className="resume-preview max-w-[700px] mx-auto bg-white rounded-lg border border-slate-200/80 shadow-sm p-6 text-left"
-                    dangerouslySetInnerHTML={{
-                      __html: buildWorkerResumeHtml(worker).bodyContent ?? '',
-                    }}
-                  />
-                </div>
+            
               </div>
             </div>
           ) : null}

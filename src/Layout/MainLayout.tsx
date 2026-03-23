@@ -15,7 +15,6 @@ import React, { useEffect, useState } from 'react';
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomTooltip from '@/components/reusable/CustomTooltip';
-
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +23,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
-
 import { NavlinkStyle } from '@/style/CustomStyles';
 import NotificationSheet from '@/components/shared/NotificationSheet';
 import { logout } from '@/features/auth/authSlice';

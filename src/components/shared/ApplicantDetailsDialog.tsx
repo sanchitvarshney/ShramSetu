@@ -6,13 +6,7 @@ import {
   clearApplicationDetails,
   type ApplicantDetail,
 } from '@/features/jobFeatures/jobApplicationsSlice';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/reusable/Loading';
 import { jsPDF } from 'jspdf';
@@ -33,7 +27,12 @@ function applicantToResumeData(d: ApplicantDetail): ResumeData {
   const presentLines = buildAddressLines(
     cleanAddrPart(d.presentHouseNo ?? d.present_houseNo),
     cleanAddrPart(d.presentColony ?? d.present_colony),
-    cleanAddrPart(d.present_city ?? d.presentCity ?? d.present_district ?? d.presentDistrict),
+    cleanAddrPart(
+      d.present_city ??
+        d.presentCity ??
+        d.present_district ??
+        d.presentDistrict,
+    ),
     cleanAddrPart(d.presentState ?? d.present_state),
     cleanAddrPart(d.present_country ?? d.presentCountry),
     cleanAddrPart(d.presentPincode ?? d.present_pincode),
@@ -48,31 +47,60 @@ function applicantToResumeData(d: ApplicantDetail): ResumeData {
   );
   const hasPresent = presentLines.length > 0;
   const hasPerma = permaLines.length > 0;
-  const sameAddress = hasPresent && hasPerma && presentLines.join(' ') === permaLines.join(' ');
+  const sameAddress =
+    hasPresent && hasPerma && presentLines.join(' ') === permaLines.join(' ');
   const showPerma = hasPerma && !sameAddress;
   let addressBlock = '';
   if (hasPresent) {
-    addressBlock += presentLines.map((l) => `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`).join('');
+    addressBlock += presentLines
+      .map(
+        (l) =>
+          `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+      )
+      .join('');
     if (showPerma) {
       addressBlock += `<p style="font-size:10px;margin:4px 0 1px 0;color:#64748b;font-weight:600;">Permanent:</p>`;
-      addressBlock += permaLines.map((l) => `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`).join('');
+      addressBlock += permaLines
+        .map(
+          (l) =>
+            `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+        )
+        .join('');
     }
   } else if (hasPerma) {
-    addressBlock += permaLines.map((l) => `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`).join('');
+    addressBlock += permaLines
+      .map(
+        (l) =>
+          `<p style="font-size:11px;margin:0 0 1px 0;color:#475569;">${l}</p>`,
+      )
+      .join('');
   }
-  const employmentList = d.companyInfo ?? d.employmentList ?? d.employment ?? [];
+  const employmentList =
+    d.companyInfo ?? d.employmentList ?? d.employment ?? [];
   const employment = Array.isArray(employmentList)
     ? employmentList.map((item: any) => ({
         companyName: item.companyName ?? item.company ?? '',
-        role: typeof item.role === 'object' && item.role != null ? (item.role.text ?? item.role.value ?? '') : (item.role ?? item.empDesignation ?? ''),
+        role:
+          typeof item.role === 'object' && item.role != null
+            ? (item.role.text ?? item.role.value ?? '')
+            : (item.role ?? item.empDesignation ?? ''),
         joining: item.empJoiningDate ?? item.joiningDate ?? item.joining ?? '',
-        relieving: item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '',
+        relieving:
+          item.empRelievingDate ?? item.relievingDate ?? item.relieving ?? '',
         industry: item.industry ?? '',
       }))
     : [];
   const educationList = d.educationList ?? [];
-  const degrees = Array.isArray(d.degree) ? d.degree : d.degree ? [d.degree] : [];
-  const universities = Array.isArray(d.university) ? d.university : d.university ? [d.university] : [];
+  const degrees = Array.isArray(d.degree)
+    ? d.degree
+    : d.degree
+      ? [d.degree]
+      : [];
+  const universities = Array.isArray(d.university)
+    ? d.university
+    : d.university
+      ? [d.university]
+      : [];
   const education: ResumeData['education'] = [];
   if (Array.isArray(educationList) && educationList.length > 0) {
     educationList.forEach((edu: any) => {
@@ -85,7 +113,12 @@ function applicantToResumeData(d: ApplicantDetail): ResumeData {
     });
   } else {
     degrees.forEach((deg: any, i: number) => {
-      education.push({ degree: fmt(deg), stream: '', university: fmt(universities[i]), endYear: '' });
+      education.push({
+        degree: fmt(deg),
+        stream: '',
+        university: fmt(universities[i]),
+        endYear: '',
+      });
     });
   }
   const dob = d.dob ?? d.empDOB ?? '';
@@ -98,12 +131,18 @@ function applicantToResumeData(d: ApplicantDetail): ResumeData {
   const hobbies = fmt(d.empHobbies ?? d.hobbies ?? '');
   const personalRows: { label: string; value: string }[] = [];
   if (dob) personalRows.push({ label: 'Date of Birth', value: fmt(dob) });
-  if (marital) personalRows.push({ label: 'Marital Status', value: convertMarital(marital) });
-  if (gender) personalRows.push({ label: 'Gender', value: convertGender(gender) });
+  if (marital)
+    personalRows.push({
+      label: 'Marital Status',
+      value: convertMarital(marital),
+    });
+  if (gender)
+    personalRows.push({ label: 'Gender', value: convertGender(gender) });
   personalRows.push({ label: 'Nationality', value: nationality });
   if (aadhaar) personalRows.push({ label: 'Aadhaar', value: aadhaar });
   if (pan) personalRows.push({ label: 'PAN', value: pan });
-  if (bloodGroup) personalRows.push({ label: 'Blood Group', value: bloodGroup });
+  if (bloodGroup)
+    personalRows.push({ label: 'Blood Group', value: bloodGroup });
   if (hobbies) personalRows.push({ label: 'Hobbies', value: hobbies });
   const photoRaw = d.empPhoto ?? (d as any).empPhoto;
   const photoUrl =
@@ -127,9 +166,14 @@ function applicantToResumeData(d: ApplicantDetail): ResumeData {
   };
 }
 
-function buildResumeHtml(d: ApplicantDetail, photoUrlOverride?: string): { fullHtml: string; bodyContent: string } {
+function buildResumeHtml(
+  d: ApplicantDetail,
+  photoUrlOverride?: string,
+): { fullHtml: string; bodyContent: string } {
   const data = applicantToResumeData(d);
-  return buildResumeHtmlShared(photoUrlOverride != null ? { ...data, photoUrl: photoUrlOverride } : data);
+  return buildResumeHtmlShared(
+    photoUrlOverride != null ? { ...data, photoUrl: photoUrlOverride } : data,
+  );
 }
 
 /** Placeholder when no photo is available for PDF. */
@@ -199,8 +243,8 @@ function waitForImages(el: HTMLElement, timeoutMs = 3000): Promise<any> {
             }
             img.onload = () => resolve();
             img.onerror = () => resolve();
-          })
-      )
+          }),
+      ),
     ),
     new Promise<void>((r) => setTimeout(r, timeoutMs)),
   ]);
@@ -235,7 +279,11 @@ export default function ApplicantDetailsDialog({
   const handleDownload = useCallback(async () => {
     if (!applicationDetails) return;
     setDownloadLoading(true);
-    const baseName = (applicationDetails.empName ?? applicationDetails.empEmail ?? 'details').replace(/[^a-zA-Z0-9.-]/g, '_');
+    const baseName = (
+      applicationDetails.empName ??
+      applicationDetails.empEmail ??
+      'details'
+    ).replace(/[^a-zA-Z0-9.-]/g, '_');
     const data = applicantToResumeData(applicationDetails);
     const photoUrl = data.photoUrl;
 
@@ -243,17 +291,22 @@ export default function ApplicantDetailsDialog({
       applicationDetails.empCode ??
       applicationDetails.key ??
       (applicationDetails as any).employeeID;
-    let photoForPdf: string | undefined =
-      empCode ? await getWorkerImageAsBase64(empCode) : undefined;
+    let photoForPdf: string | undefined = empCode
+      ? await getWorkerImageAsBase64(empCode)
+      : undefined;
 
     if (photoForPdf == null) {
       const isDataUrl = photoUrl && photoUrl.startsWith('data:');
       photoForPdf =
         photoUrl && !isDataUrl
-          ? (await resolvePhotoToBase64(photoUrl)) ?? PLACEHOLDER_PHOTO_DATAURL
-          : photoUrl ?? PLACEHOLDER_PHOTO_DATAURL;
+          ? ((await resolvePhotoToBase64(photoUrl)) ??
+            PLACEHOLDER_PHOTO_DATAURL)
+          : (photoUrl ?? PLACEHOLDER_PHOTO_DATAURL);
     }
-    const { fullHtml, bodyContent } = buildResumeHtml(applicationDetails, photoForPdf);
+    const { fullHtml, bodyContent } = buildResumeHtml(
+      applicationDetails,
+      photoForPdf,
+    );
 
     const wrap = document.createElement('div');
     wrap.style.cssText =
@@ -324,31 +377,12 @@ export default function ApplicantDetailsDialog({
   }
 
   const d = applicationDetails;
-  const resumePreview = d ? buildResumeHtml(d).bodyContent : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="fixed left-1/2 top-1/2 max-w-3xl max-h-[90vh] w-full -translate-x-1/2 -translate-y-1/2 flex flex-col p-0 bg-white rounded-xl shadow-lg overflow-hidden">
         {applicationDetailsLoading && (
           <Loading message="Loading applicant..." variant="minimal" />
-        )}
-        {d && (
-          <>
-            <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-2 border-b border-slate-200/80">
-              <DialogTitle className="text-base font-semibold text-slate-600">
-                Resume preview
-              </DialogTitle>
-              <p className="text-xs text-slate-500 mt-0.5">
-                This is how the resume will look when you download the PDF.
-              </p>
-            </DialogHeader>
-            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 bg-slate-50/40">
-              <div
-                className="resume-preview max-w-[700px] mx-auto bg-white rounded-lg border border-slate-200/80 shadow-sm p-6 text-left"
-                dangerouslySetInnerHTML={{ __html: resumePreview ?? '' }}
-              />
-            </div>
-          </>
         )}
 
         {!d && open && appliedKey && !applicationDetailsLoading && (
