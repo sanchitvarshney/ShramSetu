@@ -29,6 +29,7 @@ const JobListPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<any | null>(null);
+  
   const [jobToDelete, setJobToDelete] = useState<{
     company: string;
     uniqueID: string;

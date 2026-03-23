@@ -34,13 +34,17 @@ import {
 import { AppDispatch, RootState } from '@/store';
 import { DatePicker, DatePickerProps } from 'antd';
 import { CircularProgress } from '@mui/material';
-import { validateForm, addWorkerSchema, isValidAadhaar } from '@/lib/validations';
+import {
+  validateForm,
+  addWorkerSchema,
+  isValidAadhaar,
+} from '@/lib/validations';
 
 const AddWorker = () => {
   const dispatch = useDispatch<AppDispatch>();
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const { department, designation , adduserloading} = useSelector(
+  const { department, designation, adduserloading } = useSelector(
     (state: RootState) => state.adminPage,
   );
   const [empFirstName, setEmpFirstName] = useState('');
@@ -90,58 +94,57 @@ const AddWorker = () => {
       return;
     }
 
-  const formData = new FormData();
+    const formData = new FormData();
 
-  formData.append('firstName', empFirstName);
-  formData.append('lastName', empLastName);
-  formData.append('email', empEmail);
-  formData.append('dob', format(empDOB, 'dd/MM/yyyy')); // ✅ fixed
-  formData.append('department', empDepartment);
-  formData.append('designation', empDesignation);
-  formData.append('mobile', empMobile);
-  formData.append('password', empPassword);
-  formData.append('gender', empGender);
-  const aadhaarDigits = empAadhaarNo.replace(/\s/g, '');
-  if (aadhaarDigits) formData.append('aadhaar', aadhaarDigits);
+    formData.append('firstName', empFirstName);
+    formData.append('lastName', empLastName);
+    formData.append('email', empEmail);
+    formData.append('dob', format(empDOB, 'dd/MM/yyyy')); // ✅ fixed
+    formData.append('department', empDepartment);
+    formData.append('designation', empDesignation);
+    formData.append('mobile', empMobile);
+    formData.append('password', empPassword);
+    formData.append('gender', empGender);
+    const aadhaarDigits = empAadhaarNo.replace(/\s/g, '');
+    if (aadhaarDigits) formData.append('aadhaar', aadhaarDigits);
 
-  if (empPhoto instanceof File) {
-    formData.append('image', empPhoto); // ✅ fixed name
-  }
-
-  dispatch(addWorker(formData)).then((response: any) => {
-    if (response.payload.success) {
-      setEmpFirstName(''); // Reset form fields
-      setEmpMiddleName('');
-      setEmpLastName('');
-      setEmpEmail('');
-      setEmpDOB(undefined);
-      setEmpDepartment('');
-      setEmpDesignation('');
-      setEmpMobile('');
-      setEmpPassword('');
-      setEmpConfirmPassword('');
-      setEmpGender('');
-      setEmpAadhaarNo('');
-      toast({ title: 'Success!!', description: response.payload.message });
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: response.payload.message,
-      });
+    if (empPhoto instanceof File) {
+      formData.append('image', empPhoto); // ✅ fixed name
     }
-  });
-};
+
+    dispatch(addWorker(formData)).then((response: any) => {
+      if (response.payload.success) {
+        setEmpFirstName(''); // Reset form fields
+        setEmpMiddleName('');
+        setEmpLastName('');
+        setEmpEmail('');
+        setEmpDOB(undefined);
+        setEmpDepartment('');
+        setEmpDesignation('');
+        setEmpMobile('');
+        setEmpPassword('');
+        setEmpConfirmPassword('');
+        setEmpGender('');
+        setEmpAadhaarNo('');
+        toast({ title: 'Success!!', description: response.payload.message });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.payload.message,
+        });
+      }
+    });
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files ? e.target.files[0] : null;
     if (file) {
       setEmpPhoto(file);
-      const imageUrl = URL.createObjectURL(file);  // Generate URL for the selected image file
-      setEmpPhotoUrl(imageUrl);  // Store the URL in state for immediate display
+      const imageUrl = URL.createObjectURL(file); // Generate URL for the selected image file
+      setEmpPhotoUrl(imageUrl); // Store the URL in state for immediate display
     }
   };
-  
 
   useEffect(() => {
     dispatch(fetchDepartments());
@@ -167,7 +170,7 @@ const AddWorker = () => {
               <div className="w-1/3 bg-gray-50 p-[20px] rounded-xl shadow-lg flex flex-col items-center">
                 <div className="relative w-[150px] h-[150px] mb-4 overflow-hidden rounded-full bg-gray-200">
                   <img
-                    src={empPhotoUrl || './ProfileImage.png'}
+                    src={empPhotoUrl || '/ProfileImage.png'}
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -191,130 +194,166 @@ const AddWorker = () => {
                 />
                 <button className="bg-[#115e59] text-white rounded-md px-4 py-2 mt-2 hover:bg-[#0d4a46] transition">
                   <label
-                      htmlFor="profile-upload"
-                      className="cursor-pointer text-white text-lg font-bold"
-                    >
-                      <span>Upload Image</span>
-                    </label>
+                    htmlFor="profile-upload"
+                    className="cursor-pointer text-white text-lg font-bold"
+                  >
+                    <span>Upload Image</span>
+                  </label>
                 </button>
               </div>
-            
-            <div className="w-2/3 grid grid-cols-3 gap-[20px]">
-              <LabeledField
-                label="First Name"
-                required
-                value={empFirstName}
-                onChange={(e) => setEmpFirstName(capitalizeName(e.target.value))}
-              />
-              <LabeledField
-                label="Middle Name"
-                value={empMiddleName}
-                onChange={(e) => setEmpMiddleName(capitalizeName(e.target.value))}
-              />
-              <LabeledField
-                label="Last Name"
-                required
-                value={empLastName}
-                onChange={(e) => setEmpLastName(capitalizeName(e.target.value))}
-              />
-              <div className="flex flex-col gap-[10px]">
-                <Label className="gap-[10px]">Gender</Label>
-                <Select onValueChange={setEmpGender}>
-                  <SelectTrigger className={`${inputStyle} input2 focus:ring-0`} ref={buttonRef}>
-                    <SelectValue placeholder="--" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="M">Male</SelectItem>
-                    <SelectItem value="F">Female</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-[10px]">
-                <Label className="gap-[10px]">Date Of Birth</Label>
-                <Popover>
-                  <DatePicker
-                    onChange={onChange}
-                    className={`${inputStyle} input2 focus:ring-0 w-[100%]`}
-                    format="YYYY/MM/DD"
+
+              <div className="w-2/3 ">
+                <div className="grid grid-cols-3 gap-[20px]">
+                  <LabeledField
+                    label="First Name"
+                    required
+                    value={empFirstName}
+                    onChange={(e) =>
+                      setEmpFirstName(capitalizeName(e.target.value))
+                    }
                   />
-                </Popover>
+                  <LabeledField
+                    label="Middle Name"
+                    value={empMiddleName}
+                    onChange={(e) =>
+                      setEmpMiddleName(capitalizeName(e.target.value))
+                    }
+                  />
+                  <LabeledField
+                    label="Last Name"
+                    required
+                    value={empLastName}
+                    onChange={(e) =>
+                      setEmpLastName(capitalizeName(e.target.value))
+                    }
+                  />
+                  <div className="flex flex-col gap-[10px] mb-4">
+                    <Label className="gap-[10px]">Gender</Label>
+                    <Select onValueChange={setEmpGender}>
+                      <SelectTrigger
+                        className={`${inputStyle} input2 focus:ring-0`}
+                        ref={buttonRef}
+                      >
+                        <SelectValue placeholder="--" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="M">Male</SelectItem>
+                        <SelectItem value="F">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-[10px]  mb-4">
+                    <Label className="gap-[10px]">Date Of Birth</Label>
+                    <Popover>
+                      <DatePicker
+                        onChange={onChange}
+                        className={`${inputStyle} input2 focus:ring-0 w-[100%]`}
+                        format="YYYY/MM/DD"
+
+                      />
+                    </Popover>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-[20px] mt-4">
+                  <LabeledField
+                    label="Phone"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={15}
+                    required
+                    value={empMobile}
+                    onChange={(e) =>
+                      setEmpMobile(e.target.value.replace(/\D/g, ''))
+                    }
+                  />
+                  <LabeledField
+                    label="Email"
+                    type="email"
+                    required
+                    value={empEmail}
+                    onChange={(e) => setEmpEmail(e.target.value)}
+                  />
+                  <div className="space-y-1  ">
+                    <LabeledField
+                      label="Aadhaar Number"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={14}
+                      value={empAadhaarNo}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, '');
+                        if (v.length <= 12) setEmpAadhaarNo(v);
+                      }}
+                      placeholder="12 digits (e.g. 234512345678)"
+                    />
+                    {empAadhaarNo.length > 0 && (
+                      <p
+                        className={`text-xs mt-0.5 ${isValidAadhaar(empAadhaarNo) ? 'text-green-600' : 'text-red-600'}`}
+                      >
+                        {isValidAadhaar(empAadhaarNo)
+                          ? 'Aadhaar valid'
+                          : 'Aadhaar not valid'}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-[20px] mt-6">
+                  <div className="flex flex-col gap-[10px] ">
+                    <Label className="gap-[10px]">Department</Label>
+                    <Select onValueChange={setEmpDepartment}>
+                      <SelectTrigger
+                        className={`${inputStyle} input2 focus:ring-0`}
+                        ref={buttonRef}
+                      >
+                        <SelectValue placeholder="--" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {department?.map((d: Department) => (
+                          <SelectItem value={d?.value} key={d?.value}>
+                            {d?.text}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex flex-col gap-[10px]  ">
+                    <Label className="gap-[10px]">Designation</Label>
+                    <Select onValueChange={setEmpDesignation}>
+                      <SelectTrigger
+                        className={`${inputStyle} input2 focus:ring-0`}
+                        ref={buttonRef}
+                      >
+                        <SelectValue placeholder="--" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {designation?.map((d: Designation) => (
+                          <SelectItem value={d?.value} key={d?.value}>
+                            {d?.text}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-[20px] mt-6">
+                  <LabeledField
+                    label="Password"
+                    type="password"
+                    required
+                    value={empPassword}
+                    onChange={(e) => setEmpPassword(e.target.value)}
+                  />
+                  <LabeledField
+                    label="Confirm Password"
+                    type="password"
+                    required
+                    value={empConfirmPassword}
+                    onChange={(e) => setEmpConfirmPassword(e.target.value)}
+                  />
+                </div>
               </div>
-              <LabeledField
-                label="Phone"
-                type="text"
-                inputMode="numeric"
-                maxLength={15}
-                required
-                value={empMobile}
-                onChange={(e) => setEmpMobile(e.target.value.replace(/\D/g, ''))}
-              />
-              <LabeledField
-                label="Email"
-                type="email"
-                required
-                value={empEmail}
-                onChange={(e) => setEmpEmail(e.target.value)}
-              />
-              <div className="space-y-1">
-                <LabeledField
-                  label="Aadhaar Number"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={14}
-                  value={empAadhaarNo}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, '');
-                    if (v.length <= 12) setEmpAadhaarNo(v);
-                  }}
-                  placeholder="12 digits (e.g. 234512345678)"
-                />
-                {empAadhaarNo.length > 0 && (
-                  <p className={`text-xs mt-0.5 ${isValidAadhaar(empAadhaarNo) ? 'text-green-600' : 'text-red-600'}`}>
-                    {isValidAadhaar(empAadhaarNo) ? 'Aadhaar valid' : 'Aadhaar not valid'}
-                  </p>
-                )}
-              </div>
-              <div className="flex flex-col gap-[10px]">
-                <Label className="gap-[10px]">Department</Label>
-                <Select onValueChange={setEmpDepartment}>
-                  <SelectTrigger className={`${inputStyle} input2 focus:ring-0`} ref={buttonRef}>
-                    <SelectValue placeholder="--" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {department?.map((d: Department) => (
-                      <SelectItem value={d?.value} key={d?.value}>{d?.text}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-[10px]">
-                <Label className="gap-[10px]">Designation</Label>
-                <Select onValueChange={setEmpDesignation}>
-                  <SelectTrigger className={`${inputStyle} input2 focus:ring-0`} ref={buttonRef}>
-                    <SelectValue placeholder="--" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {designation?.map((d: Designation) => (
-                      <SelectItem value={d?.value} key={d?.value}>{d?.text}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <LabeledField
-                label="Password"
-                type="password"
-                required
-                value={empPassword}
-                onChange={(e) => setEmpPassword(e.target.value)}
-              />
-              <LabeledField
-                label="Confirm Password"
-                type="password"
-                required
-                value={empConfirmPassword}
-                onChange={(e) => setEmpConfirmPassword(e.target.value)}
-              />
-            </div></div>
+            </div>
           </CardContent>
           <CardFooter className="p-0 px-[20px] flex justify-end items-center border-t h-[50px]">
             <Button
@@ -322,8 +361,11 @@ const AddWorker = () => {
               onClick={handleSubmit}
               disabled={adduserloading}
             >
-              {adduserloading ? <CircularProgress size={20} /> : <BiSolidLogInCircle className="h-[25px] w-[25px]" />}
-              
+              {adduserloading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <BiSolidLogInCircle className="h-[25px] w-[25px]" />
+              )}
               Register
             </Button>
           </CardFooter>

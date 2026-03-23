@@ -34,26 +34,39 @@ export const calculateExperience = (
   joiningDate?: string,
   relievingDate?: string
 ) => {
-  if (!joiningDate) return '0.0';
+  if (!joiningDate) return '0 year 0 month';
 
-  const [startYear, startMonth] = joiningDate.split('-').map(Number);
-  const startDate = new Date(startYear, startMonth - 1);
+  // Expected formats: "YYYY-MM" or "YYYY-MM-DD". We only care about year+month.
+  const [startYearRaw, startMonthRaw] = joiningDate.split('-');
+  const startYear = Number(startYearRaw);
+  const startMonth = Number(startMonthRaw); // 1-12
 
-  let endDate: Date;
+  if (!startYear || !startMonth || startMonth < 1 || startMonth > 12) {
+    return '0 year 0 month';
+  }
 
+  let endYear: number;
+  let endMonth: number; // 1-12
   if (!relievingDate || relievingDate === 'Present') {
-    endDate = new Date(); // currently working
+    const now = new Date();
+    endYear = now.getFullYear();
+    endMonth = now.getMonth() + 1;
   } else {
-    const [endYear, endMonth] = relievingDate.split('-').map(Number);
-    endDate = new Date(endYear, endMonth - 1);
+    const [endYearRaw, endMonthRaw] = relievingDate.split('-');
+    endYear = Number(endYearRaw);
+    endMonth = Number(endMonthRaw);
   }
 
-  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-    return '0.0';
+  if (!endYear || !endMonth || endMonth < 1 || endMonth > 12) {
+    return '0 year 0 month';
   }
 
-  const diffTime = endDate.getTime() - startDate.getTime();
-  const years = diffTime / (1000 * 60 * 60 * 24 * 365.25);
+  const totalMonths = (endYear - startYear) * 12 + (endMonth - startMonth);
+  const safeMonths = Math.max(0, totalMonths);
 
-  return years.toFixed(1);
+  const years = Math.floor(safeMonths / 12);
+  const months = safeMonths % 12;
+
+  // Use wording exactly like "2 year 5 month" (no pluralization logic).
+  return `${years} year ${months} month`;
 };

@@ -70,6 +70,7 @@ const JobAddPage = () => {
       vacancy: 0,
       skills: '',
       jobTitle: '',
+      jobLocationUrl: '',
       qualification: '10th, 12th, Other',
       experience: '',
       jobStatus: '',
@@ -143,6 +144,7 @@ const JobAddPage = () => {
       vacancy: data.vacancy ?? 0,
       skills: data.skills,
       jobTitle: data.jobTitle,
+        jobLocationUrl: data.jobLocationUrl,
       qualification: data.qualification,
       experience: data.experience,
       jobStatus: data.jobStatus,
@@ -497,6 +499,28 @@ const JobAddPage = () => {
                         rows={3}
                         value={field.value ?? ''}
                         readOnly
+                        ref={field.ref}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Job Location URL */}
+              <FormField
+                control={form.control}
+                name="jobLocationUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Job Location URL</FormLabel>
+                    <FormControl>
+                      <Input
+                        className={inputStyle}
+                        placeholder="https://maps.google.com/... (optional)"
+                        value={field.value ?? ''}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
                         ref={field.ref}
                       />
                     </FormControl>

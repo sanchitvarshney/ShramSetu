@@ -266,6 +266,16 @@ export const jobFormSchema = z
     branch: z.string().min(1, 'Branch is required'),
     jobType: z.string().min(1, 'Job type is required'),
     jobTitle: z.string().min(1, 'Job title is required').max(200, 'Job title is too long'),
+    jobLocationUrl: z
+      .string()
+      .optional()
+      .refine(
+        (v) =>
+          v == null || v.trim() === '' || z.string().url().safeParse(v.trim()).success,
+        {
+          message: 'Job Location URL must be a valid URL (e.g. https://maps.google.com/...)',
+        },
+      ),
     department: z.string().min(1, 'Department is required'),
     designation: z.string().min(1, 'Designation is required'),
     minSalary: z.number().min(0, 'Minimum salary must be 0 or more'),

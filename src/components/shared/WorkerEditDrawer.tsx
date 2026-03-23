@@ -279,7 +279,7 @@ const WorkerEditDrawer: React.FC<WorkerEditDrawerProps> = ({
                         (Array.isArray(worker?.empPhoto)
                           ? worker.empPhoto[0]
                           : worker?.empPhoto) ||
-                        './ProfileImage.png'
+                        '/ProfileImage.png'
                       }
                       alt="Profile"
                       className="w-full h-full object-cover"

@@ -79,16 +79,21 @@ const ListCompany = () => {
       field: 'brand',
       valueFormatter: (params) => params.value ?? '—',
     },
+    { headerName: 'Contact Name', field: 'contactName' },
     { headerName: 'Email', field: 'email' },
     { headerName: 'Mobile', field: 'mobile' },
     { headerName: 'Website', field: 'website' },
-
     {
-      headerName: 'Active Status',
-      field: 'activeStatus',
-      valueGetter: (params) =>
-        params.data?.activeStatus === 'A' ? 'Active' : 'Not Active',
+      headerName: 'Created by',
+      field: 'createdBy',
     },
+    { headerName: 'Updated At', field: 'updatedAt' },
+    // {
+    //   headerName: 'Active Status',
+    //   field: 'activeStatus',
+    //   valueGetter: (params) =>
+    //     params.data?.activeStatus === 'A' ? 'Active' : 'Not Active',
+    // },
   ];
 
   return (

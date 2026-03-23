@@ -43,6 +43,7 @@ const AddCompany: React.FC = () => {
   const [panNo, setPanNo] = useState<string>('');
   const [website, setWebsite] = useState<string>('');
   const [brandName, setBrandName] = useState<string>('');
+  const [contactName, setContactName] = useState<string>('');
   const [hsnList, setHsnList] = useState<string[]>(['']);
   const [sscList, setSscList] = useState<string[]>(['']);
 
@@ -83,6 +84,7 @@ const AddCompany: React.FC = () => {
       name: company ?? '',
       panNo,
       website,
+      contactName,
       ...(brandName.trim() && { brand: brandName.trim() }),
       ...(hsnArray.length > 0 && { hsn: hsnArray }),
       ...(sscArray.length > 0 && { ssc: sscArray }),
@@ -96,6 +98,7 @@ const AddCompany: React.FC = () => {
         setPanNo('');
         setWebsite('');
         setBrandName('');
+        setContactName('');
         setHsnList(['']);
         setSscList(['']);
         toast({ title: 'Success!!', description: response.payload.message });
@@ -241,13 +244,19 @@ const AddCompany: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <LabeledField
-                label="Phone Number"
+                label="Contact Number"
                 type="text"
                 inputMode="numeric"
                 maxLength={15}
                 required
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+              />
+                 <LabeledField
+                label="Contact Person Name"
+                placeholder=""
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
               />
               <LabeledField
                 label="Pan No."
@@ -263,6 +272,7 @@ const AddCompany: React.FC = () => {
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
               />
+              
               <div className="col-span-2 space-y-2">
                 <Label className="text-sm font-medium">HSN (multiple)</Label>
                 {hsnList.map((val, idx) => (

@@ -43,7 +43,7 @@ const UpdateBranchModal = (props: any) => {
     industry: industryList,
     perPincode,
     isaddbranch,
-    isbranchUpdate
+    isbranchUpdate,
   } = useSelector((state: RootState) => state.adminPage);
 
   useEffect(() => {
@@ -64,9 +64,17 @@ const UpdateBranchModal = (props: any) => {
     setEmail(b?.email ?? '');
     setMobile(b?.mobile ?? '');
     setGstNo(b?.gst ?? '');
-    setIndustry(typeof b?.industry === 'object' && b?.industry?.value != null ? b.industry.value : b?.industry ?? '');
+    setIndustry(
+      typeof b?.industry === 'object' && b?.industry?.value != null
+        ? b.industry.value
+        : (b?.industry ?? ''),
+    );
     setPinCode(b?.pinCode ?? '');
-    setState(typeof b?.state === 'object' && b?.state?.value != null ? b.state.value : b?.state ?? '');
+    setState(
+      typeof b?.state === 'object' && b?.state?.value != null
+        ? b.state.value
+        : (b?.state ?? ''),
+    );
     setCity(b?.city ?? '');
     setAddress(b?.address ?? '');
   }, [props?.updatingBranch]);
@@ -178,13 +186,15 @@ const UpdateBranchModal = (props: any) => {
         </DialogHeader>
 
         <div>
-          <div className="grid grid-cols-3 gap-[20px]">
+          <div className="grid grid-cols-2 gap-[20px] mt-4">
             <LabeledField
               label="Branch Name"
               required
               value={branchName}
               onChange={(e) => setBranchName(e.target.value)}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-[20px] mt-4">
             <LabeledField
               label="Email"
               required
@@ -201,6 +211,9 @@ const UpdateBranchModal = (props: any) => {
               value={mobile}
               onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-[20px] mt-4">
+            {' '}
             <LabeledField
               label="GST Number"
               required
@@ -216,6 +229,8 @@ const UpdateBranchModal = (props: any) => {
               optionKey="industryID"
               icon={Map}
             />
+          </div>
+          <div className="grid grid-cols-2 gap-[20px] mt-4">
             <LabeledField
               label="Pin Code"
               type="text"
@@ -233,7 +248,7 @@ const UpdateBranchModal = (props: any) => {
               textKey="text"
               optionKey="value"
               icon={Map}
-            />
+            />{' '}
             <SelectWithLabel
               label="City/Area"
               value={city}
@@ -243,18 +258,20 @@ const UpdateBranchModal = (props: any) => {
               optionKey="name"
               icon={Map}
             />
-            <div className="col-span-3 flex flex-col gap-[10px]">
-              <Label className="text-sm font-medium">Address</Label>
-              <Textarea
-                placeholder="Street, building, landmark..."
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                rows={2}
-                className={inputStyle + ' resize-none min-h-[60px]'}
-              />
-            </div>
           </div>
-          <div className="flex justify-between mt-2 float-right gap-5">
+
+          <div className="col-span-3 flex flex-col gap-[10px] mt-4">
+            <Label className="text-sm font-medium">Address</Label>
+            <Textarea
+              placeholder="Street, building, landmark..."
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              rows={2}
+              className={inputStyle + ' resize-none min-h-[60px]'}
+            />
+          </div>
+
+          <div className="flex justify-between mt-4 float-right gap-5">
             <Button
               variant="outline"
               onClick={() => props.hide()}
@@ -270,7 +287,9 @@ const UpdateBranchModal = (props: any) => {
                 className="bg-[#115e59] hover:bg-[#0d4a46]"
                 disabled={!branchName || !email || isaddbranch}
               >
-                { (isaddbranch || isbranchUpdate) && <CircularProgress size={18} />}
+                {(isaddbranch || isbranchUpdate) && (
+                  <CircularProgress size={18} />
+                )}
                 {props?.updatingBranch ? 'Update' : 'Create Branch'}
               </Button>
             </div>

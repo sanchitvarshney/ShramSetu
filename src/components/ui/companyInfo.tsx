@@ -20,7 +20,7 @@ import {
 import { LabeledField } from '@/components/ui/LabeledField';
 import IconButton from '@/components/ui/IconButton';
 import {
-  branchUpdate,
+  // branchUpdate,
   companyUpdate,
   getCompanyBranchOptions,
   getCompanyInfo,
@@ -85,7 +85,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
   const [updatingBranch, setUpdatingBranch] = useState<any>(null);
   const [showAddClientDialog, setShowAddClientDialog] = useState<boolean>(false);
   const [showUpdateComDialog, setShowUpdateComDialog] = useState<boolean>(false);
-  const [updatingBranchStatusId, setUpdatingBranchStatusId] = useState<string | null>(null);
+  // const [updatingBranchStatusId, setUpdatingBranchStatusId] = useState<string | null>(null);
 
   const openAddBranch = () => {
     setUpdatingBranch(null);
@@ -132,35 +132,35 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
     });
   };
 
-  const handleBranchActiveStatusChange = (branch: any, value: string) => {
-    const companyID = details?.[0]?.companyID;
-    if (!companyID || !branch?.branchID) return;
-    const activeStatus = value as 'A' | 'INA';
-    setUpdatingBranchStatusId(branch.branchID);
-    const payload = {
-      addressID: branch.branchID,
-      companyID,
-      name: branch.branchName,
-      city: branch.city ?? '',
-      email: branch.email ?? '',
-      gst: branch.gst ?? '',
-      mobile: (branch as any).mobile ?? '',
-      pinCode: (branch as any).pinCode ?? '',
-      state: (branch as any).state ?? '',
-      industry: (branch as any).industry ?? '',
-      activeStatus,
-    };
-    dispatch(branchUpdate(payload)).then((res: any) => {
-      setUpdatingBranchStatusId(null);
-      if (res.payload?.success !== false) {
-        dispatch(getCompanyBranchOptions(companyId));
-        toast({
-          title: 'Updated',
-          description: `Branch "${branch.branchName}" is now ${activeStatus === 'A' ? 'Active' : 'Inactive'}.`,
-        });
-      }
-    });
-  };
+  // const handleBranchActiveStatusChange = (branch: any, value: string) => {
+  //   const companyID = details?.[0]?.companyID;
+  //   if (!companyID || !branch?.branchID) return;
+  //   const activeStatus = value as 'A' | 'INA';
+  //   setUpdatingBranchStatusId(branch.branchID);
+  //   const payload = {
+  //     addressID: branch.branchID,
+  //     companyID,
+  //     name: branch.branchName,
+  //     city: branch.city ?? '',
+  //     email: branch.email ?? '',
+  //     gst: branch.gst ?? '',
+  //     mobile: (branch as any).mobile ?? '',
+  //     pinCode: (branch as any).pinCode ?? '',
+  //     state: (branch as any).state ?? '',
+  //     industry: (branch as any).industry ?? '',
+  //     activeStatus,
+  //   };
+  //   dispatch(branchUpdate(payload)).then((res: any) => {
+  //     setUpdatingBranchStatusId(null);
+  //     if (res.payload?.success !== false) {
+  //       dispatch(getCompanyBranchOptions(companyId));
+  //       toast({
+  //         title: 'Updated',
+  //         description: `Branch "${branch.branchName}" is now ${activeStatus === 'A' ? 'Active' : 'Inactive'}.`,
+  //       });
+  //     }
+  //   });
+  // };
 
   const wrapperClass = embedded
     ? 'flex-1 bg-white flex flex-col gap-4 p-6'
@@ -308,7 +308,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
                     </p>
                   </div>
                   <div className="flex gap-2 items-center">
-                    <Select
+                    {/* <Select
                       value={branch.activeStatus === 'A' ? 'A' : 'INA'}
                       onValueChange={(value) =>
                         handleBranchActiveStatusChange(branch, value)
@@ -322,7 +322,7 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
                         <SelectItem value="A">Active</SelectItem>
                         <SelectItem value="INA">Inactive</SelectItem>
                       </SelectContent>
-                    </Select>
+                    </Select> */}
                     <IconButton
                       icon={<Edit size={18} />}
                       onClick={() => openEditBranch(branch)}

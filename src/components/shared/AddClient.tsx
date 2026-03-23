@@ -140,12 +140,16 @@ const AddClient = (props: any) => {
                   value={mName}
                   onChange={(e) => setMName(capitalizeName(e.target.value))}
                 />
+                       </div>
+                          <div className="grid grid-cols-2 gap-[20px] mt-4">
                 <LabeledField
                   label="Last Name"
                   required
                   value={lName}
                   onChange={(e) => setLName(capitalizeName(e.target.value))}
                 />
+                </div>
+                   <div className="grid grid-cols-2 gap-[20px] mt-4">
                 <LabeledField
                   label="Email"
                   type="email"
@@ -153,6 +157,7 @@ const AddClient = (props: any) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+
                 <LabeledField
                   label="Mobile Number"
                   type="text"
@@ -162,6 +167,8 @@ const AddClient = (props: any) => {
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
                 />
+              </div>
+                   <div className="grid grid-cols-2 gap-[20px] mt-4">
                 <LabeledField
                   label="Password"
                   type="password"
@@ -169,14 +176,14 @@ const AddClient = (props: any) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-              </div>
-              <div className="flex justify-between mt-2">
+       </div>
+              <div className="flex justify-between mt-4">
                 <Button
                   variant="outline"
                   onClick={() => setSelectedBranch(undefined)}
                   icon={<ArrowLeft size={18} />}
                 >
-                  Select Branch
+                  Change Branch
                 </Button>
 
                 <div>

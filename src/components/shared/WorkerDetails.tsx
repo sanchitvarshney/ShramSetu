@@ -630,7 +630,7 @@ const BasicDetailsFlat = ({
     (Array.isArray(details?.empPhoto)
       ? details.empPhoto[0]
       : details?.empPhoto) ||
-    './ProfileImage.png';
+    '/profile.png';
 
   if (isEditing) {
     return (
@@ -1377,10 +1377,10 @@ const EmployementDetails = ({ details }: any) => {
                   {emp?.empJoiningDate && emp?.empRelievingDate && (
                     <SingleDetail
                       label="Experience"
-                      value={`${calculateExperience(
+                      value={calculateExperience(
                         emp?.empJoiningDate,
                         emp?.empRelievingDate,
-                      )} years`}
+                      )}
                     />
                   )}
                 </DetailRow>
@@ -1412,17 +1412,7 @@ const EducationDetailsFlat = ({ details }: { details: any }) => {
                   'px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50',
                 )}
               >
-                <DetailRow>
-                  <SingleDetail
-                    label="Degree"
-                    value={edu?.employeeDegree ?? edu?.degree ?? '--'}
-                  />
-                  <SingleDetail
-                    label="Stream"
-                    value={edu?.employeeStream ?? edu?.stream ?? '--'}
-                  />
-                </DetailRow>
-                <SingleDetail
+                     <SingleDetail
                   label="School / University"
                   value={
                     edu?.employeeUniversity ??
@@ -1434,19 +1424,28 @@ const EducationDetailsFlat = ({ details }: { details: any }) => {
                 />
                 <DetailRow>
                   <SingleDetail
+                    label="Degree"
+                    value={edu?.employeeDegree ?? edu?.degree ?? '--'}
+                  />
+                  <SingleDetail
+                    label="Stream"
+                    value={edu?.employeeStream ?? edu?.stream ?? '--'}
+                  />
+                </DetailRow>
+               
+                <DetailRow>
+              
+                  <SingleDetail
                     label="Board / Type"
                     value={edu?.educationType ?? '--'}
                   />
-                  <SingleDetail
-                    label="Percentage"
-                    value={edu?.percentage ?? '--'}
-                  />
-                </DetailRow>
-                <DetailRow>
-                  <SingleDetail
+            <SingleDetail
                     label="Start Year"
                     value={edu?.startYear ?? '--'}
                   />
+                </DetailRow>
+                <DetailRow>
+                
                   <SingleDetail label="End Year" value={edu?.endYear ?? '--'} />
                 </DetailRow>
               </div>

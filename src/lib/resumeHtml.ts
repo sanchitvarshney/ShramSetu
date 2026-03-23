@@ -9,33 +9,24 @@ export function sectionTitle(title: string): string {
   return `
     <div style="
       width:100%;
-      margin:16px 0 8px 0;
-      page-break-inside:avoid;
-      break-inside:avoid;
+      display:block;
+      margin:16px 0 6px 0;
+      background:#e0e0e0;
+      padding:0px 8px;
       box-sizing:border-box;
+      overflow:hidden;
     ">
-      <table style="
-        width:100%;
-        border-collapse:collapse;
-        table-layout:fixed;
-        background:#cbd5e1;
+      <div style="
+        font-size:19px;
+        font-weight:700;
+        color:#0f172a;
+        text-transform:uppercase;
+     
+        white-space:nowrap;
+      margin-bottom:16px;
       ">
-        <tr>
-          <td style="
-            padding:10px 14px;
-            font-size:19px;
-            font-weight:700;
-            color:#0f172a;
-            text-transform:uppercase;
-            letter-spacing:0.04em;
-            line-height:24px;
-            vertical-align:middle;
-            white-space:normal;
-            overflow-wrap:break-word;
-            word-break:break-word;
-          ">${title}</td>
-        </tr>
-      </table>
+        ${title}
+      </div>
     </div>
   `;
 }
@@ -175,7 +166,7 @@ export function buildResumeHtml(data: ResumeData): {
     ? `<a href="mailto:${email}" style="color:#0f172a;text-decoration:underline;">${email}</a>`
     : '';
   const photoHtml = photoUrl
-    ? `<div style="flex-shrink:0;margin-left:20px;"><img src="${photoUrl}" alt="Photo" style="width:100px;height:120px;object-fit:cover;border:1px solid #cbd5e1;display:block;" /></div>`
+    ? `<div style="flex-shrink:0;margin-left:20px;"><img src="${photoUrl}" alt="Photo" style="width:130px;height:150px;object-fit:cover;border:1px solid #cbd5e1;display:block;" /></div>`
     : '';
 
   const cleanAddress = addressBlock
@@ -219,14 +210,19 @@ export function buildResumeHtml(data: ResumeData): {
   ${photoHtml}
 </div>
 
-<div style="height:4px;"></div>
+
+  `);
+
+  sections.push(`
+  <div style="height:1px;background:#0f172a; margin:0 0 8px 0;"></div>
+
   `);
 
   const summary = careerObjective || DEFAULT_CAREER_OBJECTIVE;
   sections.push(`
     ${sectionTitle('CAREER OBJECTIVE')}
-    <p style="margin:0;font-size:18px;line-height:1.55;color:#0f172a;">${summary}</p>
-    <div style="height:4px;"></div>
+    <p style="margin:0;font-size:16px;color:#0f172a;">${summary}</p>
+
   `);
 
   if (employment.length > 0) {
@@ -237,15 +233,17 @@ export function buildResumeHtml(data: ResumeData): {
       const dateRange = [startStr, endStr].filter(Boolean).join(' | ');
       sections.push(`
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:12px;">
-          <span style="font-size:12px;font-weight:600;color:#0f172a;">${fmt(item.companyName)}</span>
-          <span style="font-size:11px;color:#475569;flex-shrink:0;">${dateRange}</span>
+          <span style="font-size:16px;font-weight:600;color:#0f172a;">${fmt(item.companyName)}</span>
+          <span style="font-size:16px;color:#0f172a;flex-shrink:0;">${dateRange}</span>
         </div>
-        ${item.role ? `<p style="font-size:11px;margin:0 0 4px 0;color:#475569;">${fmt(item.role)}</p>` : ''}
+    
       `);
     });
     sections.push('');
   }
 
+
+      // ${item.role ? `<p style="font-size:11px;margin:0 0 4px 0;color:#475569;">${fmt(item.role)}</p>` : ''}
   if (education.length > 0) {
     sections.push(sectionTitle('EDUCATION'));
     education.forEach((edu) => {
@@ -254,8 +252,8 @@ export function buildResumeHtml(data: ResumeData): {
         .join(' | ');
       sections.push(`
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:12px;">
-          <span style="font-size:12px;color:#0f172a;">${fmt(edu.degree)}</span>
-          <span style="font-size:11px;color:#475569;flex-shrink:0;">${rightPart || '—'}</span>
+          <span style="font-size:16px;color:#0f172a;">${fmt(edu.degree)}</span>
+          <span style="font-size:16px;color:#0f172a;flex-shrink:0;">${rightPart || '—'}</span>
         </div>
       `);
     });
@@ -263,35 +261,32 @@ export function buildResumeHtml(data: ResumeData): {
   }
 
   if (personalRows.length > 0) {
-    sections.push(sectionTitle('PERSONAL DETAILS'));
-    sections.push(
-      '<table style="width:100%;border-collapse:collapse;font-size:12px;">',
-    );
-    for (let i = 0; i < personalRows.length; i += 2) {
-      const left = personalRows[i];
-      const right = personalRows[i + 1];
-      const leftLabel = left.label === 'Gender' ? 'Gender' : left.label;
-      const rightLabel =
-        right && right.label === 'Gender' ? 'Gender' : (right?.label ?? '');
-      sections.push('<tr>');
+    const personalRowsFiltered = personalRows.filter((r) => {
+      const lbl = (r.label ?? '').toString().trim().toLowerCase();
+      return lbl !== 'aadhaar' && lbl !== 'pan';
+    });
+    if (personalRowsFiltered.length > 0) {
+      sections.push(sectionTitle('PERSONAL DETAILS'));
       sections.push(
-        `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${leftLabel}</td><td style="padding:3px 0;color:#0f172a;">${left.value}</td>`,
+        '<table style="width:100%;border-collapse:collapse;font-size:16px;table-layout:fixed;">',
       );
-      sections.push(
-        right
-          ? `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${rightLabel}</td><td style="padding:3px 0;color:#0f172a;">${right.value}</td>`
-          : '<td></td><td></td>',
-      );
-      sections.push('</tr>');
+      for (let i = 0; i < personalRowsFiltered.length; i += 1) {
+        const row = personalRowsFiltered[i];
+        const label = row.label === 'Gender' ? 'Gender' : row.label;
+        sections.push('<tr>');
+        sections.push(
+          `<td style="padding:3px 12px 3px 0;color:#0f172a;font-weight:700;width:32%;">${label}</td><td style="padding:3px 0;color:#0f172a;">${row.value}</td>`,
+        );
+        sections.push('</tr>');
+      }
+      sections.push('</table>');
     }
-    sections.push('</table>');
-    sections.push('<div style="height:8px;"></div>');
   }
 
   sections.push(sectionTitle('DECLARATION'));
   sections.push(`
-    <p style="margin:0;font-size:12px;line-height:1.5;color:#0f172a;">I solemnly declare that all the above information is correct to the best of my knowledge and belief.</p>
-    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:12px;color:#0f172a;">
+    <p style="margin:0;font-size:16px;line-height:1.5;color:#0f172a;">I solemnly declare that all the above information is correct to the best of my knowledge and belief.</p>
+    <div style="display:flex;justify-content:space-between;margin-top:14px;font-size:16px;color:#0f172a;">
       <span>Date ..........</span>
       <span>Place ..........</span>
     </div>
@@ -299,7 +294,7 @@ export function buildResumeHtml(data: ResumeData): {
 
   const bodyInner = sections.join('\n');
   const wrapperStyle =
-    "font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;width:210mm;max-width:210mm;margin:0;padding:28px 32px;color:#0f172a;line-height:1.45;background:#fff;box-sizing:border-box;font-size:13px;";
+    "font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;width:210mm;max-width:210mm;margin:0;padding:28px 32px;color:#0f172a;background:#fff;box-sizing:border-box;font-size:20px;";
   const bodyContent = `<div style="${wrapperStyle}">${bodyInner}</div>`;
   const fullHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>${name} - Curriculum Vitae</title><style>body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;margin:0;padding:28px 32px;color:#0f172a;background:#fff;max-width:210mm;}</style></head><body>${bodyInner}</body></html>`;
   return { bodyContent, fullHtml };
