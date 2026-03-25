@@ -61,7 +61,7 @@ const JobApplicationsPage = () => {
             notifyUserApplication({
               title: 'Application Status',
               message: `Your application status has been updated to ${newStatus}.`,
-              playerIds: app.empKey,
+              playerIds: [app.externalId],
             }),
           );
           toast({

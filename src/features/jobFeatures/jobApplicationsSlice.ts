@@ -113,7 +113,7 @@ export const updateApplicationStatus = createAsyncThunk<
 
 export const notifyUserApplication = createAsyncThunk<
   any,
-  { title: string; message: string; playerIds: string }
+  { title: string; message: string; playerIds: any }
 >(
   'jobApplications/notifyUser',
   async ({ title, message, playerIds }, { rejectWithValue }) => {
