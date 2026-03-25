@@ -23,6 +23,7 @@ interface Props {
 
 const SIDEBAR_ICONS: Record<string, React.ReactNode> = {
   COMPANY_LIST: <HiOutlineOfficeBuilding className="h-[20px] w-[20px]" />,
+  COMPANY_PENDING_LIST: <HiOutlineOfficeBuilding className="h-[20px] w-[20px]" />,
   COMPANY_CREATE: <MdOutlineAddBusiness className="h-[20px] w-[20px]" />,
   CLIENT_USER: <FaUserGroup className="h-[20px] w-[20px]" />,
   WORKERS_LIST: <GrUserWorker className="h-[20px] w-[20px]" />,

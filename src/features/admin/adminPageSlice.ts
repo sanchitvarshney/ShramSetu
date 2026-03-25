@@ -30,6 +30,16 @@ interface CompanyResponse {
   message: string;
   success: boolean;
 }
+interface MergePendingCompaniesPayload {
+  targetId: string[];
+  onldCompany?: string;
+  newCompany?: string;
+}
+interface MergePendingCompaniesResponse {
+  success: boolean;
+  message: string;
+  data?: unknown;
+}
 
 export interface Department {
   text: string;
@@ -298,8 +308,14 @@ interface AdminPageState {
   isaddbranch: boolean;
   isbranchUpdate: boolean;
   loadingworkerlist: boolean;
+  loadingCompaniesList: boolean;
+  loadingCompanyInfo: boolean;
+  loadingCompanyBranches: boolean;
   loadingJob: boolean;
   jobsList: any[] | null;
+  pendingCompanies: Company[] | null;
+  pendingCompLoading: boolean;
+  mergeCompanyLoading: boolean;
 }
 
 const initialState: AdminPageState = {
@@ -336,8 +352,14 @@ const initialState: AdminPageState = {
   isaddbranch: false,
   isbranchUpdate: false,
   loadingworkerlist: false,
+  loadingCompaniesList: false,
+  loadingCompanyInfo: false,
+  loadingCompanyBranches: false,
   loadingJob: false,
   jobsList: [],
+  pendingCompanies: [],
+  pendingCompLoading: false,
+  mergeCompanyLoading: false,
 };
 
 
@@ -382,6 +404,63 @@ export const searchCompanies = createAsyncThunk<
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch companies');
+    }
+  },
+);
+
+export const fetchPendingCompanies = createAsyncThunk<
+  CompanyResponse,
+  string | undefined
+>(
+  'adminPage/pendingCompanies',
+  async (_,{ rejectWithValue }) => {
+    try {
+     
+      const response = await orshAxios.get<CompanyResponse>(
+        `/company/pendingList`,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Failed to fetch companies');
+    }
+  },
+);
+
+export const mergePendingCompanies = createAsyncThunk<
+  MergePendingCompaniesResponse,
+  MergePendingCompaniesPayload,
+  { rejectValue: string }
+>(
+  'adminPage/mergePendingCompanies',
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await orshAxios.post<MergePendingCompaniesResponse>(
+        '/company/mergeCompany',
+        payload,
+      );
+      if (!response.data?.success) {
+        const message = response.data?.message || 'Failed to merge companies';
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: message,
+        });
+        return rejectWithValue(message);
+      }
+      toast({
+        title: 'Success',
+        description: response.data.message || 'Companies merged successfully',
+      });
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || 'Failed to merge companies';
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: message,
+      });
+      return rejectWithValue(message);
     }
   },
 );
@@ -1356,16 +1435,41 @@ const adminPageSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(searchCompanies.pending, (state) => {
-        state.loading = true;
+        state.loadingCompaniesList = true;
         state.error = null;
       })
       .addCase(searchCompanies.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingCompaniesList = false;
         state.error = null;
         state.companies = action.payload.data;
       })
       .addCase(searchCompanies.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingCompaniesList = false;
+        state.error = action.payload as string;
+      })
+         .addCase(fetchPendingCompanies.pending, (state) => {
+        state.pendingCompLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchPendingCompanies.fulfilled, (state, action) => {
+        state.pendingCompLoading = false;
+        state.error = null;
+        state.pendingCompanies = action.payload.data;
+      })
+      .addCase(fetchPendingCompanies.rejected, (state, action) => {
+        state.pendingCompLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(mergePendingCompanies.pending, (state) => {
+        state.mergeCompanyLoading = true;
+        state.error = null;
+      })
+      .addCase(mergePendingCompanies.fulfilled, (state) => {
+        state.mergeCompanyLoading = false;
+        state.error = null;
+      })
+      .addCase(mergePendingCompanies.rejected, (state, action) => {
+        state.mergeCompanyLoading = false;
         state.error = action.payload as string;
       })
        .addCase(getJobsList.pending, (state) => {
@@ -1601,30 +1705,30 @@ const adminPageSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(getCompanyBranchOptions.pending, (state) => {
-        state.loading = true;
+        state.loadingCompanyBranches = true;
         state.error = null;
       })
       .addCase(getCompanyBranchOptions.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingCompanyBranches = false;
         state.error = null;
         state.branches = action.payload.data;
       })
       .addCase(getCompanyBranchOptions.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingCompanyBranches = false;
         state.error = action.payload as string;
         state.branches = [];
       })
       .addCase(getCompanyInfo.pending, (state) => {
-        state.loading = true;
+        state.loadingCompanyInfo = true;
         state.error = null;
       })
       .addCase(getCompanyInfo.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingCompanyInfo = false;
         state.error = null;
         state.companyInfo = action.payload.data;
       })
       .addCase(getCompanyInfo.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingCompanyInfo = false;
         state.error = action.payload as string;
       })
       .addCase(getLocationsFromPinCode.pending, (state) => {

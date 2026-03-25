@@ -48,6 +48,7 @@ const UpdateCompany = (props: any) => {
   const [mobile, setMobile] = useState('');
   const [companyWeb, setCompanyWeb] = useState('');
   const [hsnList, setHsnList] = useState<string[]>(['']);
+  const [contactName, setContactName] = useState<string>('');
   const [sscList, setSscList] = useState<string[]>(['']);
 
   const { companyInfo, iseditcompany } = useSelector((state: RootState) => state.adminPage);
@@ -60,6 +61,7 @@ const UpdateCompany = (props: any) => {
     setMobile(c?.mobile ?? '');
     setPanNo(c?.panNo ?? '');
     setCompanyWeb(c?.website ?? '');
+    setContactName((c as any)?.contactName ?? '');
     setBrandName((c as any)?.brand ?? (c as any)?.brandName ?? '');
     setHsnList(parseHsnSscList((c as any)?.hsn));
     setSscList(parseHsnSscList((c as any)?.ssc));
@@ -73,6 +75,7 @@ const UpdateCompany = (props: any) => {
       brandName: brandName.trim() || undefined,
       email: email.trim(),
       mobile: mobile.trim(),
+      contactName: contactName.trim(),
       panNo: panNo.trim(),
       website: companyWeb.trim(),
       hsn: hsnArray.length ? hsnArray : undefined,
@@ -93,6 +96,7 @@ const UpdateCompany = (props: any) => {
       panNo,
       website: companyWeb,
       mobile,
+      contactName,
       ...(brandName.trim() && { brand: brandName.trim() }),
       ...(hsnArray.length > 0 && { hsn: hsnArray }),
       ...(sscArray.length > 0 && { ssc: sscArray }),
@@ -130,6 +134,7 @@ const UpdateCompany = (props: any) => {
     setBrandName('');
     setEmail('');
     setMobile('');
+    setContactName('');
     setPanNo('');
     setCompanyWeb('');
     setHsnList(['']);
@@ -169,8 +174,10 @@ const UpdateCompany = (props: any) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            </div>
+                  <div className="grid grid-cols-2 gap-[20px] mt-4">
             <LabeledField
-              label="Mobile Number"
+              label="Contact Number"
               type="text"
               inputMode="numeric"
               maxLength={15}
@@ -178,6 +185,14 @@ const UpdateCompany = (props: any) => {
               value={mobile}
               onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
             />
+               <LabeledField
+              label="Contact Name"
+              // placeholder="e.g. Company Brand"
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+            />
+            </div>
+                  <div className="grid grid-cols-2 gap-[20px] mt-4">
             <LabeledField
               label="PAN Number"
               required
@@ -192,7 +207,7 @@ const UpdateCompany = (props: any) => {
               value={companyWeb}
               onChange={(e) => setCompanyWeb(e.target.value)}
             />
-          </div>
+      </div>
           <div className="grid grid-cols-1 gap-2 mt-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">HSN (multiple)</Label>

@@ -38,6 +38,7 @@ import FallBackUI from './components/error/FallBackUI';
 import RootLayout from './Layout/RootLayout';
 import ClientUserPage from './pages/adminPages/ClientUserPage';
 import ListCompany from './components/shared/ListCompany';
+import PendingCompanyList from './components/shared/PendingCompanyList';
 import AddCompany from './components/shared/AddCompany';
 import AddWorker from './components/shared/AddWorker';
 import ListWorker from './components/shared/ListWorker';
@@ -120,6 +121,18 @@ const router = createBrowserRouter([
             <MainLayout>
               <AdminLayout>
                 <AddCompany />
+              </AdminLayout>
+            </MainLayout>
+          </Protected>
+        ),
+      },
+      {
+        path: '/company/pending-list',
+        element: (
+          <Protected authentication>
+            <MainLayout>
+              <AdminLayout>
+                <PendingCompanyList />
               </AdminLayout>
             </MainLayout>
           </Protected>

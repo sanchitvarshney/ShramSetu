@@ -49,7 +49,13 @@ export const APP_ROUTES: Record<string, RouteDefinition> = {
   },
   COMPANY_LIST: {
     path: '/company/list',
-    label: 'Company List',
+    label: 'Master Company',
+    access: 'admin',
+    inAdminSidebar: true,
+  },
+  COMPANY_PENDING_LIST: {
+    path: '/company/pending-list',
+    label: 'Approval Company',
     access: 'admin',
     inAdminSidebar: true,
   },
@@ -189,6 +195,7 @@ export const APP_ROUTES: Record<string, RouteDefinition> = {
 /** Ordered list of sidebar items for AdminLayout – Admin user */
 export const ADMIN_SIDEBAR_ORDER: (keyof typeof APP_ROUTES)[] = [
    'COMPANY_LIST',
+   'COMPANY_PENDING_LIST',
     'COMPANY_CREATE',
    
 
