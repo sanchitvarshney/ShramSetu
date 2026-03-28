@@ -13,7 +13,27 @@ import {
   sentOtp,
   verifyOtp,
 } from '@/features/profile/profilePageSlice';
+import {
+  getCompanyBranchOptions,
+  searchCompanies,
+} from '@/features/admin/adminPageSlice';
 import Loading from '@/components/reusable/Loading';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { isPlaceholderDisplayValue } from '@/lib/utils';
 
 /** API returns "true"/"false" or boolean; true = show Verify button (field is not verified) */
 function isNotVerified(value: unknown): boolean {
@@ -25,15 +45,22 @@ function Profile() {
   const { userProfile, loading } = useSelector(
     (state: RootState) => state.profilePage,
   );
+  const { companies, branches } = useSelector((state: RootState) => state.adminPage);
   const [mobile, setMobile] = useState<string>('');
   const [email, setEmail] = useState<string>('');
-  const [supportEmail, setSupportEmail] = useState<string>('');
-  const [recruitmentEmail, setRecruitmentEmail] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('');
+  const [middleName, setMiddleName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [company, setCompany] = useState<string>('');
+  const [branch, setBranch] = useState<string>('');
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [fieldToVerify, setFieldToVerify] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     dispatch(fetchUserProfile());
+    dispatch(searchCompanies());
   }, [dispatch]);
 
   useEffect(() => {
@@ -41,17 +68,25 @@ function Profile() {
       const p = userProfile[0];
       setMobile(p?.phoneNumber ?? '');
       setEmail(p?.email ?? '');
-      setSupportEmail(p?.emailSupport ?? '');
-      setRecruitmentEmail(p?.emailRecruitment ?? '');
+      setFirstName(p?.firstName ?? '');
+      setMiddleName(p?.middleName ?? '');
+      setLastName(p?.lastName ?? '');
+      setCompany(String(p?.companyID ?? p?.company ?? ''));
+      setBranch(String(p?.branchID ?? p?.branch ?? ''));
     }
   }, [userProfile]);
+
+  useEffect(() => {
+    if (company) {
+      dispatch(getCompanyBranchOptions(company));
+    }
+  }, [company, dispatch]);
 
   const updateUserData = async (field: string, value: string, type: string) => {
     if (
       field === 'mobile' ||
       field === 'adminEmail' ||
-      field === 'supportEmail' ||
-      field === 'recruitmentEmail'
+      field === 'supportEmail'
     ) {
       setFieldToVerify(type);
       dispatch(
@@ -77,6 +112,54 @@ function Profile() {
     );
   };
 
+  const handleOpenEditModal = () => {
+    if (!userProfile?.length) return;
+    const p = userProfile[0];
+    setFirstName(p?.firstName ?? '');
+    setMiddleName(p?.middleName ?? '');
+    setLastName(p?.lastName ?? '');
+    setCompany(String(p?.companyID ?? p?.company ?? ''));
+    setBranch(String(p?.branchID ?? p?.branch ?? ''));
+    setMobile((p?.phoneNumber ?? '').replace(/\D/g, ''));
+    setEmail(p?.email ?? '');
+    setShowEditModal(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!userProfile?.length) return;
+    const p = userProfile[0];
+
+    const normalizedMobile = String(mobile ?? '').replace(/\D/g, '');
+    const profileBody = {
+      firstName: firstName.trim(),
+      middleName: middleName.trim(),
+      lastName: lastName.trim(),
+      company: company,
+      branch: branch,
+    };
+
+    setSavingProfile(true);
+    try {
+      await dispatch(
+        changePassword({ body: profileBody, type: 'profile=true' }),
+      ).unwrap();
+
+      if (normalizedMobile !== String(p?.phoneNumber ?? '').replace(/\D/g, '')) {
+        await updateUserData('mobile', normalizedMobile, 'mobile');
+      }
+      if (email.trim() !== String(p?.email ?? '').trim()) {
+        await updateUserData('email', email.trim(), 'email');
+      }
+
+      await dispatch(fetchUserProfile());
+      setShowEditModal(false);
+    } catch {
+      // Errors are toasted by thunks.
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   return (
     <div className="h-full min-h-0">
       {loading && <Loading />}
@@ -86,34 +169,52 @@ function Profile() {
             <Card className="shadow-sm border-border/80 overflow-hidden">
               <CardHeader className="pb-4">
                 <CardTitle className="text-xl sm:text-2xl font-semibold text-foreground">
-                  <div className="flex gap-3 items-center">
+                  <div className="flex gap-3 items-center justify-between w-full">
+                    <div className="flex gap-3 items-center min-w-0">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#115e59]/10 text-[#115e59]">
                       <User size={22} />
                     </div>
                     <span className="truncate">{userProfile[0]?.name}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="bg-[#115e59] hover:bg-[#0d4a46]"
+                      onClick={handleOpenEditModal}
+                    >
+                      <Pen size={14} className="mr-2" />
+                      Edit
+                    </Button>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-5 pt-0">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="flex flex-wrap items-center  gap-x-2 gap-y-1">
-                    <span className="flex items-center gap-2 text-muted-foreground text-sm font-medium shrink-0">
-                      <Building2 size={18} className="shrink-0" />
-                      Company
-                    </span>
-                    <span className="text-foreground font-medium">
-                      {userProfile[0]?.nameOfCompany || '—'}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <span className="flex items-center gap-2 text-muted-foreground text-sm font-medium shrink-0">
-                      <Building2 size={18} className="shrink-0" />
-                      Branch
-                    </span>
-                    <span className="text-foreground font-medium">
-                      {userProfile[0]?.nameOfBranch || '—'}
-                    </span>
-                  </div>
+                  {!isPlaceholderDisplayValue(
+                    userProfile[0]?.nameOfCompany,
+                  ) && (
+                    <div className="flex flex-wrap items-center  gap-x-2 gap-y-1">
+                      <span className="flex items-center gap-2 text-muted-foreground text-sm font-medium shrink-0">
+                        <Building2 size={18} className="shrink-0" />
+                        Company
+                      </span>
+                      <span className="text-foreground font-medium">
+                        {userProfile[0]?.nameOfCompany}
+                      </span>
+                    </div>
+                  )}
+                  {!isPlaceholderDisplayValue(
+                    userProfile[0]?.nameOfBranch,
+                  ) && (
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="flex items-center gap-2 text-muted-foreground text-sm font-medium shrink-0">
+                        <Building2 size={18} className="shrink-0" />
+                        Branch
+                      </span>
+                      <span className="text-foreground font-medium">
+                        {userProfile[0]?.nameOfBranch}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="border-t border-border" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -121,16 +222,8 @@ function Profile() {
                     label="Contact No."
                     icon={<Phone size={19} />}
                     value={mobile}
-                    editable
+                    numericOnly
                     notVerified={isNotVerified(userProfile[0]?.phoneVerify)}
-                    onUpdate={(newValue) => {
-                      const digitsOnly = String(newValue ?? '').replace(
-                        /\D/g,
-                        '',
-                      );
-                      setMobile(digitsOnly);
-                      updateUserData('mobile', digitsOnly, 'mobile');
-                    }}
                     onVerify={() =>
                       handleVerifyClick('mobile', mobile, 'mobile')
                     }
@@ -139,54 +232,13 @@ function Profile() {
                     label="E-Mail"
                     icon={<Mail size={19} />}
                     value={email}
-                    editable
                     notVerified={isNotVerified(userProfile[0]?.emailVerify)}
-                    onUpdate={(newValue) => {
-                      setEmail(newValue);
-                      updateUserData('email', newValue, 'email');
-                    }}
                     onVerify={() => handleVerifyClick('email', email, 'email')}
-                  />
-                  <SingleItem
-                    label="Support E-mail"
-                    icon={<Mail size={19} />}
-                    value={supportEmail}
-                    editable
-                    notVerified={isNotVerified(
-                      userProfile[0]?.supportEmailVerify,
-                    )}
-                    onUpdate={(newValue) => {
-                      setSupportEmail(newValue);
-                      updateUserData('email', newValue, 'supportEmail');
-                    }}
-                    onVerify={() =>
-                      handleVerifyClick('email', supportEmail, 'supportEmail')
-                    }
-                  />
-                  <SingleItem
-                    label="Recruitment E-mail"
-                    icon={<Mail size={19} />}
-                    value={recruitmentEmail}
-                    editable
-                    notVerified={isNotVerified(
-                      userProfile[0]?.recruitmentEmailVerify,
-                    )}
-                    onUpdate={(newValue) => {
-                      setRecruitmentEmail(newValue);
-                      updateUserData('email', newValue, 'recruitmentEmail');
-                    }}
-                    onVerify={() =>
-                      handleVerifyClick(
-                        'email',
-                        recruitmentEmail,
-                        'recruitmentEmail',
-                      )
-                    }
                   />
                 </div>
               </CardContent>
             </Card>
-            <InfoCard />
+      
           </div>
         </div>
       )}
@@ -202,6 +254,122 @@ function Profile() {
           );
         }}
       />
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+            <div className="space-y-1.5">
+              <Label>First Name</Label>
+              <Input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                disabled={savingProfile}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Middle Name</Label>
+              <Input
+                value={middleName}
+                onChange={(e) => setMiddleName(e.target.value)}
+                disabled={savingProfile}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Last Name</Label>
+              <Input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                disabled={savingProfile}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Company</Label>
+              <Select
+                value={company}
+                onValueChange={(value) => {
+                  setCompany(value);
+                  setBranch('');
+                }}
+                disabled={savingProfile}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies?.map((c: any) => (
+                    <SelectItem
+                      key={c.value || c.companyID}
+                      value={String(c.value || c.companyID)}
+                    >
+                      {c.text || c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Branch</Label>
+              <Select
+                value={branch}
+                onValueChange={setBranch}
+                disabled={savingProfile || !company}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={company ? 'Select Branch' : 'Select Company first'}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {branches?.map((b: any) => (
+                    <SelectItem key={b.branchID} value={String(b.branchID)}>
+                      {b.branchName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Mobile No.</Label>
+              <Input
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                disabled={savingProfile}
+              />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <Label>E-Mail</Label>
+              <Input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                disabled={savingProfile}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowEditModal(false)}
+              disabled={savingProfile}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#115e59] hover:bg-[#0d4a46]"
+              onClick={handleSaveProfile}
+              disabled={savingProfile}
+            >
+              {savingProfile ? 'Saving...' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -212,6 +380,7 @@ interface PropTypes {
   label: string;
   value: string;
   editable?: boolean;
+  numericOnly?: boolean;
   notVerified?: boolean;
   extra?: ReactNode;
   onUpdate?: (newValue: string) => void;
@@ -223,6 +392,7 @@ const SingleItem = ({
   label,
   value,
   editable,
+  numericOnly = false,
   notVerified,
   extra,
   onUpdate,
@@ -246,9 +416,14 @@ const SingleItem = ({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    const nextValue = numericOnly
+      ? e.target.value.replace(/\D/g, '')
+      : e.target.value;
+    setInputValue(nextValue);
     setHasChanges(true); // Mark as changed when user types
   };
+
+  if (isPlaceholderDisplayValue(value)) return null;
 
   return (
     <div className="flex flex-col gap-0">
@@ -287,6 +462,8 @@ const SingleItem = ({
             <Input
               value={inputValue}
               onChange={handleInputChange}
+              inputMode={numericOnly ? 'numeric' : undefined}
+              pattern={numericOnly ? '[0-9]*' : undefined}
               className="flex-1"
             />
             <Button
@@ -317,31 +494,31 @@ const SingleItem = ({
   );
 };
 
-const InfoCard = () => {
-  return (
-    <div className="rounded-lg border border-border p-5 w-full bg-amber-50">
-      <div className="text-muted-foreground mb-4 flex">
-        <Info size={20} />
-      </div>
-      <ul className="flex flex-col gap-2 text-muted-foreground">
-        <li>
-          <p>
-            <strong>Support Email</strong> is used if we need any support from
-            you or your technical team.
-          </p>
-        </li>
-        <li>
-          <p>
-            <strong>Recruitment Email</strong> is used when you contact workers
-            through e-mail.
-          </p>
-          <p>
-            You will need to create and set a <strong>App Password</strong> with
-            your <strong>Recruitment Email</strong> so we can use that e-mail to
-            send mails otherwise the e-mails will be sent through our E-mail ID.
-          </p>
-        </li>
-      </ul>
-    </div>
-  );
-};
+// const InfoCard = () => {
+//   return (
+//     <div className="rounded-lg border border-border p-5 w-full bg-amber-50">
+//       <div className="text-muted-foreground mb-4 flex">
+//         <Info size={20} />
+//       </div>
+//       <ul className="flex flex-col gap-2 text-muted-foreground">
+//         <li>
+//           <p>
+//             <strong>Support Email</strong> is used if we need any support from
+//             you or your technical team.
+//           </p>
+//         </li>
+//         <li>
+//           <p>
+//             <strong>Recruitment Email</strong> is used when you contact workers
+//             through e-mail.
+//           </p>
+//           <p>
+//             You will need to create and set a <strong>App Password</strong> with
+//             your <strong>Recruitment Email</strong> so we can use that e-mail to
+//             send mails otherwise the e-mails will be sent through our E-mail ID.
+//           </p>
+//         </li>
+//       </ul>
+//     </div>
+//   );
+// };

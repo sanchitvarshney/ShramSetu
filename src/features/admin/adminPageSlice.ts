@@ -760,6 +760,56 @@ export const updateEmployeePermanentAddress = createAsyncThunk<
   },
 );
 
+/** Bank + UAN update — bankDetail aligns with worker bankDetails[] item */
+export const updateWorkerBankDetails = createAsyncThunk<
+  UpdateEmployeeResponse,
+  {
+    code: string;
+    bank: string;
+    ac: string;
+    ifsc: string;
+    branch: string;
+    address: string;
+    state: string;
+    uan: string;
+  },
+  { rejectValue: string }
+>(
+  'adminPage/updateWorkerBankDetails',
+  async (
+    { code, bank, ac, ifsc, branch, address, state, uan },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await orshAxios.put('/bank/edit', {
+        code,
+        bank,
+        ac,
+        ifsc,
+        branch,
+        address,
+        state,
+        uan,
+      });
+      if (!response.data.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: response.data.message,
+        });
+      } else {
+        toast({
+          title: 'Success',
+          description: response.data.message ?? 'Bank details updated',
+        });
+      }
+      return response.data.add;
+    } catch (error) {
+      return rejectWithValue('Failed to update bank details');
+    }
+  },
+);
+
 export const companyUpdate = createAsyncThunk<
   UpdateEmployeeResponse,
   any,
@@ -1662,7 +1712,7 @@ const adminPageSlice = createSlice({
         state.loadingworkerlist = false;
         state.error = action.payload as string;
       })
-  
+
       .addCase(getStreams.pending, (state) => {
         state.loading = true;
         state.error = null;
