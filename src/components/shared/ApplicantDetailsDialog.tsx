@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import Loading from '@/components/reusable/Loading';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { isPlaceholderDisplayValue } from '@/lib/utils';
 import {
   buildResumeHtml as buildResumeHtmlShared,
   buildAddressLines,
@@ -335,25 +336,25 @@ export default function ApplicantDetailsDialog({
               <div className="space-y-5 pb-4">
                 <SectionTitle text="Applicant Details" />
                 <DetailRow>
-                  <SingleDetail label="Name" value={d.empName ?? d.applicantName ?? '--'} />
-                  <SingleDetail label="Job Title" value={d.jobTitle ?? '--'} />
+                  <SingleDetail label="Name" value={d.empName ?? d.applicantName} />
+                  <SingleDetail label="Job Title" value={d.jobTitle} />
                 </DetailRow>
                 <DetailRow>
-                  <SingleDetail label="Email" value={d.empEmail ?? d.email ?? '--'} />
-                  <SingleDetail label="Mobile" value={d.empMobile ?? d.mobile ?? '--'} />
+                  <SingleDetail label="Email" value={d.empEmail ?? d.email} />
+                  <SingleDetail label="Mobile" value={d.empMobile ?? d.mobile} />
                 </DetailRow>
                 <DetailRow>
-                  <SingleDetail label="Company" value={d.company ?? '--'} />
-                  <SingleDetail label="Department" value={d.department ?? '--'} />
+                  <SingleDetail label="Company" value={d.company} />
+                  <SingleDetail label="Department" value={d.department} />
                 </DetailRow>
                 <DetailRow>
-                  <SingleDetail label="Designation" value={d.designation ?? '--'} />
-                  <SingleDetail label="Experience" value={d.experience ?? '--'} />
+                  <SingleDetail label="Designation" value={d.designation} />
+                  <SingleDetail label="Experience" value={d.experience} />
                 </DetailRow>
 
                 <SectionTitle text="Personal" />
                 <DetailRow>
-                  <SingleDetail label="DOB" value={d.empDOB ?? d.dob ?? '--'} />
+                  <SingleDetail label="DOB" value={d.empDOB ?? d.dob} />
                   <SingleDetail
                     label="Gender"
                     value={
@@ -361,7 +362,7 @@ export default function ApplicantDetailsDialog({
                         ? convertGender(d.empGender)
                         : d.gender
                           ? convertGender(d.gender)
-                          : '--'
+                          : undefined
                     }
                   />
                 </DetailRow>
@@ -369,10 +370,10 @@ export default function ApplicantDetailsDialog({
                 <SectionTitle text="Education / Skills" />
                 <SingleDetail
                   label="Qualification"
-                  value={d.qualification ?? '--'}
+                  value={d.qualification}
                 />
-                <SingleDetail label="Skills" value={d.skills ?? '--'} />
-                <SingleDetail label="Education" value={d.education ?? '--'} />
+                <SingleDetail label="Skills" value={d.skills} />
+                <SingleDetail label="Education" value={d.education} />
 
                 <SectionTitle text="Salary" />
                 <SingleDetail
@@ -380,7 +381,7 @@ export default function ApplicantDetailsDialog({
                   value={
                     d.minSalary || d.maxSalary
                       ? `${d.minSalary ?? ''}${d.minSalary ? ' - ' : ''}${d.maxSalary ?? ''}`
-                      : '--'
+                      : undefined
                   }
                 />
               </div>
@@ -438,6 +439,7 @@ const SingleDetail = ({
   value?: string | number | null;
 }) => {
   const display = value == null || value === '' ? '--' : String(value);
+  if (isPlaceholderDisplayValue(display)) return null;
   return (
     <div className="flex justify-between gap-4 py-1.5">
       <span className="text-sm font-medium text-slate-500 shrink-0">

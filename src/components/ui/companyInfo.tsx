@@ -16,6 +16,7 @@ import {
 } from '@/features/admin/adminPageSlice';
 import { AppDispatch, RootState } from '@/store';
 import { Building2, Edit, Ellipsis, PlusIcon, User } from 'lucide-react';
+import { isPlaceholderDisplayValue } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
@@ -39,6 +40,7 @@ function formatHsnSsc(val: unknown): string {
 function DetailField({ label, value }: { label: string; value?: string | null }) {
   const display =
     value == null || String(value).trim() === '' ? '—' : String(value);
+  if (isPlaceholderDisplayValue(display)) return null;
   return (
     <div className="flex flex-col gap-1">
       <span className="text-sm font-medium text-slate-500">{label}</span>
@@ -236,7 +238,11 @@ export function CompanyInfoContent({ companyId, embedded,  }: CompanyInfoContent
                   <div className="flex gap-2 items-center">
                     <Building2 className="h-5 w-5 text-slate-600" />
                     <p className="font-semibold text-xl text-slate-800">
-                      {branch.branchName ?? branch.companyName ?? '—'}
+                      {isPlaceholderDisplayValue(
+                        branch.branchName ?? branch.companyName,
+                      )
+                        ? ''
+                        : (branch.branchName ?? branch.companyName)}
                     </p>
                   </div>
                   <div className="flex gap-2 items-center">

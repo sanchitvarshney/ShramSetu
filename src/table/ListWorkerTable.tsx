@@ -1,3 +1,4 @@
+import { isPlaceholderDisplayValue } from '@/lib/utils';
 import { ColDef } from 'ag-grid-community';
 
 const actionCellRenderer = (params: any) => {
@@ -10,7 +11,10 @@ const actionCellRenderer = (params: any) => {
         className="text-teal-500 hover:text-teal-600"
         aria-label="Show Name"
       >
-        {params.data.empFirstName + ' ' + params.data.empLastName || '--'}
+        {(() => {
+          const full = `${params.data.empFirstName ?? ''} ${params.data.empLastName ?? ''}`.trim();
+          return isPlaceholderDisplayValue(full) ? '' : full;
+        })()}
       </button>
     </div>
   );

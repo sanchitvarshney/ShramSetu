@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { DatePicker, TimePicker } from 'antd';
 import type { Dayjs } from 'dayjs';
+import { isPlaceholderDisplayValue } from '@/lib/utils';
 import { AppDispatch, RootState } from '@/store';
 import { getJobsList, shareWorkers } from '@/features/admin/adminPageSlice';
 import { inputStyle } from '@/style/CustomStyles';
@@ -109,7 +110,10 @@ const ShareWorkersDialog: React.FC<ShareWorkersDialogProps> = ({
     const mobile = workersWithMobile.map((w) =>
       normalizeMobileWith91(w.mobile ?? ''),
     );
-    const name = workersWithMobile.map((w) => (w.name ?? '').trim() || '--');
+    const name = workersWithMobile.map((w) => {
+      const n = (w.name ?? '').trim();
+      return isPlaceholderDisplayValue(n) ? '' : n;
+    });
     if (empCode.length === 0) {
       toast({
         variant: 'destructive',

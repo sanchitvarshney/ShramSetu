@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { isPlaceholderDisplayValue } from '@/lib/utils';
 import type { AppDispatch, RootState } from '@/store';
 import {
   fetchPendingCompanies,
@@ -87,7 +88,7 @@ const PendingCompanyList = () => {
               fontWeight: 500,
             }}
           >
-            {value || '--'}
+            {isPlaceholderDisplayValue(value) ? '' : String(value)}
           </span>
         ),
       },

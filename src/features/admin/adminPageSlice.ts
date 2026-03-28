@@ -288,7 +288,6 @@ interface AdminPageState {
   activityLogs: ActivityLog[] | null;
   branches: BranchDetail[] | null;
   workers: Worker[] | null;
-  workersStatusCount: [] | null;
   corPincode: PinCode[] | null;
   perPincode: PinCode[] | null;
   workerInfo: [] | null;
@@ -331,7 +330,6 @@ const initialState: AdminPageState = {
   clientList: [],
   activityLogs: [],
   workers: [],
-  workersStatusCount: [],
   branches: [],
   workerInfo: [],
   companyInfo: [],
@@ -362,8 +360,6 @@ const initialState: AdminPageState = {
   mergeCompanyLoading: false,
 };
 
-
-
 // Define the async thunk for adding a company
 export const addCompany = createAsyncThunk(
   'adminPage/addCompany',
@@ -393,68 +389,43 @@ export const addClient = createAsyncThunk(
 export const searchCompanies = createAsyncThunk<
   CompanyResponse,
   string | undefined
->(
-  'adminPage/searchCompanies',
-  async (type, { rejectWithValue }) => {
-    try {
-      const queryType = type ?? 'admin';
-      const response = await orshAxios.get<CompanyResponse>(
-        `/company/list?type=${queryType}`,
-      );
-      return response.data;
-    } catch (error) {
-      return rejectWithValue('Failed to fetch companies');
-    }
-  },
-);
+>('adminPage/searchCompanies', async (type, { rejectWithValue }) => {
+  try {
+    const queryType = type ?? 'admin';
+    const response = await orshAxios.get<CompanyResponse>(
+      `/company/list?type=${queryType}`,
+    );
+    return response.data;
+  } catch (error) {
+    return rejectWithValue('Failed to fetch companies');
+  }
+});
 
 export const fetchPendingCompanies = createAsyncThunk<
   CompanyResponse,
   string | undefined
->(
-  'adminPage/pendingCompanies',
-  async (_,{ rejectWithValue }) => {
-    try {
-     
-      const response = await orshAxios.get<CompanyResponse>(
-        `/company/pendingList`,
-      );
-      return response.data;
-    } catch (error) {
-      return rejectWithValue('Failed to fetch companies');
-    }
-  },
-);
+>('adminPage/pendingCompanies', async (_, { rejectWithValue }) => {
+  try {
+    const response =
+      await orshAxios.get<CompanyResponse>(`/company/pendingList`);
+    return response.data;
+  } catch (error) {
+    return rejectWithValue('Failed to fetch companies');
+  }
+});
 
 export const mergePendingCompanies = createAsyncThunk<
   MergePendingCompaniesResponse,
   MergePendingCompaniesPayload,
   { rejectValue: string }
->(
-  'adminPage/mergePendingCompanies',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.post<MergePendingCompaniesResponse>(
-        '/company/mergeCompany',
-        payload,
-      );
-      if (!response.data?.success) {
-        const message = response.data?.message || 'Failed to merge companies';
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: message,
-        });
-        return rejectWithValue(message);
-      }
-      toast({
-        title: 'Success',
-        description: response.data.message || 'Companies merged successfully',
-      });
-      return response.data;
-    } catch (error: any) {
-      const message =
-        error?.response?.data?.message || 'Failed to merge companies';
+>('adminPage/mergePendingCompanies', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post<MergePendingCompaniesResponse>(
+      '/company/mergeCompany',
+      payload,
+    );
+    if (!response.data?.success) {
+      const message = response.data?.message || 'Failed to merge companies';
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -462,16 +433,28 @@ export const mergePendingCompanies = createAsyncThunk<
       });
       return rejectWithValue(message);
     }
-  },
-);
+    toast({
+      title: 'Success',
+      description: response.data.message || 'Companies merged successfully',
+    });
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || 'Failed to merge companies';
+    toast({
+      variant: 'destructive',
+      title: 'Error',
+      description: message,
+    });
+    return rejectWithValue(message);
+  }
+});
 
 export const getJobsList = createAsyncThunk<any, void>(
   'adminPage/get/job',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<any>(
-        `/invitations/gets/jobs`,
-      );
+      const response = await orshAxios.get<any>(`/invitations/gets/jobs`);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch jobs');
@@ -483,9 +466,8 @@ export const fetchDepartments = createAsyncThunk<DepartmentResponse, void>(
   'adminPage/fetchDepartments',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<DepartmentResponse>(
-        `/fetch/departments`,
-      );
+      const response =
+        await orshAxios.get<DepartmentResponse>(`/fetch/departments`);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch departments');
@@ -509,9 +491,8 @@ export const fetchDesignations = createAsyncThunk<DesignationResponse, void>(
   'adminPage/fetchDesignations',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<DesignationResponse>(
-        `/fetch/designations`,
-      );
+      const response =
+        await orshAxios.get<DesignationResponse>(`/fetch/designations`);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch designations');
@@ -523,41 +504,34 @@ export const addDepartment = createAsyncThunk<
   { success: boolean; message: string; data?: Department | null },
   { departmentName: any },
   { rejectValue: string }
->(
-  'adminPage/addDepartment',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.post('/fetch/addDepartment', payload);
-      return response?.data ?? { success: false, message: 'No response' };
-    } catch (error) {
-      return rejectWithValue('Failed to add department');
-    }
-  },
-);
+>('adminPage/addDepartment', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post('/fetch/addDepartment', payload);
+    return response?.data ?? { success: false, message: 'No response' };
+  } catch (error) {
+    return rejectWithValue('Failed to add department');
+  }
+});
 
 export const addDesignation = createAsyncThunk<
   { success: boolean; message: string; data?: Designation | null },
   { designationName: string },
   { rejectValue: string }
->(
-  'adminPage/addDesignation',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.post('/fetch/addDesignation', payload);
-      return response?.data ?? { success: false, message: 'No response' };
-    } catch (error) {
-      return rejectWithValue('Failed to add designation');
-    }
-  },
-);
+>('adminPage/addDesignation', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post('/fetch/addDesignation', payload);
+    return response?.data ?? { success: false, message: 'No response' };
+  } catch (error) {
+    return rejectWithValue('Failed to add designation');
+  }
+});
 
 export const fetchMarriedStatus = createAsyncThunk<DesignationResponse, void>(
   'adminPage/fetchMarriedStatus',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<DesignationResponse>(
-        `/fetch/marriedStatus`,
-      );
+      const response =
+        await orshAxios.get<DesignationResponse>(`/fetch/marriedStatus`);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch married status');
@@ -569,9 +543,8 @@ export const fetchStates = createAsyncThunk<DesignationResponse, void>(
   'adminPage/fetchStates',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<DesignationResponse>(
-        `/fetch/states`,
-      );
+      const response =
+        await orshAxios.get<DesignationResponse>(`/fetch/states`);
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch states');
@@ -684,7 +657,10 @@ export const updateEmployeeCurrentAddress = createAsyncThunk<
   async (payload, { rejectWithValue }) => {
     const type = 'current';
     try {
-      const response = await orshAxios.put(`worker/update/address?type=${type}`, payload);
+      const response = await orshAxios.put(
+        `worker/update/address?type=${type}`,
+        payload,
+      );
       if (!response.data?.success) {
         toast({
           variant: 'destructive',
@@ -721,7 +697,10 @@ export const updateEmployeePermanentAddress = createAsyncThunk<
   'adminPage/updateEmployeePermanentAddress',
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.put('/worker/update/address?type=permanent', payload);
+      const response = await orshAxios.put(
+        '/worker/update/address?type=permanent',
+        payload,
+      );
       if (!response.data?.success) {
         toast({
           variant: 'destructive',
@@ -748,7 +727,7 @@ export const companyUpdate = createAsyncThunk<
 >('adminPage/companyUpdate', async (companyData: any, { rejectWithValue }) => {
   try {
     const response = await orshAxios.put('/company/edit', companyData);
-   
+
     return response.data;
   } catch (error) {
     return rejectWithValue('Failed to fetch employee');
@@ -815,12 +794,12 @@ export const addWorker = createAsyncThunk(
       // Make sure to pass formData as the request body
       const response = await orshAxios.post('/worker/add-user', workerData, {
         headers: {
-          'Content-Type': 'multipart/form-data', 
+          'Content-Type': 'multipart/form-data',
         },
       });
       return response.data;
     } catch (error) {
-      console.log(error,"error")
+      console.log(error, 'error');
       return rejectWithValue('Failed to add worker');
     }
   },
@@ -866,7 +845,7 @@ export const fetchClientList = createAsyncThunk<ClientResponse, void>(
 
 export const fetchWorkers = createAsyncThunk<
   WorkersResponse,
-  { startDate: string; endDate: string;}
+  { startDate: string; endDate: string }
 >(
   'adminPage/fetchWorkers',
   async ({ startDate, endDate }, { rejectWithValue }) => {
@@ -887,17 +866,7 @@ export const fetchWorkers = createAsyncThunk<
     }
   },
 );
-export const fetchCountStatus = createAsyncThunk<any, void>(
-  'adminPage/fetchCountStatus',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.get<any>(`/worker/count`);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue('Failed to fetch universities');
-    }
-  },
-);
+
 export const fetchJobs = createAsyncThunk<any, void>(
   'adminPage/fetchJobs',
   async (_, { rejectWithValue }) => {
@@ -986,74 +955,78 @@ export interface ShareWorkersResponse {
 export const shareWorkers = createAsyncThunk<
   ShareWorkersResponse,
   ShareWorkersPayload
->(
-  'adminPage/shareWorkers',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.post('/invitations/send-whatsapp', payload);
-      const data = response.data as ShareWorkersResponse;
-      if (!data?.success) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data?.message || 'Failed to send.',
-        });
-        return rejectWithValue(data?.message || 'Failed');
-      }
-      return {
-        success: data.success,
-        message: data.message ?? 'WhatsApp sending completed',
-        total: data.total ?? 0,
-        sent: data.sent ?? 0,
-        failed: data.failed ?? 0,
-        failedUsers: data.failedUsers ?? [],
-      };
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to send';
-      toast({ variant: 'destructive', title: 'Error', description: msg });
-      return rejectWithValue(msg);
+>('adminPage/shareWorkers', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post(
+      '/invitations/send-whatsapp',
+      payload,
+    );
+    const data = response.data as ShareWorkersResponse;
+    if (!data?.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: data?.message || 'Failed to send.',
+      });
+      return rejectWithValue(data?.message || 'Failed');
     }
-  },
-);
+    return {
+      success: data.success,
+      message: data.message ?? 'WhatsApp sending completed',
+      total: data.total ?? 0,
+      sent: data.sent ?? 0,
+      failed: data.failed ?? 0,
+      failedUsers: data.failedUsers ?? [],
+    };
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || 'Failed to send';
+    toast({ variant: 'destructive', title: 'Error', description: msg });
+    return rejectWithValue(msg);
+  }
+});
 
 /** Push notification: title + message */
 export const sendNotification = createAsyncThunk<
   { success: boolean; message: string },
   { title: string; message: string }
->(
-  'adminPage/sendNotification',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.post('/invitations/send-notification', payload);
-      const data = response.data;
-      if (!data?.success) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data?.message || 'Failed to send notification.',
-        });
-        return rejectWithValue(data?.message || 'Failed');
-      }
-      toast({ title: 'Success', description: data.message || 'Notification sent.' });
-      return { success: true, message: data.message };
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to send notification';
-      toast({ variant: 'destructive', title: 'Error', description: msg });
-      return rejectWithValue(msg);
+>('adminPage/sendNotification', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post(
+      '/invitations/send-notification',
+      payload,
+    );
+    const data = response.data;
+    if (!data?.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: data?.message || 'Failed to send notification.',
+      });
+      return rejectWithValue(data?.message || 'Failed');
     }
-  },
-);
+    toast({
+      title: 'Success',
+      description: data.message || 'Notification sent.',
+    });
+    return { success: true, message: data.message };
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || 'Failed to send notification';
+    toast({ variant: 'destructive', title: 'Error', description: msg });
+    return rejectWithValue(msg);
+  }
+});
 
 /** Contractors: list, add, update */
 export const fetchContractors = createAsyncThunk<ContractorListResponse, void>(
   'adminPage/fetchContractors',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await orshAxios.get<ContractorListResponse>('/contractor/all');
+      const response =
+        await orshAxios.get<ContractorListResponse>('/contractor/all');
       return response.data;
     } catch (error) {
       return rejectWithValue('Failed to fetch contractors');
@@ -1075,31 +1048,31 @@ export interface AddContractorPayload {
 export const addContractor = createAsyncThunk<
   { success: boolean; message: string; data?: Contractor },
   AddContractorPayload
->(
-  'adminPage/addContractor',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.post('/contractor/add', payload);
-      const data = response.data;
-      if (!data?.success) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data?.message || 'Failed to add contractor',
-        });
-        return rejectWithValue(data?.message || 'Failed');
-      }
-      toast({ title: 'Success', description: data.message || 'Contractor added.' });
-      return data;
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to add contractor';
-      toast({ variant: 'destructive', title: 'Error', description: msg });
-      return rejectWithValue(msg);
+>('adminPage/addContractor', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.post('/contractor/add', payload);
+    const data = response.data;
+    if (!data?.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: data?.message || 'Failed to add contractor',
+      });
+      return rejectWithValue(data?.message || 'Failed');
     }
-  },
-);
+    toast({
+      title: 'Success',
+      description: data.message || 'Contractor added.',
+    });
+    return data;
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || 'Failed to add contractor';
+    toast({ variant: 'destructive', title: 'Error', description: msg });
+    return rejectWithValue(msg);
+  }
+});
 
 export interface UpdateContractorPayload extends AddContractorPayload {
   contractorID: string;
@@ -1109,31 +1082,31 @@ export interface UpdateContractorPayload extends AddContractorPayload {
 export const updateContractor = createAsyncThunk<
   { success: boolean; message: string; data?: Contractor },
   UpdateContractorPayload
->(
-  'adminPage/updateContractor',
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.put('/contractor/edit', payload);
-      const data = response.data;
-      if (!data?.success) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: data?.message || 'Failed to update contractor',
-        });
-        return rejectWithValue(data?.message || 'Failed');
-      }
-      toast({ title: 'Success', description: data.message || 'Contractor updated.' });
-      return data;
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to update contractor';
-      toast({ variant: 'destructive', title: 'Error', description: msg });
-      return rejectWithValue(msg);
+>('adminPage/updateContractor', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.put('/contractor/edit', payload);
+    const data = response.data;
+    if (!data?.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: data?.message || 'Failed to update contractor',
+      });
+      return rejectWithValue(data?.message || 'Failed');
     }
-  },
-);
+    toast({
+      title: 'Success',
+      description: data.message || 'Contractor updated.',
+    });
+    return data;
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message || 'Failed to update contractor';
+    toast({ variant: 'destructive', title: 'Error', description: msg });
+    return rejectWithValue(msg);
+  }
+});
 
 export const bulkUpload = createAsyncThunk<void, File, { rejectValue: string }>(
   'adminPage/bulkUpload',
@@ -1175,31 +1148,29 @@ export const fetchWorkerDetailsByKey = createAsyncThunk<
   WorkerDetailsApiResponse,
   string,
   { rejectValue: string }
->(
-  'adminPage/fetchWorkerDetailsByKey',
-  async (key, { rejectWithValue }) => {
-    try {
-      const response = await orshAxios.get<{ success?: boolean; message?: string } & WorkerDetailsApiResponse>(
-        `/worker/details/${encodeURIComponent(key)}`,
-      );
-      if (response.data?.success === false) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: (response.data as any).message ?? 'Failed to load worker details',
-        });
-      }
-      return response.data as WorkerDetailsApiResponse;
-    } catch (error) {
+>('adminPage/fetchWorkerDetailsByKey', async (key, { rejectWithValue }) => {
+  try {
+    const response = await orshAxios.get<
+      { success?: boolean; message?: string } & WorkerDetailsApiResponse
+    >(`/worker/details/${encodeURIComponent(key)}`);
+    if (response.data?.success === false) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to load worker details',
+        description:
+          (response.data as any).message ?? 'Failed to load worker details',
       });
-      return rejectWithValue('Failed to fetch worker details');
     }
-  },
-);
+    return response.data as WorkerDetailsApiResponse;
+  } catch (error) {
+    toast({
+      variant: 'destructive',
+      title: 'Error',
+      description: 'Failed to load worker details',
+    });
+    return rejectWithValue('Failed to fetch worker details');
+  }
+});
 
 export const fetchSubIndustry = createAsyncThunk<SubIndustryResponse, string>(
   'adminPage/fetchSubIndustry',
@@ -1315,8 +1286,8 @@ export const deleteActivityLog = createAsyncThunk<void, string>(
 
 export const uploadFamilyPhoto = createAsyncThunk<
   any, // Define the type of the data you expect to return
-  { file: File; id: string ,type:string} // Define the type of the argument you expect
->('/client/uploadExcel', async ({ file, id,type }) => {
+  { file: File; id: string; type: string } // Define the type of the argument you expect
+>('/client/uploadExcel', async ({ file, id, type }) => {
   const formData = new FormData();
   formData.append('familyPhoto', file); // Append the file to FormData
   formData.append('familyUid', id); // Append the channel to FormData
@@ -1351,7 +1322,7 @@ const adminPageSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-         .addCase(fetchJobs.pending, (state) => {
+      .addCase(fetchJobs.pending, (state) => {
         state.isFetchingJobsLoading = true;
         state.error = null;
       })
@@ -1447,7 +1418,7 @@ const adminPageSlice = createSlice({
         state.loadingCompaniesList = false;
         state.error = action.payload as string;
       })
-         .addCase(fetchPendingCompanies.pending, (state) => {
+      .addCase(fetchPendingCompanies.pending, (state) => {
         state.pendingCompLoading = true;
         state.error = null;
       })
@@ -1472,7 +1443,7 @@ const adminPageSlice = createSlice({
         state.mergeCompanyLoading = false;
         state.error = action.payload as string;
       })
-       .addCase(getJobsList.pending, (state) => {
+      .addCase(getJobsList.pending, (state) => {
         state.loadingJob = true;
         state.error = null;
       })
@@ -1651,19 +1622,7 @@ const adminPageSlice = createSlice({
         state.loadingworkerlist = false;
         state.error = action.payload as string;
       })
-      .addCase(fetchCountStatus.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCountStatus.fulfilled, (state, action) => {
-        state.loading = false;
-        state.error = null;
-        state.workersStatusCount = action.payload.data;
-      })
-      .addCase(fetchCountStatus.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
+  
       .addCase(getStreams.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -1755,21 +1714,20 @@ const adminPageSlice = createSlice({
       })
       .addCase(companyUpdate.fulfilled, (state) => {
         state.iseditcompany = false;
-     
-   
+
         state.error = null;
       })
       .addCase(companyUpdate.rejected, (state, action) => {
         state.iseditcompany = false;
         state.error = action.payload as string;
-      })  .addCase(addBranch.pending, (state) => {
+      })
+      .addCase(addBranch.pending, (state) => {
         state.isaddbranch = true;
         state.error = null;
       })
       .addCase(addBranch.fulfilled, (state) => {
         state.isaddbranch = false;
-     
-   
+
         state.error = null;
       })
       .addCase(addBranch.rejected, (state, action) => {
@@ -1782,15 +1740,13 @@ const adminPageSlice = createSlice({
       })
       .addCase(branchUpdate.fulfilled, (state) => {
         state.isbranchUpdate = false;
-     
-   
+
         state.error = null;
       })
       .addCase(branchUpdate.rejected, (state, action) => {
         state.isbranchUpdate = false;
         state.error = action.payload as string;
       });
-
   },
 });
 

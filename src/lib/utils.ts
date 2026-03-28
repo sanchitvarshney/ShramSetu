@@ -2,6 +2,42 @@ import { type ClassValue, clsx } from 'clsx';
 import { format, parse } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 
+/** Inner string equals one of these after trim / quote-stripping → treat as "no value" for UI */
+const PLACEHOLDER_INNER = new Set(['--', '\u2014', '\u2013']); // --, em dash, en dash
+
+function stripOuterAsciiQuotes(s: string): string {
+  let t = s.trim();
+  for (let i = 0; i < 4; i += 1) {
+    const quoted =
+      (t.startsWith("'") && t.endsWith("'")) ||
+      (t.startsWith('"') && t.endsWith('"'));
+    if (!quoted) break;
+    t = t.slice(1, -1).trim();
+  }
+  return t;
+}
+
+/**
+ * True when a value should not be shown (missing data or API placeholders like `--`, `'--'`, `"--"`).
+ * Also treats blank strings and typographic dashes used as empty markers (—, –).
+ */
+export function isPlaceholderDisplayValue(val: unknown): boolean {
+  if (val == null) return true;
+  if (
+    typeof val === 'object' &&
+    val !== null &&
+    !Array.isArray(val) &&
+    'text' in val
+  ) {
+    return isPlaceholderDisplayValue((val as { text?: unknown }).text);
+  }
+  if (typeof val === 'boolean') return false;
+  const s = String(val).trim();
+  if (s === '') return true;
+  const inner = stripOuterAsciiQuotes(s);
+  return PLACEHOLDER_INNER.has(inner);
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

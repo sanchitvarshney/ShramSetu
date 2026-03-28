@@ -15,7 +15,7 @@ import {
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { SelectOptionType } from '@/types/general';
-import { calculateExperience, cn } from '@/lib/utils';
+import { calculateExperience, cn, isPlaceholderDisplayValue } from '@/lib/utils';
 import dayjs from 'dayjs';
 import { DatePicker, DatePickerProps } from 'antd';
 import { getLoggedInUserType } from '@/lib/routeAccess';
@@ -416,6 +416,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
                 </div>
                 {worker && <EmployementDetails details={worker} />}
                 {worker && <EducationDetailsFlat details={worker} />}
+                {worker && <BankDetailsFlat details={worker} />}
               </div>
             </div>
           ) : null}
@@ -462,6 +463,7 @@ const SingleDetail = ({
       : typeof value === 'object' && value && !Array.isArray(value)
         ? ((value as { text?: string })?.text ?? '--')
         : String(value);
+  if (isPlaceholderDisplayValue(display)) return null;
   return (
     <div className="flex justify-between gap-4 py-1.5">
       <span className="text-sm font-medium text-slate-500 shrink-0">
@@ -625,12 +627,13 @@ const BasicDetailsFlat = ({
     }
   };
 
-  const photoSrc =
-    empPhotoUrl ||
-    (Array.isArray(details?.empPhoto)
-      ? details.empPhoto[0]
-      : details?.empPhoto) ||
-    '/profile.png';
+  const resolvedPhoto =
+    Array.isArray(details?.empPhoto) && details.empPhoto.length > 0
+      ? String(details.empPhoto[0] ?? '').trim()
+      : typeof details?.empPhoto === 'string'
+        ? details.empPhoto.trim()
+        : '';
+  const photoSrc = empPhotoUrl || resolvedPhoto || PLACEHOLDER_PHOTO_DATAURL;
 
   if (isEditing) {
     return (
@@ -1361,19 +1364,31 @@ const EmployementDetails = ({ details }: any) => {
                 )}
               >
                 <SingleDetail label="Company" value={emp?.companyName} />
-                <SingleDetail label="Industry" value={emp?.industry} />
+                <DetailRow>
+                    <SingleDetail label="Location" value={emp?.empWorkingCompanyAddressID} />
+                    <SingleDetail
+                    label="Contractor"
+                    value={emp?.contractor}
+                  />
+                </DetailRow>
+                      <DetailRow>
+                  <SingleDetail label="Department" value={emp?.departmentName} />
+                   <SingleDetail
+                    label="Designation"
+                    value={emp?.designationName}
+                  />
+                
+                </DetailRow>
+
                 <DetailRow>
                   <SingleDetail label="Joined on" value={emp?.empJoiningDate} />
                   <SingleDetail
                     label="Releived on"
-                    value={emp?.empRelievingDate ?? '--'}
+                    value={emp?.empRelievingDate}
                   />
                 </DetailRow>
                 <DetailRow>
-                  <SingleDetail
-                    label="Role"
-                    value={emp?.designationName ?? '--'}
-                  />
+                 
                   {emp?.empJoiningDate && emp?.empRelievingDate && (
                     <SingleDetail
                       label="Experience"
@@ -1412,41 +1427,80 @@ const EducationDetailsFlat = ({ details }: { details: any }) => {
                   'px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50',
                 )}
               >
-                     <SingleDetail
+                <SingleDetail
                   label="School / University"
                   value={
                     edu?.employeeUniversity ??
                     edu?.university ??
                     edu?.institution ??
-                    edu?.school ??
-                    '--'
+                    edu?.school
                   }
                 />
                 <DetailRow>
                   <SingleDetail
                     label="Degree"
-                    value={edu?.employeeDegree ?? edu?.degree ?? '--'}
+                    value={edu?.employeeDegree ?? edu?.degree}
                   />
                   <SingleDetail
-                    label="Stream"
-                    value={edu?.employeeStream ?? edu?.stream ?? '--'}
+                    label="Stream/Board"
+                    value={edu?.employeeStream ?? edu?.stream}
                   />
                 </DetailRow>
-               
+
+         
                 <DetailRow>
-              
+                  <SingleDetail label="End Year" value={edu?.endYear} />
+                </DetailRow>
+              </div>
+            ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+
+const BankDetailsFlat = ({ details }: { details: any }) => {
+  const list = details?.bankDetails ?? [];
+  const hasList = Array.isArray(list) && list.length > 0;
+  return (
+    <Card className="shadow-sm border-slate-200/80">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-base font-semibold text-slate-800">
+          Bank Details
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="flex flex-col gap-3">
+          {hasList &&
+            list.map((edu: any, i: number) => (
+              <div
+                key={edu?.uan ?? i}
+                className={cn(
+                  'px-4 py-3 rounded-lg border border-slate-200 bg-slate-50/50',
+                )}
+              >
+                <SingleDetail
+                  label="Bank Name"
+                  value={
+                    edu?.bankName 
+                  }
+                />
+                <DetailRow>
                   <SingleDetail
-                    label="Board / Type"
-                    value={edu?.educationType ?? '--'}
+                    label="Account Number"
+                    value={edu?.accountNo }
                   />
-            <SingleDetail
-                    label="Start Year"
-                    value={edu?.startYear ?? '--'}
+                  <SingleDetail
+                    label="IFSC Code"
+                    value={edu?.ifsCode}
                   />
                 </DetailRow>
+
+         
                 <DetailRow>
-                
-                  <SingleDetail label="End Year" value={edu?.endYear ?? '--'} />
+                  <SingleDetail label="Branch" value={edu?.branch} />
+                   <SingleDetail label="UAN" value={edu?.uan} />
                 </DetailRow>
               </div>
             ))}

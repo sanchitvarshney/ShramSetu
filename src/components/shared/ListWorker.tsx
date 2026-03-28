@@ -5,7 +5,7 @@ import { DatePicker, Space } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store';
 import {
-  fetchCountStatus,
+ 
   fetchWorkers,
   fetchWorkerDetailsByKey,
   handleEmpStatus,
@@ -18,6 +18,7 @@ import ShareWorkersDialog, {
   type SelectedWorkerItem,
 } from '@/components/shared/ShareWorkersDialog';
 import Loading from '@/components/reusable/Loading';
+import { isPlaceholderDisplayValue } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { SearchOutlined } from '@mui/icons-material';
@@ -61,6 +62,7 @@ function normalizeWorkerDetailsFromApi(
     : employment && typeof employment === 'object' && !Array.isArray(employment)
       ? Object.values(employment)
       : [];
+  const bankDetails = raw.bankDetails;
   return {
     employeeID: empCode,
     empId: empCode,
@@ -101,6 +103,7 @@ function normalizeWorkerDetailsFromApi(
     perma_pincode: personal.perma_pincode ?? '',
     educationList: raw.educationDetails ?? [],
     companyInfo,
+    bankDetails,
   };
 }
 
@@ -134,7 +137,7 @@ function toSelectedWorkerItem(row: any): SelectedWorkerItem {
   return {
     empCode: getWorkerId(row),
     mobile: row?.empMobile ?? row?.mobile ?? '',
-    name: name || '--',
+    name: isPlaceholderDisplayValue(name) ? '' : name,
   };
 }
 
@@ -235,9 +238,7 @@ const ListWorker: React.FC = () => {
     [],
   );
 
-  useEffect(() => {
-    dispatch(fetchCountStatus());
-  }, [dispatch]);
+
 
   const handleDownloadExcel = () => {
     if (!workers?.length) {
@@ -274,7 +275,7 @@ const ListWorker: React.FC = () => {
     ).then((response: any) => {
       if (response.payload.success) {
         toast({ title: 'Success!!', description: response.payload.message });
-        dispatch(fetchCountStatus());
+ 
       } else {
         toast({
           variant: 'destructive',

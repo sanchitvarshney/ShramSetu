@@ -1,3 +1,5 @@
+import { isPlaceholderDisplayValue } from '@/lib/utils';
+
 export function fmt(v: unknown): string {
   if (v === undefined || v === null || v === '') return '';
   if (Array.isArray(v)) return v.filter(Boolean).join(', ');
@@ -45,7 +47,7 @@ export function convertGender(g: string): string {
 
 export function cleanAddrPart(x: string | null | undefined): string {
   const v = x == null ? '' : String(x).trim();
-  return v === '' || v === '--' ? '' : v;
+  return isPlaceholderDisplayValue(v) ? '' : v;
 }
 
 export function buildAddressLines(
@@ -166,7 +168,7 @@ export function buildResumeHtml(data: ResumeData): {
     ? `<a href="mailto:${email}" style="color:#0f172a;text-decoration:underline;">${email}</a>`
     : '';
   const photoHtml = photoUrl
-    ? `<div style="flex-shrink:0;margin-left:20px;"><img src="${photoUrl}" alt="Photo" style="width:130px;height:150px;object-fit:cover;border:1px solid #cbd5e1;display:block;" /></div>`
+    ? `<div style="flex-shrink:0;margin-left:20px;"><img src="${photoUrl}" alt="Photo" style="width:130px;height:150px;object-fit:cover;display:block;" /></div>`
     : '';
 
   const cleanAddress = addressBlock
@@ -247,13 +249,16 @@ export function buildResumeHtml(data: ResumeData): {
   if (education.length > 0) {
     sections.push(sectionTitle('EDUCATION'));
     education.forEach((edu) => {
-      const rightPart = [fmt(edu.stream), fmt(edu.university), fmt(edu.endYear)]
+      const rightPartRaw = [fmt(edu.stream), fmt(edu.endYear)]
         .filter(Boolean)
         .join(' | ');
+      const rightPart = isPlaceholderDisplayValue(rightPartRaw)
+        ? ''
+        : rightPartRaw;
       sections.push(`
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;gap:12px;">
           <span style="font-size:16px;color:#0f172a;">${fmt(edu.degree)}</span>
-          <span style="font-size:16px;color:#0f172a;flex-shrink:0;">${rightPart || '—'}</span>
+          <span style="font-size:16px;color:#0f172a;flex-shrink:0;">${rightPart}</span>
         </div>
       `);
     });
