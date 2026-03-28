@@ -385,7 +385,47 @@ export const addClient = createAsyncThunk(
   },
 );
 
-// Define the async thunk for fetching companies (type = logged-in user type: admin | client)
+interface UpdateClientDetailsPayload {
+  code: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobile: string;
+  // panNo?: string;
+  // gstNo?: string;
+  isPasswordChanged: boolean;
+  newPassword?: string;
+  company: string;
+  branch: string;
+}
+
+export const updateClientDetails = createAsyncThunk<
+  { success?: boolean; message?: string; data?: unknown },
+  UpdateClientDetailsPayload
+>('adminPage/updateClientDetails', async (clientData, { rejectWithValue }) => {
+  try {
+    // Backend convention matches other master updates: PUT /<entity>/edit
+    const response = await orshAxios.post('/client/edit', clientData);
+    const res = response?.data;
+
+    if (res?.success === false) {
+      const message = res?.message || 'Failed to update client';
+      toast({ variant: 'destructive', title: 'Error', description: message });
+      return rejectWithValue(message);
+    }
+
+    toast({
+      title: 'Success',
+      description: res?.message || 'Client updated successfully',
+    });
+    return res;
+  } catch (err: any) {
+    const message = err?.response?.data?.message || 'Failed to update client';
+    toast({ variant: 'destructive', title: 'Error', description: message });
+    return rejectWithValue(message);
+  }
+});
+
 export const searchCompanies = createAsyncThunk<
   CompanyResponse,
   string | undefined
