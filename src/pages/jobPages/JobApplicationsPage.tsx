@@ -9,6 +9,7 @@ import {
   fetchJobApplications,
   updateApplicationStatus,
   setApplicationStatusLocal,
+  notifyUserApplication,
   type JobApplication,
   type ApplicationStatus,
 } from '@/features/jobFeatures/jobApplicationsSlice';
@@ -18,14 +19,14 @@ import ApplicantDetailsDialog from '@/components/shared/ApplicantDetailsDialog';
 
 const JobApplicationsPage = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const {
-    applications,
-    isLoading,
-    isUpdating,
-  } = useSelector((state: RootState) => state.jobApplications);
+  const { applications, isLoading, isUpdating } = useSelector(
+    (state: RootState) => state.jobApplications,
+  );
 
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [selectedAppliedKey, setSelectedAppliedKey] = useState<string | null>(null);
+  const [selectedAppliedKey, setSelectedAppliedKey] = useState<string | null>(
+    null,
+  );
 
   const displayApplications = applications.length > 0 ? applications : [];
 
@@ -34,7 +35,7 @@ const JobApplicationsPage = () => {
   }, [dispatch]);
 
   const handleViewDetails = useCallback((app: JobApplication) => {
-    const key =  app.empKey;
+    const key = app.empKey;
     if (key) {
       setSelectedAppliedKey(String(key));
       setDetailsDialogOpen(true);
@@ -43,18 +44,26 @@ const JobApplicationsPage = () => {
 
   const handleStatusChange = useCallback(
     (app: any, newStatus: ApplicationStatus) => {
-    
       dispatch(
-        updateApplicationStatus({ appliedKey: app.key, status: newStatus })
+        updateApplicationStatus({ appliedKey: app.key, status: newStatus }),
       ).then((res: any) => {
         if (updateApplicationStatus.rejected.match(res)) {
-          dispatch(setApplicationStatusLocal({ id: app.key, status: app.status }));
+          dispatch(
+            setApplicationStatusLocal({ id: app.key, status: app.status }),
+          );
           toast({
             variant: 'destructive',
             title: 'Error',
             description: 'Failed to update status.',
           });
         } else {
+          dispatch(
+            notifyUserApplication({
+              title: 'Application Status',
+              message: `Your application status has been updated to ${newStatus}.`,
+              playerIds: [app.externalId],
+            }),
+          );
           toast({
             title: 'Updated',
             description: `Application status set to ${newStatus}.`,
@@ -62,16 +71,32 @@ const JobApplicationsPage = () => {
         }
       });
     },
-    [dispatch]
+    [dispatch],
   );
 
-  const onAccept = useCallback((app: JobApplication) => handleStatusChange(app, 'accepted'), [handleStatusChange]);
-  const onDecline = useCallback((app: JobApplication) => handleStatusChange(app, 'declined'), [handleStatusChange]);
-  const onHold = useCallback((app: JobApplication) => handleStatusChange(app, 'hold'), [handleStatusChange]);
+  const onAccept = useCallback(
+    (app: JobApplication) => handleStatusChange(app, 'accepted'),
+    [handleStatusChange],
+  );
+  const onDecline = useCallback(
+    (app: JobApplication) => handleStatusChange(app, 'declined'),
+    [handleStatusChange],
+  );
+  const onHold = useCallback(
+    (app: JobApplication) => handleStatusChange(app, 'hold'),
+    [handleStatusChange],
+  );
 
   const columnDefs = useMemo<ColDef<JobApplication>[]>(
-    () => getJobApplicationsColumnDefs(onAccept, onDecline, onHold, handleViewDetails, isUpdating),
-    [onAccept, onDecline, onHold, handleViewDetails, isUpdating]
+    () =>
+      getJobApplicationsColumnDefs(
+        onAccept,
+        onDecline,
+        onHold,
+        handleViewDetails,
+        isUpdating,
+      ),
+    [onAccept, onDecline, onHold, handleViewDetails, isUpdating],
   );
 
   const defaultColDef = useMemo<ColDef>(
@@ -80,17 +105,17 @@ const JobApplicationsPage = () => {
       floatingFilter: true,
       resizable: true,
     }),
-    []
+    [],
   );
 
   const statusCounts = useMemo(() => {
     const list = displayApplications;
     return {
       all: list.length,
-      pending: list.filter((a:any) => a.status === 'PEN').length,
-      accepted: list.filter((a:any) => a.status === 'APR').length,
-      declined: list.filter((a:any) => a.status === 'REJ').length,
-      hold: list.filter((a:any) => a.status === 'HOLD').length,
+      pending: list.filter((a: any) => a.status === 'PEN').length,
+      accepted: list.filter((a: any) => a.status === 'APR').length,
+      declined: list.filter((a: any) => a.status === 'REJ').length,
+      hold: list.filter((a: any) => a.status === 'HOLD').length,
     };
   }, [displayApplications]);
 
@@ -108,11 +133,21 @@ const JobApplicationsPage = () => {
         <CardContent>
           {isLoading && <Loading />}
           <div className="mb-4 flex flex-wrap gap-4 p-3 bg-gray-50 rounded-lg">
-            <span className="font-semibold text-gray-700">Total: {statusCounts.all}</span>
-            <span className="text-amber-700 font-medium">Pending: {statusCounts.pending}</span>
-            <span className="text-green-700 font-medium">Accepted: {statusCounts.accepted}</span>
-            <span className="text-red-700 font-medium">Declined: {statusCounts.declined}</span>
-            <span className="text-blue-700 font-medium">Hold: {statusCounts.hold}</span>
+            <span className="font-semibold text-gray-700">
+              Total: {statusCounts.all}
+            </span>
+            <span className="text-amber-700 font-medium">
+              Pending: {statusCounts.pending}
+            </span>
+            <span className="text-green-700 font-medium">
+              Accepted: {statusCounts.accepted}
+            </span>
+            <span className="text-red-700 font-medium">
+              Declined: {statusCounts.declined}
+            </span>
+            <span className="text-blue-700 font-medium">
+              Hold: {statusCounts.hold}
+            </span>
           </div>
           <div className="ag-theme-quartz h-[calc(100vh-400px)] min-h-[425px]">
             <AgGridReact<JobApplication>

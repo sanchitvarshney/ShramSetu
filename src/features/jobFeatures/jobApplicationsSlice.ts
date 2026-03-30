@@ -97,7 +97,8 @@ export const updateApplicationStatus = createAsyncThunk<
 >(
   'jobApplications/updateStatus',
   async ({ appliedKey, status }, { rejectWithValue }) => {
-    const stautsData = status === 'accepted' ? 'APR' : status === 'declined' ? 'REJ' : 'HOLD';
+    const stautsData =
+      status === 'accepted' ? 'APR' : status === 'declined' ? 'REJ' : 'HOLD';
     try {
       await orshAxios.post('/job/updateAppliedJobStatus', {
         appliedKey,
@@ -110,15 +111,33 @@ export const updateApplicationStatus = createAsyncThunk<
   },
 );
 
+export const notifyUserApplication = createAsyncThunk<
+  any,
+  { title: string; message: string; playerIds: any }
+>(
+  'jobApplications/notifyUser',
+  async ({ title, message, playerIds }, { rejectWithValue }) => {
+    try {
+      await orshAxios.post('/invitations/send-notification-user', {
+        title,
+        message,
+        playerIds,
+      });
+    } catch (err: any) {
+      return rejectWithValue(err?.message ?? 'Failed to notify user');
+    }
+  },
+);
+
 export const fetchApplicationDetails = createAsyncThunk<
   ApplicantDetail,
   string
 >('jobApplications/fetchDetails', async (key, { rejectWithValue }) => {
   try {
-    const response = await orshAxios.get<{ data: ApplicantDetail; success: boolean }>(
-      `/job/getEmpJobsDetails/${key}`,
-      
-    );
+    const response = await orshAxios.get<{
+      data: ApplicantDetail;
+      success: boolean;
+    }>(`/job/getEmpJobsDetails/${key}`);
     if (response.data?.success && response.data?.data) {
       return response.data.data;
     }
@@ -137,7 +156,8 @@ const jobApplicationsSlice = createSlice({
       action: { payload: { id: string; status: ApplicationStatus } },
     ) => {
       const app = state.applications.find(
-        (a) => (a as any).key === action.payload.id || a.id === action.payload.id,
+        (a) =>
+          (a as any).key === action.payload.id || a.id === action.payload.id,
       );
       if (app) app.status = action.payload.status;
     },
@@ -166,7 +186,8 @@ const jobApplicationsSlice = createSlice({
       .addCase(updateApplicationStatus.fulfilled, (state, action) => {
         state.isUpdating = false;
         const app = state.applications.find(
-          (a) => (a as any).key === action.payload.id || a.id === action.payload.id,
+          (a) =>
+            (a as any).key === action.payload.id || a.id === action.payload.id,
         );
         if (app) app.status = action.payload.status;
       })
