@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BasicDetailsFlat } from './BasicDetailsFlat';
 import { CurrentAddressFlat } from './CurrentAddressFlat';
 import { PermanentAddressFlat } from './PermanentAddressFlat';

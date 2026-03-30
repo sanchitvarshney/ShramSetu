@@ -685,10 +685,9 @@ export const updateEmployeeCurrentAddress = createAsyncThunk<
   {
     empId: string;
     houseNoPresent: string;
-    colonyPresent: string;
     cityPresent: string;
     statePresent: string;
-    countryPresent: string;
+    districtPresent: string;
     pinCodePresent: string;
   },
   { rejectValue: string }
@@ -726,10 +725,9 @@ export const updateEmployeePermanentAddress = createAsyncThunk<
   {
     empId: string;
     houseNoPermanent: string;
-    colonyPermanent: string;
     cityPermanent: string;
     statePermanent: string;
-    countryPermanent: string;
+    districtPermanent: string;
     pinCodePermanent: string;
   },
   { rejectValue: string }

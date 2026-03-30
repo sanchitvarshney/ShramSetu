@@ -1,14 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { Edit, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { updateEmployeePermanentAddress } from '@/features/admin/adminPageSlice';
-import { AppDispatch } from '@/store';
+import {
+  fetchStates,
+  updateEmployeePermanentAddress,
+} from '@/features/admin/adminPageSlice';
+import { AppDispatch, RootState } from '@/store';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { inputStyle } from '@/style/CustomStyles';
 import { SingleDetail } from './detailPrimitives';
+import { SelectOptionType } from '@/types/general';
+import { useToast } from '@/components/ui/use-toast';
+
+type StateSelectMode = 'value' | 'text';
+
+function resolveStateSelectValue(
+  raw: string,
+  opts: SelectOptionType[] | null | undefined,
+): { mode: StateSelectMode; value: string } {
+  const r = String(raw ?? '').trim();
+  if (!r) return { mode: 'value', value: '' };
+
+  const byValue = opts?.find((s) => String(s.value).trim() === r);
+  if (byValue) return { mode: 'value', value: String(byValue.value) };
+
+  const byText = opts?.find(
+    (s) => String(s.text ?? '').trim().toUpperCase() === r.toUpperCase(),
+  );
+  if (byText) return { mode: 'text', value: String(byText.text) };
+
+  return { mode: 'value', value: r };
+}
 
 export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
   details,
@@ -22,39 +55,69 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
   onSuccess?: () => void;
 }) {
   const dispatch = useDispatch<AppDispatch>();
+  const { states } = useSelector((s: RootState) => s.adminPage);
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [houseNo, setHouseNo] = useState('');
-  const [colony, setColony] = useState('');
+  const [district, setDistrict] = useState('');
   const [city, setCity] = useState('');
   const [stateVal, setStateVal] = useState('');
-  const [country, setCountry] = useState('');
   const [pincode, setPincode] = useState('');
+  const [stateSelectMode, setStateSelectMode] = useState<StateSelectMode>('value');
+  const [stateManuallyEdited, setStateManuallyEdited] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchStates());
+  }, [dispatch]);
 
   useEffect(() => {
     if (details) {
       setHouseNo(details?.perma_houseNo ?? '');
-      setColony(details?.perma_colony ?? '');
+      setDistrict(details?.perma_district ?? details?.present_district ?? '');
       setCity(details?.perma_city ?? '');
+      // Initial state value while entering edit mode; will be normalized once `states` is loaded.
       setStateVal(details?.perma_state ?? '');
-      setCountry(details?.perma_country ?? '');
-      setPincode(details?.perma_pincode ?? '');
+      // PIN code should be digits-only and max 6 digits
+      setPincode(
+        String(details?.perma_pincode ?? '')
+          .replace(/\D/g, '')
+          .slice(0, 6),
+      );
     }
   }, [details, isEditing]);
 
+  useEffect(() => {
+    if (!isEditing) return;
+    if (!details) return;
+    if (stateManuallyEdited) return;
+
+    const resolved = resolveStateSelectValue(details?.perma_state ?? '', states);
+    setStateSelectMode(resolved.mode);
+    setStateVal(resolved.value);
+  }, [details, isEditing, states, stateManuallyEdited]);
+
   const handleUpdatePermanentAddress = async () => {
     if (!employeeId) return;
+    const pinDigits = String(pincode ?? '').replace(/\D/g, '');
+    if (pinDigits.length > 0 && pinDigits.length !== 6) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid PIN code',
+        description: 'PIN code must be exactly 6 digits.',
+      });
+      return;
+    }
     setSaving(true);
     try {
       await dispatch(
         updateEmployeePermanentAddress({
           empId: employeeId,
           houseNoPermanent: houseNo?.trim() || '',
-          colonyPermanent: colony?.trim() || '',
+          districtPermanent: district?.trim() || '',
           cityPermanent: city?.trim() || '',
           statePermanent: stateVal?.trim() || '',
-          countryPermanent: country?.trim() || '',
-          pinCodePermanent: pincode?.trim() || '',
+          pinCodePermanent: pinDigits.trim() || '',
         }),
       ).unwrap();
       setIsEditing(false);
@@ -105,15 +168,7 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Colony</Label>
-              <Input
-                className={inputStyle}
-                value={colony}
-                onChange={(e) => setColony(e.target.value)}
-                placeholder="Colony"
-              />
-            </div>
+           
             <div className="space-y-1.5">
               <Label className="text-xs">City</Label>
               <Input
@@ -123,30 +178,52 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
                 placeholder="City"
               />
             </div>
+             <div className="space-y-1.5">
+              <Label className="text-xs">District</Label>
+              <Input
+                className={inputStyle}
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                placeholder="District"
+              />
+            </div>
             <div className="space-y-1.5">
               <Label className="text-xs">State</Label>
-              <Input
-                className={inputStyle}
+              <Select
                 value={stateVal}
-                onChange={(e) => setStateVal(e.target.value)}
-                placeholder="State"
-              />
+                onValueChange={(v) => {
+                  setStateManuallyEdited(true);
+                  setStateVal(v);
+                }}
+              >
+                <SelectTrigger className={inputStyle}>
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(states ?? []).map((s) => (
+                    <SelectItem
+                      key={s.value}
+                      value={stateSelectMode === 'value' ? s.value : s.text}
+                    >
+                      {s.text}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Country</Label>
-              <Input
-                className={inputStyle}
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                placeholder="Country"
-              />
-            </div>
+        
             <div className="space-y-1.5">
               <Label className="text-xs">Pin Code</Label>
               <Input
                 className={inputStyle}
                 value={pincode}
-                onChange={(e) => setPincode(e.target.value)}
+                inputMode="numeric"
+                maxLength={6}
+                onChange={(e) =>
+                  setPincode(
+                    e.target.value.replace(/\D/g, '').slice(0, 6),
+                  )
+                }
                 placeholder="Pincode"
               />
             </div>
@@ -167,7 +244,10 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              setStateManuallyEdited(false);
+              setIsEditing(true);
+            }}
           >
             <Edit className="h-4 w-4 mr-1" /> Edit
           </Button>
@@ -176,10 +256,10 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
       <CardContent className="pt-0">
         <div className="flex flex-col gap-0">
           <SingleDetail label="House No." value={details?.perma_houseNo} />
-          <SingleDetail label="Colony" value={details?.perma_colony} />
+        
           <SingleDetail label="City" value={details?.perma_city} />
+            <SingleDetail label="District" value={details?.perma_district} />
           <SingleDetail label="State" value={details?.perma_state} />
-          <SingleDetail label="Country" value={details?.perma_country} />
           <SingleDetail label="Pin Code" value={details?.perma_pincode} />
         </div>
       </CardContent>
