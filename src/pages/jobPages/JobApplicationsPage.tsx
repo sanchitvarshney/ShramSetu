@@ -56,19 +56,19 @@ const JobApplicationsPage = () => {
             title: 'Error',
             description: 'Failed to update status.',
           });
-        } else {
-          dispatch(
-            notifyUserApplication({
-              title: 'Application Status',
-              message: `Your application status has been updated to ${newStatus}.`,
-              playerIds: [app.externalId],
-            }),
-          );
-          toast({
-            title: 'Updated',
-            description: `Application status set to ${newStatus}.`,
-          });
         }
+        dispatch(
+          notifyUserApplication({
+            title: 'Application Status',
+            message: `Your application status has been updated to ${newStatus}.`,
+            playerIds: [app.externalId],
+          }),
+        );
+        toast({
+          title: 'Updated',
+          description: `Application status set to ${newStatus}.`,
+        });
+        dispatch(fetchJobApplications());
       });
     },
     [dispatch],

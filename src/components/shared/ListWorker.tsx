@@ -138,6 +138,7 @@ function toSelectedWorkerItem(row: any): SelectedWorkerItem {
     empCode: getWorkerId(row),
     mobile: row?.empMobile ?? row?.mobile ?? '',
     name: isPlaceholderDisplayValue(name) ? '' : name,
+    externalId: row?.externalId  ?? '',
   };
 }
 
