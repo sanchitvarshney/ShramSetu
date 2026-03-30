@@ -200,7 +200,7 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(states ?? []).map((s) => (
+                  {(states ?? []).map((s:any) => (
                     <SelectItem
                       key={s.value}
                       value={stateSelectMode === 'value' ? s.value : s.text}
