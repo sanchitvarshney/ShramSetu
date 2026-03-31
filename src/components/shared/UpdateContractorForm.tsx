@@ -29,14 +29,23 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
   onCancel,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { addContractorLoading } = useSelector((state: RootState) => state.adminPage);
+  const { addContractorLoading } = useSelector(
+    (state: RootState) => state.adminPage,
+  );
   const [name, setName] = useState(contractor.name ?? '');
   const [panNo, setPanNo] = useState(contractor.panNo ?? '');
   const [mobile, setMobile] = useState(() => String(contractor.mobile ?? ''));
-  const [contactMobile, setContactMobile] = useState(() => String(contractor.contactMobile ?? contractor.mobile2 ?? ''));
-  const [contactName, setContactName] = useState(() => String(contractor.contactName ?? contractor.mobile2Name ?? ''));
+  const [contactMobile, setContactMobile] = useState(
+    () => String(contractor.contactMobile ?? contractor.mobile2 ?? ''),
+  );
+  const [contactName, setContactName] = useState(
+    () => String(contractor.contactName ?? contractor.mobile2Name ?? ''),
+  );
   const [email, setEmail] = useState(contractor.email ?? '');
-  const [gst, setGst] = useState(contractor.gst ?? '');
+  // Backend may return GST as `gstNo` in list API; fall back to that when present
+  const [gst, setGst] = useState(
+    (contractor as any).gst ?? (contractor as any).gstNo ?? '',
+  );
   const [address, setAddress] = useState(contractor.address ?? '');
   const [activeStatus, setActiveStatus] = useState(contractor.activeStatus ?? 'A');
 
@@ -44,13 +53,20 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
     setName(contractor.name ?? '');
     setPanNo(contractor.panNo ?? '');
     setMobile(String(contractor.mobile ?? ''));
-    setContactMobile(String(contractor.contactMobile ?? contractor.mobile2 ?? ''));
-    setContactName(String(contractor.contactName ?? contractor.mobile2Name ?? ''));
+    setContactMobile(
+      String(contractor.contactMobile ?? contractor.mobile2 ?? ''),
+    );
+    setContactName(
+      String(contractor.contactName ?? contractor.mobile2Name ?? ''),
+    );
     setEmail(contractor.email ?? '');
-    setGst(contractor.gst ?? '');
+    setGst((contractor as any).gst ?? (contractor as any).gstNo ?? '');
     setAddress(contractor.address ?? '');
     setActiveStatus(contractor.activeStatus ?? 'A');
   }, [contractor]);
+
+
+
 
   const handleSubmit = () => {
     const validation = validateForm(contractorSchema, {
@@ -92,15 +108,24 @@ const UpdateContractorForm: React.FC<UpdateContractorFormProps> = ({
     });
   };
 
+  /**
+   * Basic front‑end guard for enabling the button.
+   * Full validation (including exact GST format) is handled by `contractorSchema`
+   * inside `handleSubmit`, so we only check that required fields are non‑empty
+   * and mobiles have 10 digits to avoid the button being stuck disabled
+   * for legacy contractors that were created without GST.
+   */
   const isFormValid =
-    name.trim() &&
-    panNo.trim() &&
+    name.trim().length > 0 &&
+    panNo.trim().length > 0 &&
     String(mobile ?? '').trim().length === 10 &&
     String(contactMobile ?? '').trim().length === 10 &&
-    String(contactName ?? '').trim() &&
-    email.trim() &&
-    gst.trim().length === 15 &&
-    address.trim();
+    String(contactName ?? '').trim().length > 0 &&
+    email.trim().length > 0 &&
+    gst.trim().length > 0 &&
+    address.trim().length > 0;
+
+   
 
   return (
     <div className="grid gap-4 py-4">
