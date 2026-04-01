@@ -64,14 +64,21 @@ const PendingCompanyList = () => {
 
   const columnDefs = useMemo<ColDef[]>(
     () => [
-      {
-        headerName: '#',
-        maxWidth: 70,
-        valueGetter: 'node.rowIndex + 1',
-        checkboxSelection: true,
-        headerCheckboxSelection: true,
-        headerCheckboxSelectionFilteredOnly: true,
-      },
+ {
+  headerName: '#',
+  maxWidth: 70,
+  valueGetter: (params:any) => {
+    if (!params.node) return '';
+
+    const pageSize = params.api.paginationGetPageSize();
+    const currentPage = params.api.paginationGetCurrentPage();
+
+    return currentPage * pageSize + params.node.rowIndex + 1;
+  },
+  checkboxSelection: true,
+  headerCheckboxSelection: true,
+  headerCheckboxSelectionFilteredOnly: true,
+},
       { headerName: 'Company Name', field: 'name' },
       {
         headerName: 'Status',
