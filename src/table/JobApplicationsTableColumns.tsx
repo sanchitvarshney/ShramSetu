@@ -54,7 +54,7 @@ export const getJobApplicationsColumnDefs = (
   onAccept: (app: any) => void,
   onDecline: (app: any) => void,
   onHold: (app: any) => void,
-  // onView: (app: any) => void,
+  onView: (app: any) => void,
   isUpdating: boolean,
 ): ColDef<any>[] => [
   { headerName: '#', field: 'text', maxWidth: 60, valueGetter: 'node.rowIndex + 1' },
@@ -98,14 +98,14 @@ export const getJobApplicationsColumnDefs = (
     flex: 1,
     minWidth: 180,
   },
-  //  {
-  //   headerName: 'Branch',
-  //   field: 'branchName',
-  //   sortable: true,
-  //   filter: true,
-  //   flex: 1,
-  //   minWidth: 180,
-  // },
+   {
+    headerName: 'Branch',
+    field: 'branchName',
+    sortable: true,
+    filter: true,
+    flex: 1,
+    minWidth: 180,
+  },
   {
     headerName: 'Current Salary',
     field: 'minSalary',
@@ -153,14 +153,14 @@ export const getJobApplicationsColumnDefs = (
       const status: any = app.status;
       return (
         <div className="flex items-center gap-2 h-full py-1 flex-wrap">
-          {/* <Button
+          <Button
             size="sm"
             variant="outline"
             className="text-slate-700 border-slate-300 hover:bg-slate-50 text-xs h-8"
             onClick={() => onView(app)}
           >
             View
-          </Button> */}
+          </Button>
           {status !== 'APR' && (
             <Button
               size="sm"

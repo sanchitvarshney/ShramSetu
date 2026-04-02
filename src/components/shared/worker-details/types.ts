@@ -4,6 +4,8 @@ export interface WorkerDetailsProps {
   worker: any;
   toggleDetails?: (id?: string) => void;
   showEdit?: boolean;
+  /** Optional sheet title override (defaults to "Worker Details") */
+  title?: string;
   setOpen?: Dispatch<SetStateAction<boolean>>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

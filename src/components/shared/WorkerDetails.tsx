@@ -36,6 +36,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
   onOpenChange,
   onWorkerUpdated,
   detailsLoading = false,
+  title,
 }) => {
   const employeeId = getEmployeeId(worker);
   const isAdmin = getLoggedInUserType() === 'admin';
@@ -61,7 +62,7 @@ const WorkerDetails: React.FC<WorkerDetailsProps> = ({
         >
           <SheetHeader className="flex-shrink-0 flex flex-row items-center justify-between px-6 py-4 border-b bg-slate-50/80">
             <SheetTitle className="text-lg font-semibold text-slate-800">
-              Worker Details
+              {title ?? 'Worker Details'}
             </SheetTitle>
           </SheetHeader>
 

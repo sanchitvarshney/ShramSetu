@@ -137,7 +137,7 @@ export const fetchApplicationDetails = createAsyncThunk<
     const response = await orshAxios.get<{
       data: ApplicantDetail;
       success: boolean;
-    }>(`/job/getEmpJobsDetails/${key}`);
+    }>(`/worker/details/${key}`);
     if (response.data?.success && response.data?.data) {
       return response.data.data;
     }
