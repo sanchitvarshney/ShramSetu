@@ -93,7 +93,7 @@ const JobApplicationsPage = () => {
         onAccept,
         onDecline,
         onHold,
-        handleViewDetails,
+        // handleViewDetails,
         isUpdating,
       ),
     [onAccept, onDecline, onHold, handleViewDetails, isUpdating],
