@@ -24,6 +24,7 @@ import EmpUpdate from '@/components/ui/EmpUpdate';
 import CompanyInfo from '@/components/ui/companyInfo';
 import ProfilePage from '@/pages/profilePage/ProfilePage';
 import SetAppPassword from '@/pages/profilePage/SetAppPassword';
+import DeleteAccountPage from '@/pages/profilePage/DeleteAccountPage';
 import ProfileLayout from './Layout/ProfileLayout';
 import PageNotFound from './pages/PageNotFound';
 import JobLayout from './Layout/JobLayout';
@@ -100,6 +101,16 @@ const router = createBrowserRouter([
               </ProfileLayout>
             </MainLayout>
           </Protected>
+        ),
+      },
+      {
+        path: '/profile/delete-account/:id',
+        element: (
+       
+       
+                <DeleteAccountPage />
+           
+     
         ),
       },
       {
