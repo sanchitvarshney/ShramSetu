@@ -56,7 +56,6 @@ const DeleteAccountPage = () => {
 
     setIsDeleting(true);
     try {
-      // Hook API call here when endpoint is available.
       const payload = {
         userId,
         reason,
