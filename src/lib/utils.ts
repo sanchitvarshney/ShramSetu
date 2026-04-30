@@ -63,6 +63,16 @@ export function capitalizeName(value: string): string {
     .join(' ');
 }
 
+export function toProperCaseName(value: string): string {
+  if (!value.trim()) return value;
+  return value
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 
 export const calculateExperience = (
   joiningDate?: string,

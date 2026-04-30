@@ -15,6 +15,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import UpdateContractorForm from '@/components/shared/UpdateContractorForm';
+import { toProperCaseName } from '@/lib/utils';
 
 const ListContractor: React.FC = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -76,7 +77,13 @@ const ListContractor: React.FC = () => {
       flex: 1,
       valueGetter: 'node.rowIndex + 1',
     },
-    { headerName: 'Contractor Name', field: 'name', flex: 1, minWidth: 200 },
+    {
+      headerName: 'Contractor Name',
+      field: 'name',
+      flex: 1,
+      minWidth: 200,
+      valueFormatter: (p) => toProperCaseName(p.value ?? ''),
+    },
     {
       headerName: 'Contractor Mobile',
       field: 'mobile',
@@ -88,6 +95,7 @@ const ListContractor: React.FC = () => {
       field: 'contactName',
       flex: 1,
       minWidth: 200,
+      valueFormatter: (p) => toProperCaseName(p.value ?? ''),
     },
     {
       headerName: 'Contract Mobile',

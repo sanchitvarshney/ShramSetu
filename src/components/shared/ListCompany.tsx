@@ -13,6 +13,7 @@ import {
 import { CompanyInfoContent } from '@/components/ui/companyInfo';
 import { useToast } from '@/components/ui/use-toast';
 import { Copy } from 'lucide-react';
+import { toProperCaseName } from '@/lib/utils';
 
 const ListCompany = () => {
   const { toast } = useToast();
@@ -120,13 +121,18 @@ const ListCompany = () => {
       headerName: 'Company Name',
       field: 'name',
       cellRenderer: actionCellRenderer,
+      valueFormatter: (params) => toProperCaseName(params.value ?? ''),
     },
     {
       headerName: 'Brand',
       field: 'brand',
       valueFormatter: (params) => params.value ?? '—',
     },
-    { headerName: 'Contact Name', field: 'contactName' },
+    {
+      headerName: 'Contact Name',
+      field: 'contactName',
+      valueFormatter: (params) => toProperCaseName(params.value ?? ''),
+    },
     { headerName: 'Email', field: 'email' },
     { headerName: 'Mobile', field: 'mobile' },
     {

@@ -18,7 +18,7 @@ import ShareWorkersDialog, {
   type SelectedWorkerItem,
 } from '@/components/shared/ShareWorkersDialog';
 import Loading from '@/components/reusable/Loading';
-import { isPlaceholderDisplayValue } from '@/lib/utils';
+import { isPlaceholderDisplayValue, toProperCaseName } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { SearchOutlined } from '@mui/icons-material';
@@ -131,9 +131,10 @@ function getWorkerId(row: any): string {
 }
 
 function toSelectedWorkerItem(row: any): SelectedWorkerItem {
+  const firstName = toProperCaseName(row?.empFirstName ?? '');
+  const lastName = toProperCaseName(row?.empLastName ?? '');
   const name =
-    `${row?.empFirstName ?? ''} ${row?.empLastName ?? ''}`.trim() ||
-    (row?.empName ?? '');
+    `${firstName} ${lastName}`.trim() || toProperCaseName(row?.empName ?? '');
   return {
     empCode: getWorkerId(row),
     mobile: row?.empMobile ?? row?.mobile ?? '',
@@ -237,6 +238,20 @@ const ListWorker: React.FC = () => {
       floatingFilter: true,
     }),
     [],
+  );
+
+  const formattedWorkers = useMemo(
+    () =>
+      (workers ?? []).map((worker: any) => ({
+        ...worker,
+        empFirstName: toProperCaseName(worker?.empFirstName ?? ''),
+        empLastName: toProperCaseName(worker?.empLastName ?? ''),
+        empName:
+          toProperCaseName(
+            `${worker?.empFirstName ?? ''} ${worker?.empLastName ?? ''}`,
+          ) || toProperCaseName(worker?.empName ?? ''),
+      })),
+    [workers],
   );
 
 
@@ -352,7 +367,7 @@ const ListWorker: React.FC = () => {
       <div className="ag-theme-quartz h-full">
         <AgGridReact
           ref={gridRef}
-          rowData={workers}
+          rowData={formattedWorkers}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
           rowSelection="multiple"
