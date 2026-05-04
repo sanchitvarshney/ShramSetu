@@ -64,16 +64,23 @@ const PendingCompanyList = () => {
 
   const columnDefs = useMemo<ColDef[]>(
     () => [
+      {
+  headerName: '',
+  width: 50,
+  checkboxSelection: true,
+  headerCheckboxSelection: true,
+  suppressMenu: true,
+  sortable: false,
+  filter: false,
+},
+// Index column
 {
   headerName: '#',
   maxWidth: 70,
-  valueGetter: (params: any) => {
-    if (!params.node) return '';
-    return params.node.rowIndex + 1;
-  },
-  checkboxSelection: true,
-  headerCheckboxSelection: true,
-  headerCheckboxSelectionFilteredOnly: true,
+  valueGetter: (params: any) => params.node.rowIndex + 1,
+    suppressMenu: true,
+  sortable: false,
+  filter: false,
 },
       { headerName: 'Company Name', field: 'name' },
       {
