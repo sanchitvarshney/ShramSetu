@@ -16,15 +16,17 @@ const PushNotificationPage: React.FC = () => {
   const { loading } = useSelector((state: RootState) => state.adminPage);
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
+  const [image, setImage] = useState<File | null>(null);
 
   const handleSend = async () => {
     const t = title.trim();
     const m = message.trim();
     if (!t || !m) return;
-    const result = await dispatch(sendNotification({ title: t, message: m }));
+    const result = await dispatch(sendNotification({ title: t, message: m, image }));
     if (sendNotification.fulfilled.match(result)) {
       setTitle('');
       setMessage('');
+      setImage(null);
     }
   };
 
@@ -63,6 +65,22 @@ const PushNotificationPage: React.FC = () => {
               placeholder="Enter notification message"
               rows={4}
             />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="notification-image">Image (Optional)</Label>
+            <Input
+              id="notification-image"
+              className={inputStyle}
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const selectedImage = e.target.files?.[0] || null;
+                setImage(selectedImage);
+              }}
+            />
+            {image ? (
+              <p className="text-sm text-muted-foreground">{image.name}</p>
+            ) : null}
           </div>
           <Button
             onClick={handleSend}

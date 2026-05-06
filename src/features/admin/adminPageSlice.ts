@@ -1077,8 +1077,8 @@ export const shareWorkers = createAsyncThunk<
 
 /** Push notification: title + message */
 export const sendNotification = createAsyncThunk<
-  { success: boolean; message: string },
-  { title: string; message: string }
+  { success: boolean; message: string, image?: any },
+  { title: string; message: string; image?: any }
 >('adminPage/sendNotification', async (payload, { rejectWithValue }) => {
   try {
     const response = await orshAxios.post(
