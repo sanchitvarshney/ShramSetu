@@ -49,8 +49,10 @@ function normalizeFacilities(
   value: JobRowData['facilities'],
 ): FacilityOption[] {
   if (Array.isArray(value) && value.length >= 2) {
-    const bus = value.find((f: any) => f.facility === 'Bus') ?? DEFAULT_FACILITIES[0];
-    const canteen = value.find((f: any) => f.facility === 'Canteen') ?? DEFAULT_FACILITIES[1];
+    const bus =
+      value.find((f: any) => f.facility === 'Bus') ?? DEFAULT_FACILITIES[0];
+    const canteen =
+      value.find((f: any) => f.facility === 'Canteen') ?? DEFAULT_FACILITIES[1];
     return [
       { ...DEFAULT_FACILITIES[0], ...bus, facility: 'Bus' },
       { ...DEFAULT_FACILITIES[1], ...canteen, facility: 'Canteen' },
@@ -103,17 +105,20 @@ const EditJobDialog = ({
   useEffect(() => {
     if (!selectedBranchId || !branches?.length) return;
     const branch = branches.find(
-      (b: any) => b.branchID === selectedBranchId || String(b.branchID) === String(selectedBranchId),
+      (b: any) =>
+        b.branchID === selectedBranchId ||
+        String(b.branchID) === String(selectedBranchId),
     );
     if (!branch) return;
     const stateText =
       typeof branch.state === 'object' && branch.state?.text != null
         ? branch.state.text
-        : branch.state ?? '';
+        : (branch.state ?? '');
     const fullAddress = branch.address?.trim()
       ? branch.address.trim()
       : [branch.city, stateText].filter(Boolean).join(', ');
-    if (fullAddress) form.setValue('address', fullAddress, { shouldValidate: true });
+    if (fullAddress)
+      form.setValue('address', fullAddress, { shouldValidate: true });
   }, [selectedBranchId, branches, form]);
 
   return (
@@ -126,10 +131,7 @@ const EditJobDialog = ({
           <DialogTitle>Edit Job</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               {/* Company – same as Create Job */}
               {companies && companies.length > 0 && (
@@ -180,14 +182,19 @@ const EditJobDialog = ({
                         <SelectTrigger className={inputStyle}>
                           <SelectValue
                             placeholder={
-                              selectedCompany ? 'Select Branch' : 'Select Company first'
+                              selectedCompany
+                                ? 'Select Branch'
+                                : 'Select Company first'
                             }
                           />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {(branches ?? []).map((branch: any) => (
-                          <SelectItem key={branch.branchID} value={branch.branchID}>
+                          <SelectItem
+                            key={branch.branchID}
+                            value={branch.branchID}
+                          >
                             {branch.branchName}
                           </SelectItem>
                         ))}
@@ -222,10 +229,7 @@ const EditJobDialog = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Job Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className={inputStyle}>
                           <SelectValue placeholder="Select Job Type" />
@@ -394,10 +398,7 @@ const EditJobDialog = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Experience</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className={inputStyle}>
                           <SelectValue placeholder="Select Experience" />
@@ -422,10 +423,7 @@ const EditJobDialog = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className={inputStyle}>
                           <SelectValue placeholder="Select Status" />
@@ -524,50 +522,97 @@ const EditJobDialog = ({
               )}
             />
 
-<FormField
-                control={form.control}
-                name="facilities"
-                render={({ field }) => {
-                  const list = normalizeFacilities(field.value);
-                  const bus:any = list.find((f) => f.facility === 'Bus') ?? DEFAULT_FACILITIES[0];
-                  const canteen:any = list.find((f) => f.facility === 'Canteen') ?? DEFAULT_FACILITIES[1];
-                  const busWithProvided = 'provided' in bus ? bus : { ...bus, provided: 'no' as const };
-                  const canteenWithProvided = 'provided' in canteen ? canteen : { ...canteen, provided: 'no' as const };
-                  const setPaid = (facility: 'Bus' | 'Canteen', paid: 'yes' | 'no') => {
-                    const next =
-                      facility === 'Bus'
-                        ? [{ ...busWithProvided, paid }, canteenWithProvided]
-                        : [busWithProvided, { ...canteenWithProvided, paid }];
-                    field.onChange(next);
-                  };
-                  const setProvided = (facility: 'Bus' | 'Canteen', provided: 'yes' | 'no') => {
-                    const paid = provided === 'no' ? ('no' as const) : undefined;
-                    if (facility === 'Bus') {
-                      field.onChange([{ ...busWithProvided, provided, ...(paid && { paid }) }, canteenWithProvided]);
-                    } else {
-                      field.onChange([busWithProvided, { ...canteenWithProvided, provided, ...(paid && { paid }) }]);
-                    }
-                  };
-                  return (
-                    <FormItem>
-                      <FormLabel>Facilities</FormLabel>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Facility</TableHead>
-                            <TableHead>Provided (Yes / No)</TableHead>
-                            <TableHead>Paid (Yes / No)</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell className="font-medium">Bus</TableCell>
-                            <TableCell>
-                              <Select
-                                value={busWithProvided.provided}
-                                onValueChange={(v: 'yes' | 'no') => setProvided('Bus', v)}
+            <FormField
+              control={form.control}
+              name="facilities"
+              render={({ field }) => {
+                const list = normalizeFacilities(field.value);
+                const bus: any =
+                  list.find((f) => f.facility === 'Bus') ??
+                  DEFAULT_FACILITIES[0];
+                const canteen: any =
+                  list.find((f) => f.facility === 'Canteen') ??
+                  DEFAULT_FACILITIES[1];
+                const busWithProvided =
+                  'provided' in bus ? bus : { ...bus, provided: 'no' as const };
+                const canteenWithProvided =
+                  'provided' in canteen
+                    ? canteen
+                    : { ...canteen, provided: 'no' as const };
+                const setPaid = (
+                  facility: 'Bus' | 'Canteen',
+                  paid: 'yes' | 'no',
+                ) => {
+                  const next =
+                    facility === 'Bus'
+                      ? [{ ...busWithProvided, paid }, canteenWithProvided]
+                      : [busWithProvided, { ...canteenWithProvided, paid }];
+                  field.onChange(next);
+                };
+                const setProvided = (
+                  facility: 'Bus' | 'Canteen',
+                  provided: 'yes' | 'no',
+                ) => {
+                  const paid = provided === 'no' ? ('no' as const) : undefined;
+                  if (facility === 'Bus') {
+                    field.onChange([
+                      { ...busWithProvided, provided, ...(paid && { paid }) },
+                      canteenWithProvided,
+                    ]);
+                  } else {
+                    field.onChange([
+                      busWithProvided,
+                      {
+                        ...canteenWithProvided,
+                        provided,
+                        ...(paid && { paid }),
+                      },
+                    ]);
+                  }
+                };
+                return (
+                  <FormItem>
+                    <FormLabel>Facilities</FormLabel>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Facility</TableHead>
+                          <TableHead>Provided (Yes / No)</TableHead>
+                          <TableHead>Paid (Yes / No)</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium">Bus</TableCell>
+                          <TableCell>
+                            <Select
+                              value={busWithProvided.provided}
+                              onValueChange={(v: 'yes' | 'no') =>
+                                setProvided('Bus', v)
+                              }
+                            >
+                              <SelectTrigger
+                                className={inputStyle + ' w-[120px]'}
                               >
-                                <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="yes">Yes</SelectItem>
+                                <SelectItem value="no">No</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            {busWithProvided.provided === 'yes' ? (
+                              <Select
+                                value={busWithProvided.paid}
+                                onValueChange={(v: 'yes' | 'no') =>
+                                  setPaid('Bus', v)
+                                }
+                              >
+                                <SelectTrigger
+                                  className={inputStyle + ' w-[120px]'}
+                                >
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -575,34 +620,44 @@ const EditJobDialog = ({
                                   <SelectItem value="no">No</SelectItem>
                                 </SelectContent>
                               </Select>
-                            </TableCell>
-                            <TableCell>
-                              {busWithProvided.provided === 'yes' ? (
-                                <Select
-                                  value={busWithProvided.paid}
-                                  onValueChange={(v: 'yes' | 'no') => setPaid('Bus', v)}
-                                >
-                                  <SelectTrigger className={inputStyle + ' w-[120px]'}>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="yes">Yes</SelectItem>
-                                    <SelectItem value="no">No</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">—</span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">Canteen</TableCell>
-                            <TableCell>
-                              <Select
-                                value={canteenWithProvided.provided}
-                                onValueChange={(v: 'yes' | 'no') => setProvided('Canteen', v)}
+                            ) : (
+                              <span className="text-muted-foreground text-sm">
+                                —
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell className="font-medium">Canteen</TableCell>
+                          <TableCell>
+                            <Select
+                              value={canteenWithProvided.provided}
+                              onValueChange={(v: 'yes' | 'no') =>
+                                setProvided('Canteen', v)
+                              }
+                            >
+                              <SelectTrigger
+                                className={inputStyle + ' w-[120px]'}
                               >
-                                <SelectTrigger className={inputStyle + ' w-[120px]'}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="yes">Yes</SelectItem>
+                                <SelectItem value="no">No</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            {canteenWithProvided.provided === 'yes' ? (
+                              <Select
+                                value={canteenWithProvided.paid}
+                                onValueChange={(v: 'yes' | 'no') =>
+                                  setPaid('Canteen', v)
+                                }
+                              >
+                                <SelectTrigger
+                                  className={inputStyle + ' w-[120px]'}
+                                >
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -610,43 +665,30 @@ const EditJobDialog = ({
                                   <SelectItem value="no">No</SelectItem>
                                 </SelectContent>
                               </Select>
-                            </TableCell>
-                            <TableCell>
-                              {canteenWithProvided.provided === 'yes' ? (
-                                <Select
-                                  value={canteenWithProvided.paid}
-                                  onValueChange={(v: 'yes' | 'no') => setPaid('Canteen', v)}
-                                >
-                                  <SelectTrigger className={inputStyle + ' w-[120px]'}>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="yes">Yes</SelectItem>
-                                    <SelectItem value="no">No</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">—</span>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
+                            ) : (
+                              <span className="text-muted-foreground text-sm">
+                                —
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-              >
+              <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
-              <Button disabled={isUpdateLoading} type="submit" className="bg-[#115e59] hover:bg-[#0d4a46]">
+              <Button
+                disabled={isUpdateLoading}
+                type="submit"
+                className="bg-[#115e59] hover:bg-[#0d4a46]"
+              >
                 Save Changes
               </Button>
             </DialogFooter>

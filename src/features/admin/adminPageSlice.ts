@@ -1077,13 +1077,18 @@ export const shareWorkers = createAsyncThunk<
 
 /** Push notification: title + message */
 export const sendNotification = createAsyncThunk<
-  { success: boolean; message: string, image?: any },
-  { title: string; message: string; image?: any }
+  { success: boolean; message: string; image?: any },
+  FormData
 >('adminPage/sendNotification', async (payload, { rejectWithValue }) => {
   try {
     const response = await orshAxios.post(
       '/invitations/send-notification',
       payload,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
     );
     const data = response.data;
     if (!data?.success) {

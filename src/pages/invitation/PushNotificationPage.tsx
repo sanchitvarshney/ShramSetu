@@ -22,7 +22,14 @@ const PushNotificationPage: React.FC = () => {
     const t = title.trim();
     const m = message.trim();
     if (!t || !m) return;
-    const result = await dispatch(sendNotification({ title: t, message: m, image }));
+    const formData = new FormData();
+    formData.append('title', t);
+    formData.append('message', m);
+    if (image) {
+      formData.append('image', image);
+    }
+
+    const result = await dispatch(sendNotification(formData));
     if (sendNotification.fulfilled.match(result)) {
       setTitle('');
       setMessage('');
