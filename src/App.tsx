@@ -104,14 +104,8 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/profile/delete-account/:id',
-        element: (
-       
-       
-                <DeleteAccountPage />
-           
-     
-        ),
+        path: '/profile/delete-account',
+        element: <DeleteAccountPage />,
       },
       {
         path: '/company/list',

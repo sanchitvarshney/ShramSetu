@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -18,6 +17,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { inputStyle } from '@/style/CustomStyles';
+import { Input } from 'antd';
 
 const deleteReasons = [
   'Privacy concerns',
@@ -28,8 +28,8 @@ const deleteReasons = [
 ];
 
 const DeleteAccountPage = () => {
-  const { id: userId } = useParams<{ id: string }>();
   const [reason, setReason] = useState('');
+  const [email, setEmail] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const isOtherReason = reason === 'Other';
@@ -57,7 +57,7 @@ const DeleteAccountPage = () => {
     setIsDeleting(true);
     try {
       const payload = {
-        userId,
+        email,
         reason,
         feedback,
       };
@@ -65,8 +65,8 @@ const DeleteAccountPage = () => {
 
       toast({
         title: 'Delete request submitted',
-        description: userId
-          ? `Request captured for user ID: ${userId}`
+        description: email
+          ? `Request captured for user email: ${email}`
           : 'Request captured without user ID.',
       });
     } finally {
@@ -91,6 +91,15 @@ const DeleteAccountPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
+            <div className="space-y-2">
+            <Label>Email *</Label>
+           <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
           <div className="space-y-2">
             <Label>Reason for deleting account *</Label>
             <Select value={reason} onValueChange={setReason}>
