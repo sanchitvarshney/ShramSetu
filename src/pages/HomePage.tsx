@@ -80,6 +80,12 @@ const HomePage: React.FC = () => {
       value: item.totalApplications,
     })) ?? [];
 
+  const workersChartData =
+    analytics?.monthlyWorkers?.map((item: any) => ({
+      month: item.week,
+      value: item.totalWorkers,
+    })) ?? [];
+
   const chartHeight = 380;
   const areaConfig = {
     data: chartData,
@@ -111,7 +117,7 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-h-[calc(100vh- 120px)] p-4 md:p-6 space-y-6 overflow-hidden min-w-0">
+    <div className="w-full h-full p-4 md:p-6 space-y-6 overflow-y-auto min-w-0">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 min-w-0">
         {cards.map((card) => (
           <Card
@@ -134,31 +140,60 @@ const HomePage: React.FC = () => {
         ))}
       </div>
 
-      <Card
-        title="Monthly Applications (Last 3 Months)"
-        className="shadow-sm min-w-0 overflow-hidden"
-        styles={{ body: { padding: '1.25rem' } }}
-      >
-        <div
-          className="min-w-0 w-full overflow-hidden"
-          style={{ height: chartHeight }}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
+        <Card
+          title="Monthly Applications (Last 3 Months)"
+          className="shadow-sm min-w-0 overflow-hidden"
+          styles={{ body: { padding: '1.25rem' } }}
         >
-          {chartData.length > 0 ? (
-            <Line
-              {...areaConfig}
-              height={chartHeight}
-              style={{ maxWidth: '100%' }}
-            />
-          ) : (
-            <div
-              className="flex items-center justify-center text-gray-500"
-              style={{ height: chartHeight }}
-            >
-              No monthly data available
-            </div>
-          )}
-        </div>
-      </Card>
+          <div
+            className="min-w-0 w-full overflow-hidden"
+            style={{ height: chartHeight }}
+          >
+            {chartData.length > 0 ? (
+              <Line
+                {...areaConfig}
+                height={chartHeight}
+                style={{ maxWidth: '100%' }}
+              />
+            ) : (
+              <div
+                className="flex items-center justify-center text-gray-500"
+                style={{ height: chartHeight }}
+              >
+                No monthly applications data available
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <Card
+          title="Weekly Workers (Last 3 Weeks)"
+          className="shadow-sm min-w-0 overflow-hidden"
+          styles={{ body: { padding: '1.25rem' } }}
+        >
+          <div
+            className="min-w-0 w-full overflow-hidden"
+            style={{ height: chartHeight }}
+          >
+            {workersChartData.length > 0 ? (
+              <Line
+                {...areaConfig}
+                data={workersChartData}
+                height={chartHeight}
+                style={{ maxWidth: '100%' }}
+              />
+            ) : (
+              <div
+                className="flex items-center justify-center text-gray-500"
+                style={{ height: chartHeight }}
+              >
+                No last 3 weeks workers data available
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };
