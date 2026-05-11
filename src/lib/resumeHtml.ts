@@ -53,12 +53,13 @@ export function cleanAddrPart(x: string | null | undefined): string {
 export function buildAddressLines(
   houseNo: string,
   colony: string,
+  district: string,
   city: string,
   state: string,
   country: string,
   pincode: string,
 ): string[] {
-  const parts1 = [houseNo, colony, city].filter(Boolean);
+  const parts1 = [houseNo, district, colony, city].filter(Boolean);
   const line1 = parts1.join(', ');
   const parts2 = [state, country, pincode].filter(Boolean);
   const line2 = parts2.join(', ');

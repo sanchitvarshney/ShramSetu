@@ -22,6 +22,7 @@ function workerToResumeData(w: any): ResumeData {
   const presentLines = buildAddressLines(
     cleanAddrPart(w?.present_houseNo),
     cleanAddrPart(w?.present_colony),
+    cleanAddrPart(w?.present_district),
     cleanAddrPart(w?.present_city),
     cleanAddrPart(w?.present_state),
     cleanAddrPart(w?.present_country),
