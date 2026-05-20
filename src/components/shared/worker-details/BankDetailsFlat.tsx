@@ -240,7 +240,7 @@ export const BankDetailsFlat = React.memo(function BankDetailsFlat({
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(states ?? []).map((s) => (
+                  {(states ?? []).map((s:any) => (
                     <SelectItem key={s.value} value={String(s.value)}>
                       {s.text}
                     </SelectItem>
