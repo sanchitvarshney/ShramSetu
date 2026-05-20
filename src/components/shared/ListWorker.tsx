@@ -27,6 +27,7 @@ import FilterListAltIcon from '@mui/icons-material/FilterListAlt';
 import { FileUploadDialog } from './FileUploadDialog';
 import { useNavigate } from 'react-router-dom';
 import type { AgGridReact as AgGridReactType } from 'ag-grid-react';
+import { resolveMaritalStatusSelectValue } from './worker-details/resolveMaritalStatus';
 
 const { RangePicker } = DatePicker;
 
@@ -79,7 +80,12 @@ function normalizeWorkerDetailsFromApi(
     empPhoto,
     empDOB: personal.dob ?? '',
     empGender: personal.gender ?? '',
-    empMaritalStatus: personal.empMaritalStatus ?? '',
+    empMaritalStatus: resolveMaritalStatusSelectValue(
+      personal.empMaritalStatus ??
+        (personal as { empMaritalstatus?: string }).empMaritalstatus ??
+        (personal as { maritalStatus?: unknown }).maritalStatus ??
+        (basic as { maritalStatus?: unknown }).maritalStatus,
+    ),
     empHobbies: personal.empHobbies ?? '',
     empPanNo:
       basic.panNo ??

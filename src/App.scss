@@ -46,3 +46,11 @@
     color: #404040;
   }
 }
+
+/* Worker details inline edit — align Ant Design DatePicker with inputs */
+.worker-details-edit {
+  .ant-picker {
+    width: 100%;
+    height: 2.5rem;
+  }
+}

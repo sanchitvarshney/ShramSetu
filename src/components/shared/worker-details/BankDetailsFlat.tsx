@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Edit, Map, X } from 'lucide-react';
+import { Edit, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { SelectWithLabel } from '@/components/ui/EmpUpdate';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   fetchStates,
   updateWorkerBankDetails,
@@ -17,6 +22,7 @@ import { inputStyle } from '@/style/CustomStyles';
 import { cn } from '@/lib/utils';
 import { SelectOptionType } from '@/types/general';
 import { DetailRow, SingleDetail } from './detailPrimitives';
+import { EditField, EDIT_FORM_GRID_2 } from './editFormPrimitives';
 
 function resolveStateSelectValue(
   raw: string,
@@ -183,19 +189,17 @@ export const BankDetailsFlat = React.memo(function BankDetailsFlat({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Bank name</Label>
+        <CardContent className="pt-0">
+          <div className={EDIT_FORM_GRID_2}>
+            <EditField label="Bank name">
               <Input
                 className={inputStyle}
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="Bank name"
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">IFSC code</Label>
+            </EditField>
+            <EditField label="IFSC code">
               <Input
                 className={inputStyle}
                 value={ifsCode}
@@ -205,47 +209,46 @@ export const BankDetailsFlat = React.memo(function BankDetailsFlat({
                 placeholder="11-character IFSC"
                 maxLength={11}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Branch</Label>
+            </EditField>
+            <EditField label="Branch">
               <Input
                 className={inputStyle}
                 value={branch}
                 onChange={(e) => setBranch(e.target.value)}
-                placeholder="Branch"
+                placeholder="Branch name"
               />
-            </div>
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label className="text-xs">Bank address</Label>
-              <Textarea
-                className={cn(inputStyle, 'min-h-[72px] resize-y')}
-                value={bankAddress}
-                onChange={(e) => setBankAddress(e.target.value)}
-                placeholder="Branch address"
-              />
-            </div>
-            <div className="space-y-1.5 sm:col-span-2">
-              <SelectWithLabel
-                label="State"
-                value={bankState}
-                onValueChange={setBankState}
-                options={states ?? []}
-                textKey="text"
-                optionKey="value"
-                icon={Map}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Account number</Label>
+            </EditField>
+            <EditField label="Account number">
               <Input
                 className={inputStyle}
                 value={accountNo}
                 onChange={(e) => setAccountNo(e.target.value)}
                 placeholder="Account number"
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">UAN</Label>
+            </EditField>
+            <EditField label="Bank address" className="sm:col-span-2">
+              <Textarea
+                className={cn(inputStyle, 'min-h-[72px] resize-y w-full')}
+                value={bankAddress}
+                onChange={(e) => setBankAddress(e.target.value)}
+                placeholder="Branch address"
+              />
+            </EditField>
+            <EditField label="State" className="sm:col-span-2">
+              <Select value={bankState} onValueChange={setBankState}>
+                <SelectTrigger className={cn(inputStyle, 'w-full')}>
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(states ?? []).map((s) => (
+                    <SelectItem key={s.value} value={String(s.value)}>
+                      {s.text}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </EditField>
+            <EditField label="UAN">
               <Input
                 className={inputStyle}
                 value={uan}
@@ -253,7 +256,7 @@ export const BankDetailsFlat = React.memo(function BankDetailsFlat({
                 placeholder="UAN"
                 maxLength={12}
               />
-            </div>
+            </EditField>
           </div>
         </CardContent>
       </Card>

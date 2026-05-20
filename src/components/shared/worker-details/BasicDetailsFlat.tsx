@@ -27,13 +27,21 @@ import { inputStyle } from '@/style/CustomStyles';
 import { capitalizeName, cn } from '@/lib/utils';
 import { isValidAadhaar, isValidPan } from '@/lib/validations';
 import { buildWorkerUpdatePayload } from '@/lib/workerUpdatePayload';
-import { AiOutlineUser } from 'react-icons/ai';
-import { BsTelephone } from 'react-icons/bs';
-import { CiMail } from 'react-icons/ci';
-import { PiCreditCard } from 'react-icons/pi';
+import { marriedStatus } from '@/types/general';
 import { PLACEHOLDER_PHOTO_DATAURL } from './constants';
 import { DetailRow, SingleDetail } from './detailPrimitives';
+import {
+  EditField,
+  EDIT_FIELD_LABEL,
+  EDIT_FORM_GRID,
+} from './editFormPrimitives';
 import { parseDOB } from './parseDob';
+import {
+  getMaritalStatusFromDetails,
+  resolveMaritalStatusSelectValue,
+} from './resolveMaritalStatus';
+
+const selectTriggerClass = cn(inputStyle, 'input2 focus:ring-0 w-full');
 
 export const BasicDetailsFlat = React.memo(function BasicDetailsFlat({
   details,
@@ -77,7 +85,9 @@ export const BasicDetailsFlat = React.memo(function BasicDetailsFlat({
       setEmpGender(details?.empGender ?? '');
       setEmpMobile(details?.empMobile ?? '');
       setEmpEmail(details?.empEmail ?? '');
-      setEmpMaritalStatus(details?.empMaritalStatus ?? '');
+      setEmpMaritalStatus(
+        resolveMaritalStatusSelectValue(getMaritalStatusFromDetails(details)),
+      );
       setEmpHobbies(details?.empHobbies ?? '');
       setAdhaar((details?.adhaar ?? '').replace(/\s/g, ''));
       setEmpPanNo((details?.empPanNo ?? '').toString().trim().toUpperCase());
@@ -203,19 +213,23 @@ export const BasicDetailsFlat = React.memo(function BasicDetailsFlat({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex gap-5">
-            <div className="w-28 shrink-0 flex flex-col items-center">
-              <div className="relative w-24 h-24 rounded-full bg-gray-200 overflow-hidden border-2 border-slate-200">
+        <CardContent className="pt-0 worker-details-edit">
+          <div className="flex flex-col sm:flex-row gap-6">
+            <div className="shrink-0 flex flex-col items-center sm:items-start gap-2">
+              <Label className={EDIT_FIELD_LABEL}>Profile photo</Label>
+              <label
+                htmlFor="basic-details-photo"
+                className="relative block w-24 h-24 rounded-full bg-slate-100 overflow-hidden border-2 border-slate-200 cursor-pointer group"
+              >
                 <img
                   src={photoSrc}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
-                <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer text-white text-xs">
+                <span className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-medium">
                   Change
-                </label>
-              </div>
+                </span>
+              </label>
               <input
                 type="file"
                 accept="image/*"
@@ -225,78 +239,63 @@ export const BasicDetailsFlat = React.memo(function BasicDetailsFlat({
               />
               <Label
                 htmlFor="basic-details-photo"
-                className="mt-2 text-xs cursor-pointer text-teal-600"
+                className="text-xs cursor-pointer text-teal-700 hover:text-teal-800 font-medium"
               >
-                {empPhotoFile ? 'Change' : 'Upload'}
+                {empPhotoFile ? 'Change photo' : 'Upload photo'}
               </Label>
             </div>
-            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="floating-label-group">
+            <div className={cn('flex-1 min-w-0', EDIT_FORM_GRID)}>
+              <EditField label="First name">
                 <Input
                   className={inputStyle}
                   value={empFirstName}
                   onChange={(e) =>
                     setEmpFirstName(capitalizeName(e.target.value))
                   }
+                  placeholder="First name"
                 />
-                <Label className="floating-label">
-                  <span className="flex items-center gap-1">
-                    <AiOutlineUser className="h-4 w-4" /> First Name
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
+              </EditField>
+              <EditField label="Middle name">
                 <Input
                   className={inputStyle}
                   value={empMiddleName}
                   onChange={(e) =>
                     setEmpMiddleName(capitalizeName(e.target.value))
                   }
+                  placeholder="Middle name"
                 />
-                <Label className="floating-label">
-                  <span className="flex items-center gap-1">
-                    <AiOutlineUser className="h-4 w-4" /> Middle Name
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
+              </EditField>
+              <EditField label="Last name">
                 <Input
                   className={inputStyle}
                   value={empLastName}
                   onChange={(e) =>
                     setEmpLastName(capitalizeName(e.target.value))
                   }
+                  placeholder="Last name"
                 />
-                <Label className="floating-label">
-                  <span className="flex items-center gap-1">
-                    <AiOutlineUser className="h-4 w-4" /> Last Name
-                  </span>
-                </Label>
-              </div>
-              <div>
-                <Label className="floating-label">Gender</Label>
+              </EditField>
+              <EditField label="Gender">
                 <Select value={empGender} onValueChange={setEmpGender}>
-                  <SelectTrigger
-                    className={`${inputStyle} input2 focus:ring-0`}
-                  >
-                    <SelectValue placeholder="--" />
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="M">Male</SelectItem>
                     <SelectItem value="F">Female</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
-                <Label className="floating-label">DOB</Label>
+              </EditField>
+              <EditField label="Date of birth">
                 <DatePicker
                   onChange={onDOBChange}
                   value={empDOBDate ? dayjs(empDOBDate) : null}
-                  className={`${inputStyle} input2 w-full`}
+                  className={cn(inputStyle, 'input2 w-full')}
                   format="DD/MM/YYYY"
+                  placeholder="DD/MM/YYYY"
                 />
-              </div>
-              <div className="floating-label-group">
+              </EditField>
+              <EditField label="Phone">
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -306,31 +305,79 @@ export const BasicDetailsFlat = React.memo(function BasicDetailsFlat({
                   onChange={(e) =>
                     setEmpMobile(e.target.value.replace(/\D/g, ''))
                   }
+                  placeholder="Mobile number"
                 />
-                <Label className="floating-label">
-                  <span className="flex items-center gap-1">
-                    <BsTelephone className="h-4 w-4" /> Phone
-                  </span>
-                </Label>
-              </div>
-              <div className="floating-label-group col-span-2">
+              </EditField>
+              <EditField label="Email" className="sm:col-span-2">
                 <Input
                   type="email"
                   className={inputStyle}
                   value={empEmail}
                   onChange={(e) => setEmpEmail(e.target.value)}
+                  placeholder="Email address"
                 />
-                <Label className="floating-label">
-                  <span className="flex items-center gap-1">
-                    <CiMail className="h-4 w-4" /> Email
+              </EditField>
+              <EditField label="Marital status">
+                <Select
+                  value={
+                    marriedStatus.some((o) => o.value === empMaritalStatus)
+                      ? empMaritalStatus
+                      : undefined
+                  }
+                  onValueChange={setEmpMaritalStatus}
+                >
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {marriedStatus.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.text}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </EditField>
+              <EditField label="Hobbies" className="sm:col-span-2">
+                <Input
+                  className={inputStyle}
+                  value={empHobbies}
+                  onChange={(e) => setEmpHobbies(e.target.value)}
+                  placeholder="Hobbies"
+                />
+              </EditField>
+              <EditField label="Blood group">
+                <Input
+                  className={inputStyle}
+                  value={empBloodGroup}
+                  onChange={(e) => setEmpBloodGroup(e.target.value)}
+                  placeholder="e.g. O+"
+                />
+              </EditField>
+              <EditField
+                label="Aadhaar number"
+                hint={
+                  <span
+                    className={cn(
+                      adhaar.length > 0
+                        ? isValidAadhaar(adhaar)
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                        : 'invisible',
+                    )}
+                  >
+                    {adhaar.length > 0
+                      ? isValidAadhaar(adhaar)
+                        ? 'Valid Aadhaar'
+                        : 'Invalid Aadhaar'
+                      : '\u00a0'}
                   </span>
-                </Label>
-              </div>
-              <div className="floating-label-group">
+                }
+              >
                 <Input
                   type="text"
                   inputMode="numeric"
-                  maxLength={14}
+                  maxLength={12}
                   className={inputStyle}
                   value={adhaar}
                   onChange={(e) => {
@@ -339,67 +386,45 @@ export const BasicDetailsFlat = React.memo(function BasicDetailsFlat({
                   }}
                   placeholder="12 digits"
                 />
-                <Label className="floating-label">
-                  <span className="flex items-center gap-1">
-                    <PiCreditCard className="h-4 w-4" /> Aadhaar
+              </EditField>
+              <EditField
+                label="PAN number"
+                hint={
+                  <span
+                    className={cn(
+                      empPanNo.length > 0
+                        ? isValidPan(empPanNo)
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                        : 'invisible',
+                    )}
+                  >
+                    {empPanNo.length > 0
+                      ? isValidPan(empPanNo)
+                        ? 'Valid PAN'
+                        : 'Format: 5 letters + 4 digits + 1 letter'
+                      : '\u00a0'}
                   </span>
-                </Label>
-                {adhaar.length > 0 && (
-                  <p
-                    className={cn(
-                      'text-xs mt-0.5',
-                      isValidAadhaar(adhaar)
-                        ? 'text-green-600'
-                        : 'text-red-600',
-                    )}
-                  >
-                    {isValidAadhaar(adhaar) ? 'Valid' : 'Invalid'}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-0.5">
-                <div
-                  className={`floating-label-group${empPanNo.trim() ? ' has-value' : ''}`}
-                >
-                  <Input
-                    type="text"
-                    maxLength={10}
-                    className={inputStyle}
-                    value={empPanNo}
-                    onChange={(e) => {
-                      const v = e.target.value
-                        .replace(/[^A-Za-z0-9]/g, '')
-                        .toUpperCase();
-                      if (v.length <= 10) setEmpPanNo(v);
-                    }}
-                    placeholder="e.g. ABCDE1234F"
-                  />
-                  <Label className="floating-label">
-                    <span className="flex items-center gap-1">
-                      <PiCreditCard className="h-4 w-4" /> PAN No.
-                    </span>
-                  </Label>
-                </div>
-                {empPanNo.length > 0 && (
-                  <p
-                    className={cn(
-                      'text-xs mt-0.5',
-                      isValidPan(empPanNo) ? 'text-green-600' : 'text-red-600',
-                    )}
-                  >
-                    {isValidPan(empPanNo)
-                      ? 'PAN valid'
-                      : 'Invalid — use 5 letters + 4 digits + 1 letter'}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label className="floating-label">Department</Label>
+                }
+              >
+                <Input
+                  type="text"
+                  maxLength={10}
+                  className={inputStyle}
+                  value={empPanNo}
+                  onChange={(e) => {
+                    const v = e.target.value
+                      .replace(/[^A-Za-z0-9]/g, '')
+                      .toUpperCase();
+                    if (v.length <= 10) setEmpPanNo(v);
+                  }}
+                  placeholder="e.g. ABCDE1234F"
+                />
+              </EditField>
+              <EditField label="Department">
                 <Select value={empDepartment} onValueChange={setEmpDepartment}>
-                  <SelectTrigger
-                    className={`${inputStyle} input2 focus:ring-0`}
-                  >
-                    <SelectValue placeholder="--" />
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue placeholder="Select department" />
                   </SelectTrigger>
                   <SelectContent>
                     {departmentList?.map((dept: Department) => (
@@ -409,17 +434,14 @@ export const BasicDetailsFlat = React.memo(function BasicDetailsFlat({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
-                <Label className="floating-label">Designation</Label>
+              </EditField>
+              <EditField label="Designation">
                 <Select
                   value={empDesignation}
                   onValueChange={setEmpDesignation}
                 >
-                  <SelectTrigger
-                    className={`${inputStyle} input2 focus:ring-0`}
-                  >
-                    <SelectValue placeholder="--" />
+                  <SelectTrigger className={selectTriggerClass}>
+                    <SelectValue placeholder="Select designation" />
                   </SelectTrigger>
                   <SelectContent>
                     {designationList?.map((desg: Designation) => (
@@ -429,7 +451,7 @@ export const BasicDetailsFlat = React.memo(function BasicDetailsFlat({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </EditField>
             </div>
           </div>
         </CardContent>

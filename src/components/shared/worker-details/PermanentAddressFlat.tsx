@@ -5,7 +5,6 @@ import { Edit, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   fetchStates,
   updateEmployeePermanentAddress,
@@ -20,7 +19,9 @@ import {
 } from '@/components/ui/select';
 import { inputStyle } from '@/style/CustomStyles';
 import { SingleDetail } from './detailPrimitives';
+import { EditField, EDIT_FORM_GRID_2 } from './editFormPrimitives';
 import { SelectOptionType } from '@/types/general';
+import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 
 type StateSelectMode = 'value' | 'text';
@@ -157,38 +158,33 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="pt-0 space-y-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs">House No. / Address</Label>
+        <CardContent className="pt-0 space-y-4">
+          <EditField label="House no. / address">
             <Input
               className={inputStyle}
               value={houseNo}
               onChange={(e) => setHouseNo(e.target.value)}
-              placeholder="House no"
+              placeholder="House no. / street address"
             />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-           
-            <div className="space-y-1.5">
-              <Label className="text-xs">City</Label>
+          </EditField>
+          <div className={EDIT_FORM_GRID_2}>
+            <EditField label="City">
               <Input
                 className={inputStyle}
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="City"
               />
-            </div>
-             <div className="space-y-1.5">
-              <Label className="text-xs">District</Label>
+            </EditField>
+            <EditField label="District">
               <Input
                 className={inputStyle}
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
                 placeholder="District"
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">State</Label>
+            </EditField>
+            <EditField label="State">
               <Select
                 value={stateVal}
                 onValueChange={(v) => {
@@ -196,7 +192,7 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
                   setStateVal(v);
                 }}
               >
-                <SelectTrigger className={inputStyle}>
+                <SelectTrigger className={cn(inputStyle, 'w-full')}>
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent>
@@ -210,10 +206,8 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-        
-            <div className="space-y-1.5">
-              <Label className="text-xs">Pin Code</Label>
+            </EditField>
+            <EditField label="Pin code">
               <Input
                 className={inputStyle}
                 value={pincode}
@@ -224,9 +218,9 @@ export const PermanentAddressFlat = React.memo(function PermanentAddressFlat({
                     e.target.value.replace(/\D/g, '').slice(0, 6),
                   )
                 }
-                placeholder="Pincode"
+                placeholder="6-digit pin code"
               />
-            </div>
+            </EditField>
           </div>
         </CardContent>
       </Card>
